@@ -489,7 +489,7 @@ async function saveProject(fields){try{
     await api("/projects/"+S.project.id,{method:"PATCH",body:{fields:fields}});
     if(S.project&&S.project.project)Object.assign(S.project.project,fields); // keep local copy in sync (fixes stale entity in PDFs)
     toast("Saved");
-    var reRender=["Entity","Rate","PricingMode","IndirectCost","OverheadPct","Classification"];
+    var reRender=["Entity","Rate","PricingMode","IndirectPct","OverheadPct","Classification"];
     if(Object.keys(fields).some(function(k){return reRender.indexOf(k)>=0;}))refresh(true);
   }catch(e){toast(e.message);}}
 async function saveChild(kind,id,field,val){try{await api("/"+(kind==="resource"?"resources":"costlines")+"/"+id,{method:"PATCH",body:defObj(field,val)});toast("Saved");refresh(true);}catch(e){toast(e.message);}}
