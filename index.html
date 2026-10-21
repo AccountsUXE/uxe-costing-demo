@@ -1063,5 +1063,395 @@ async function exportCostingPDF(){
 /* ================= BOOT ================= */
 if(S.token&&S.user){enterApp();}
 </script>
+<script>
+/* ============================================================================
+   DEMO MOCK BACKEND — runs entirely in the browser. No server, no SharePoint,
+   no email. Mirrors the real backend's workflow engine, role access and proposal
+   logic so the full flow can be tested. Sign-in code is always 000000.
+   ========================================================================== */
+(function () {
+  var CODE = "000000";
+
+  /* ---------- seed data ---------- */
+  var DB = {
+    seq: 100,
+    domains: ["uxe.ai", "emcode.ae"],
+    members: [
+      { email: "bassam.youssef@uxe.ai", name: "Bassam Youssef", entity: "UXE", role: "admin" },
+      { email: "mohamed.ishraf@uxe.ai", name: "Mohamed Ishraf", entity: "EMCODE", role: "admin" },
+      { email: "requester@uxe.ai", name: "Demo Requester", entity: "UXE", role: "requester" },
+      { email: "it@uxe.ai", name: "Demo IT Manager", entity: "UXE", role: "itmanager" },
+      { email: "hr@uxe.ai", name: "Demo HR", entity: "UXE", role: "hr" },
+      { email: "procurement@uxe.ai", name: "Demo Procurement", entity: "UXE", role: "procurement" },
+      { email: "finance@uxe.ai", name: "Demo Finance", entity: "UXE", role: "finance" },
+      { email: "ceo@uxe.ai", name: "Demo CEO", entity: "UXE", role: "ceo" },
+      { email: "pm@uxe.ai", name: "Demo PM", entity: "UXE", role: "pm" }
+    ],
+    positions: [
+      { id: 1, position: "Security Engineer", salary: 12000, status: "Pending HR" },
+      { id: 2, position: "Project Manager", salary: 18000, status: "Pending HR" },
+      { id: 3, position: "Technician", salary: 7000, status: "Estimated" }
+    ],
+    benefits: [
+      { id: 1, comp: "End-of-service gratuity", basis: "21 days salary / yr", kind: "salYrDays", value: 21, status: "Actual", sap: true },
+      { id: 2, comp: "Annual leave", basis: "30 days / yr", kind: "salYrDays", value: 30, status: "Actual", sap: false },
+      { id: 3, comp: "Air ticket", basis: "per year", kind: "perYr", value: 3000, status: "Estimated", sap: false },
+      { id: 4, comp: "Medical insurance", basis: "per year", kind: "perYr", value: 6000, status: "Assumption", sap: false }
+    ],
+    matrix: [
+      { id: 1, comp: "Project personnel", price: true, sap: true, cap: "P&L", gl: "pending", wbs: "pending", reason: "Direct labour" },
+      { id: 2, comp: "Materials & equipment", price: true, sap: true, cap: "P&L", gl: "pending", wbs: "pending", reason: "Direct materials" }
+    ],
+    projects: [],
+    resources: [],
+    costlines: [],
+    history: []
+  };
+  function nid() { return ++DB.seq; }
+  // seed one project per stakeholder-relevant stage so inboxes and the dashboard are populated
+  function seedFull(o) {
+    var id = nid();
+    DB.projects.push({ id: id, fields: Object.assign({
+      Title: o.title, Code: o.code || "", Entity: o.entity || "UXE", Client: o.client || "",
+      Stage: o.stage, HRStatus: o.hr || "Pending", ProcStatus: o.proc || "Pending",
+      RequesterEmail: "requester@uxe.ai", Requester: "Demo Requester", CurrentOwnerEmail: o.owner || "",
+      PricingMode: "margin", Rate: o.rate || 45, IndirectPct: 8, OverheadPct: 20, Currency: "AED",
+      Budget: o.budget || 0, Classification: "Project", SAPCode: o.sap || "", AppExtra: "{}"
+    }, o.extra || {}) });
+    (o.resources || []).forEach(function (r) { DB.resources.push(Object.assign({ id: nid(), projectId: id, projectTitle: o.title, person: "", position: "", type: "Staff", salary: 0, qty: 1, months: 1, util: 100 }, r)); });
+    (o.costlines || []).forEach(function (l) { DB.costlines.push(Object.assign({ id: nid(), projectId: id, projectTitle: o.title, item: "", section: "Materials", category: "Equipment", vendor: "", uom: "EA", price: 0, qty: 1 }, l)); });
+    return id;
+  }
+  // Original project (completed / approved) — the base of a program
+  var idCourtsOriginal = seedFull({ title: "Dubai Courts — Phase 1 CCTV", code: "DBC1", client: "Dubai Courts", stage: "Approved", hr: "Done", proc: "Done", budget: 300000, sap: "UXE/PRJ/DBC/001",
+    resources: [{ person: "A. Khan", position: "Security Engineer", salary: 11000, qty: 2, months: 4, util: 100 }],
+    costlines: [{ item: "IP cameras", price: 780, qty: 40, vendor: "Hikvision" }], extra: { ProposalNo: "CP-2026-0004" } });
+  // at Costing (HR pending) — keeps HR/Procurement inboxes non-empty
+  seedFull({ title: "Dubai Courts — CCTV upgrade", code: "DBC", client: "Dubai Courts", stage: "Costing", owner: "hr@uxe.ai", budget: 300000, sap: "UXE/STA/DBC/002",
+    resources: [{ person: "A. Khan", position: "Security Engineer", salary: 0, qty: 2, months: 4, util: 100 }],
+    costlines: [{ item: "IP cameras", price: 0, qty: 40 }] });
+  // at Finance review — fully priced
+  seedFull({ title: "Access Control — HQ Fit-out", code: "ACH", client: "Sample Customer LLC", stage: "Review-Finance", hr: "Done", proc: "Done", budget: 340000, owner: "finance@uxe.ai", sap: "UXE/PRJ/ACH/014",
+    resources: [{ person: "A. Rahman", position: "Security Engineer", salary: 12000, qty: 2, months: 4, util: 100 }, { person: "S. Pillai", position: "Project Manager", salary: 18000, qty: 1, months: 4, util: 60, marginPct: 60 }],
+    costlines: [{ item: "IP cameras (dome)", price: 850, qty: 24, marginPct: 35 }, { item: "Access controllers", price: 1400, qty: 6 }] });
+  // EMCODE, in costing
+  seedFull({ title: "Smart Building — Tower B", code: "SBT", entity: "EMCODE", client: "Emaar", stage: "Costing", proc: "Done", owner: "hr@uxe.ai", budget: 880000, sap: "EMC/PRJ/SBT/003",
+    resources: [{ person: "K. Das", position: "Automation Engineer", salary: 14000, qty: 2, months: 3, util: 100 }],
+    costlines: [{ item: "BMS controllers", price: 2200, qty: 30, vendor: "Siemens" }] });
+  // CEO gate (margin < 30) — EXTENSION of the completed Dubai Courts Phase 1 (linked for reporting)
+  seedFull({ title: "Dubai Courts — Phase 2 extension", code: "CUC", client: "Dubai Courts", stage: "CEO-Approval", hr: "Done", proc: "Done", budget: 410000, rate: 22, owner: "ceo@uxe.ai", sap: "UXE/PRJ/CUC/021",
+    resources: [{ person: "M. Noor", position: "Security Engineer", salary: 11000, qty: 3, months: 5, util: 100 }],
+    costlines: [{ item: "PTZ cameras", price: 3200, qty: 20, vendor: "Axis" }], extra: { ParentRef: String(idCourtsOriginal) } });
+  // PM acceptance
+  seedFull({ title: "Perimeter Intrusion — Ph.2", code: "PIP", client: "Dubai Holding", stage: "PM-Acceptance", hr: "Done", proc: "Done", budget: 320000, owner: "pm@uxe.ai", sap: "UXE/PRJ/PIP/009",
+    resources: [{ person: "T. Aziz", position: "Technician", salary: 8000, qty: 3, months: 3, util: 100 }],
+    costlines: [{ item: "Fence sensors", price: 650, qty: 60, vendor: "Senstar" }] });
+  // Approved
+  seedFull({ title: "Barrier & ANPR — Logistics", code: "BAL", client: "DP World", stage: "Approved", hr: "Done", proc: "Done", budget: 270000, sap: "UXE/PRJ/BAL/017",
+    resources: [{ person: "R. Iyer", position: "Technician", salary: 7500, qty: 2, months: 2, util: 100 }],
+    costlines: [{ item: "ANPR barriers", price: 9500, qty: 4, vendor: "Nedap" }], extra: { ProposalNo: "CP-2026-0007" } });
+
+  /* ---------- pure logic (ported from backend) ---------- */
+  function benefitMonthly(salary) {
+    salary = +salary || 0; var m = 0;
+    DB.benefits.forEach(function (b) { var v = +b.value || 0;
+      if (b.kind === "salYrDays") m += salary * v / 365; else if (b.kind === "perYr") m += v / 12;
+      else if (b.kind === "perMo") m += v; else if (b.kind === "perValid") m += v / 24; });
+    return m;
+  }
+  // per-item % with project defaults: blank line value ("", null, undefined) inherits the project default; 0 is explicit.
+  function pctOf(v, d) { return (v === "" || v === undefined || v === null) ? (+d || 0) : (+v || 0); }
+  function lineBuild(direct, proj, line) {
+    var mode = proj.PricingMode || "margin";
+    var ind = pctOf(line.indPct, proj.IndirectPct);
+    var oh = pctOf(line.ohPct, proj.OverheadPct);
+    var mg = pctOf(line.marginPct, proj.Rate);
+    var indirect = direct * ind / 100;
+    var base = direct + indirect;
+    var overhead = base * oh / 100;
+    var cost = base + overhead;
+    var sell = (mode === "markup") ? cost * (1 + mg / 100) : (mg < 100 ? cost / (1 - mg / 100) : 0);
+    var marginPct = sell > 0 ? (sell - cost) / sell * 100 : 0;
+    return { direct: direct, indirect: indirect, base: base, overhead: overhead, cost: cost, sell: sell, marginPct: marginPct, ind: ind, oh: oh, mg: mg };
+  }
+  function computeTotals(proj, resources, costlines) {
+    var loaded = function (r) { return ((+r.salary || 0) + benefitMonthly(r.salary)) * (+r.qty || 0) * (+r.months || 0) * (+r.util || 0) / 100; };
+    var rLines = resources.map(function (r) { return Object.assign({ _id: r.id }, lineBuild(loaded(r), proj, r)); });
+    var cLines = costlines.map(function (l) { return Object.assign({ _id: l.id, _section: l.section || "Materials" }, lineBuild((+l.price || 0) * (+l.qty || 0), proj, l)); });
+    var sum = function (arr, k) { return arr.reduce(function (a, x) { return a + x[k]; }, 0); };
+    var personnel = sum(rLines, "direct");
+    var materials = cLines.filter(function (l) { return l._section === "Materials"; }).reduce(function (a, l) { return a + l.direct; }, 0);
+    var other = cLines.filter(function (l) { return l._section === "Other"; }).reduce(function (a, l) { return a + l.direct; }, 0);
+    var all = rLines.concat(cLines);
+    var direct = sum(all, "direct"), indirect = sum(all, "indirect"), overhead = sum(all, "overhead"), cost = sum(all, "cost"), price = sum(all, "sell");
+    var marginPct = price > 0 ? (price - cost) / price * 100 : 0;
+    return { personnel: personnel, materials: materials, other: other, direct: direct, indirect: indirect, base: direct + indirect, overhead: overhead, cost: cost, price: price, marginPct: marginPct, lines: { resource: rLines, costline: cLines } };
+  }
+  var STAGE_OWNER = { "Draft": "requester", "Review-IT": "itmanager", "Costing": ["hr", "procurement"], "Review-Finance": "finance", "CEO-Approval": "ceo", "PM-Acceptance": "pm", "Approved": null };
+  var T = {
+    submit: { roles: ["requester"], from: ["Draft"], to: "Review-IT" },
+    it_approve: { roles: ["itmanager"], from: ["Review-IT"], to: "Costing", set: { HRStatus: "Pending", ProcStatus: "Pending" } },
+    it_return: { roles: ["itmanager"], from: ["Review-IT"], to: "Draft", comment: true },
+    hr_submit: { roles: ["hr"], from: ["Costing"], to: null },
+    hr_return: { roles: ["hr"], from: ["Costing"], to: "Draft", comment: true, set: { HRStatus: "Pending" } },
+    proc_submit: { roles: ["procurement"], from: ["Costing"], to: null },
+    proc_return: { roles: ["procurement"], from: ["Costing"], to: "Draft", comment: true, set: { ProcStatus: "Pending" } },
+    finance_approve: { roles: ["finance"], from: ["Review-Finance"], to: null },
+    finance_return: { roles: ["finance"], from: ["Review-Finance"], to: null, comment: true },
+    ceo_approve: { roles: ["ceo"], from: ["CEO-Approval"], to: "PM-Acceptance" },
+    ceo_reject: { roles: ["ceo"], from: ["CEO-Approval"], to: "Review-Finance", comment: true },
+    pm_accept: { roles: ["pm"], from: ["PM-Acceptance"], to: "Approved" },
+    pm_reject: { roles: ["pm"], from: ["PM-Acceptance"], to: "Review-Finance", comment: true }
+  };
+  var THRESHOLD = 30;
+  function applyTransition(pf, action, role, comment, totals, params) {
+    var def = T[action]; if (!def) return { error: "Unknown action." };
+    if (role !== "admin" && def.roles.indexOf(role) < 0) return { error: "Your role can't perform this action." };
+    var from = pf.Stage || "Draft";
+    if (def.from.indexOf(from) < 0) return { error: 'Action not allowed from stage "' + from + '".' };
+    if (def.comment && !(comment && comment.trim())) return { error: "A reason/comment is required." };
+    var to = def.to, set = Object.assign({}, def.set || {});
+    if (action === "hr_submit") { set.HRStatus = "Done"; to = (pf.ProcStatus === "Done") ? "Review-Finance" : "Costing"; }
+    else if (action === "proc_submit") { set.ProcStatus = "Done"; to = (pf.HRStatus === "Done") ? "Review-Finance" : "Costing"; }
+    else if (action === "finance_approve") { if (params.mode) set.PricingMode = params.mode; if (params.rate !== undefined) set.Rate = +params.rate; set.SellingPrice = Math.round(totals.price); to = (totals.marginPct < THRESHOLD) ? "CEO-Approval" : "PM-Acceptance"; }
+    else if (action === "finance_return") { var tgt = params.target;
+      if (tgt === "hr") { to = "Costing"; set.HRStatus = "Pending"; }
+      else if (tgt === "proc") { to = "Costing"; set.ProcStatus = "Pending"; }
+      else if (tgt === "costing") { to = "Costing"; set.HRStatus = "Pending"; set.ProcStatus = "Pending"; }
+      else { to = "Draft"; } }
+    set.Stage = to;
+    return { ok: true, toStage: to, set: set, history: { Action: action, FromStage: from, ToStage: to, Comment: comment || "" } };
+  }
+  // access (ported)
+  var SCOPE_RES = ["person", "position", "type", "qty", "months", "util"];
+  var SCOPE_LINE = ["item", "section", "category", "uom", "qty"];
+  var PRICE_RES = ["marginPct", "indPct", "ohPct", "flagNote"];   // per-line pricing + flag (finance)
+  var PRICE_LINE = ["marginPct", "indPct", "ohPct", "flagNote"];
+  var COST_FIELDS = ["IndirectPct", "OverheadPct", "PricingMode", "Rate", "BudgetCap", "SellingPrice", "CEOThreshold"];
+  var SCOPE_FIELDS = ["Title", "Code", "Serial", "Entity", "Client", "Department", "PM", "Requester", "StartDate", "EndDate", "Support", "PaymentTerms", "CompanyCode", "Currency", "Classification", "SAPCode", "Stage", "HRStatus", "ProcStatus", "RequesterEmail", "CurrentOwnerEmail", "ProposalNo", "Budget", "ParentRef"];
+  var SCOPE_PROJ = ["Title", "Code", "Serial", "Entity", "Client", "Department", "PM", "Requester", "StartDate", "EndDate", "Support", "PaymentTerms", "CompanyCode", "Currency", "Budget", "ParentRef", "AppExtra"];
+  var PROJECT_WRITE = {
+    requester: { "Draft": SCOPE_PROJ },
+    itmanager: { "Review-IT": SCOPE_PROJ.concat(["Classification", "SAPCode"]) },          // IT can correct scope while reviewing
+    finance: { "Review-Finance": ["IndirectPct", "OverheadPct", "PricingMode", "Rate", "BudgetCap", "Budget", "ParentRef", "Classification", "SAPCode", "AppExtra"] }, admin: { "*": "ALL" }
+  };
+  var CHILD_WRITE = {
+    requester: { "Draft": { resource: SCOPE_RES, costline: SCOPE_LINE } },
+    itmanager: { "Review-IT": { resource: SCOPE_RES, costline: SCOPE_LINE } },             // IT can correct inputs
+    hr: { "Costing": { resource: ["salary"] } }, procurement: { "Costing": { costline: ["vendor", "price"] } },
+    finance: { "Review-Finance": { resource: ["salary"].concat(PRICE_RES), costline: ["vendor", "price"].concat(PRICE_LINE) } }, // finance may correct + set per-line pricing + flag
+    admin: { "*": { resource: "ALL", costline: "ALL" } }
+  };
+  function allowP(role, stage) { if (role === "admin") return "ALL"; var r = PROJECT_WRITE[role]; if (!r) return []; return r[stage] || r["*"] || []; }
+  function allowC(role, stage, kind) { if (role === "admin") return "ALL"; var r = CHILD_WRITE[role]; if (!r) return []; var s = r[stage] || r["*"]; if (!s) return []; return s[kind] || []; }
+  function filterPatch(role, stage, kind, patch) {
+    var allow = kind === "project" ? allowP(role, stage) : allowC(role, stage, kind);
+    if (allow === "ALL") return { ok: true, fields: patch };
+    var out = {}, bad = [];
+    Object.keys(patch || {}).forEach(function (k) { if (allow.indexOf(k) >= 0) out[k] = patch[k]; else bad.push(k); });
+    if (bad.length) return { ok: false, error: "Not allowed to edit: " + bad.join(", ") };
+    return { ok: true, fields: out };
+  }
+  function pickT(t, keys) { var o = {}; keys.forEach(function (k) { if (t[k] !== undefined) o[k] = t[k]; }); return o; }
+  function shape(role, pf, resources, costlines, totals) {
+    var full = role === "admin" || role === "finance";
+    var pick = function (o, ks) { var a = {}; ks.forEach(function (k) { if (o[k] !== undefined) a[k] = o[k]; }); return a; };
+    var proj = full ? pf : pick(pf, SCOPE_FIELDS.concat(role === "pm" ? ["SellingPrice"] : []));
+    var showSal = full || role === "hr", showPr = full || role === "procurement";
+    var lmap = {}; (totals.lines ? totals.lines.resource : []).forEach(function (x) { lmap["r" + x._id] = x; });
+    var cmap = {}; (totals.lines ? totals.lines.costline : []).forEach(function (x) { cmap["c" + x._id] = x; });
+    var res = resources.map(function (r) {
+      var b = { id: r.id, person: r.person, position: r.position, type: r.type, qty: r.qty, months: r.months, util: r.util };
+      var comp = lmap["r" + r.id];
+      if (showSal) { b.salary = r.salary; if (comp) b.loaded = comp.direct; if (r.flagNote) b.flagNote = r.flagNote; }   // #5 loaded cost -> HR/finance
+      if (full && comp) { b.marginPct = r.marginPct; b.indPct = r.indPct; b.ohPct = r.ohPct; b.lineCost = comp.cost; b.lineSell = comp.sell; b.lineMargin = comp.marginPct; b.effMg = comp.mg; b.effInd = comp.ind; b.effOh = comp.oh; }
+      return b;
+    });
+    var lines = costlines.map(function (l) {
+      var b = { id: l.id, item: l.item, section: l.section, category: l.category, uom: l.uom, qty: l.qty };
+      var comp = cmap["c" + l.id];
+      if (showPr) { b.price = l.price; b.vendor = l.vendor; if (comp) b.total = comp.direct; if (l.flagNote) b.flagNote = l.flagNote; }  // #5 line total -> Procurement/finance
+      if (full && comp) { b.marginPct = l.marginPct; b.indPct = l.indPct; b.ohPct = l.ohPct; b.lineCost = comp.cost; b.lineSell = comp.sell; b.lineMargin = comp.marginPct; b.effMg = comp.mg; b.effInd = comp.ind; b.effOh = comp.oh; }
+      return b;
+    });
+    var BUILD = ["personnel", "materials", "other", "direct", "indirect", "base", "overhead", "cost", "price", "marginPct"];
+    var t = {};
+    if (full) t = totals; else if (role === "pm") t = pickT(totals, ["personnel", "materials", "other", "cost", "price"]);
+    else if (role === "itmanager") t = pickT(totals, ["personnel", "materials", "other", "direct", "cost"]);
+    else if (role === "hr") t = pickT(totals, ["personnel"]); else if (role === "procurement") t = pickT(totals, ["materials", "other"]);
+    return { project: proj, resources: res, costlines: lines, totals: t, role: role };
+  }
+  // Role-scoped portfolio dashboard: budget consumption + balance for everyone; cost breakup only for finance/admin.
+  function waitsOn(f, role, email) {
+    if (role === "requester") return f.Stage === "Draft" && (f.RequesterEmail || "") === email;
+    if (role === "itmanager") return f.Stage === "Review-IT";
+    if (role === "hr") return f.Stage === "Costing" && f.HRStatus !== "Done";
+    if (role === "procurement") return f.Stage === "Costing" && f.ProcStatus !== "Done";
+    if (role === "finance") return f.Stage === "Review-Finance";
+    if (role === "ceo") return f.Stage === "CEO-Approval";
+    if (role === "pm") return f.Stage === "PM-Acceptance";
+    return false;
+  }
+  var WAITTEXT = { requester: "draft to submit", itmanager: "IT review", hr: "enter HR salaries", procurement: "enter vendor prices", finance: "set price & margin", ceo: "CEO approval (margin < 30%)", pm: "accept the approved costing" };
+  function dashboardData(role, email) {
+    var full = role === "admin" || role === "finance";
+    var list = DB.projects.filter(function (p) {
+      if (role === "admin" || role === "finance") return true;
+      if (role === "requester") return (p.fields.RequesterEmail || "") === email;
+      return true; // IT / PM / HR / Procurement see portfolio-wide budget health
+    });
+    var port = { budget: 0, consumed: 0, direct: 0, indirect: 0, overhead: 0, cost: 0, price: 0, count: list.length, pending: 0 };
+    var byId = {}; DB.projects.forEach(function (p) { byId[String(p.id)] = p; });
+    function programRoot(p) { var seen = {}, cur = p; while (cur && cur.fields.ParentRef && byId[String(cur.fields.ParentRef)] && !seen[String(cur.id)]) { seen[String(cur.id)] = 1; cur = byId[String(cur.fields.ParentRef)]; } return cur ? String(cur.id) : String(p.id); }
+    var projects = list.map(function (p) {
+      var f = p.fields, t = computeTotals(f, kids(p.id, DB.resources), kids(p.id, DB.costlines));
+      var budget = +f.Budget || Math.round(t.price) || 0;
+      var consumed = Math.round(t.cost);
+      var avail = budget - consumed;
+      var pct = budget > 0 ? Math.round(consumed / budget * 100) : 0;
+      var wait = waitsOn(f, role, email);
+      if (wait) port.pending++;
+      port.budget += budget; port.consumed += consumed;
+      if (full) { port.direct += t.direct; port.indirect += t.indirect; port.overhead += t.overhead; port.cost += t.cost; port.price += t.price; }
+      var parent = f.ParentRef && byId[String(f.ParentRef)] ? byId[String(f.ParentRef)] : null;
+      var row = { id: p.id, name: f.Title || "(untitled)", client: f.Client || "", entity: f.Entity || "UXE", stage: f.Stage, budget: budget, consumed: consumed, available: avail, pct: pct, wait: wait, waitText: WAITTEXT[role] || "",
+        parentRef: f.ParentRef || "", parentName: parent ? (parent.fields.Title || "") : "", isExtension: !!parent, _root: programRoot(p) };
+      if (full) { row.margin = Math.round(t.marginPct || 0); row.cost = Math.round(t.cost); row.price = Math.round(t.price); }
+      return row;
+    });
+    // group original + extensions into programs (reporting only)
+    var pg = {};
+    projects.forEach(function (r) { (pg[r._root] = pg[r._root] || []).push(r); });
+    var rootName = {}; projects.forEach(function (r) { if (String(r.id) === r._root) rootName[r._root] = r.name; });
+    var programs = Object.keys(pg).filter(function (k) { return pg[k].length > 1; }).map(function (k) {
+      var ms = pg[k], budget = 0, consumed = 0;
+      ms.forEach(function (m) { budget += m.budget; consumed += m.consumed; });
+      var prog = { root: k, name: rootName[k] || (byId[k] ? byId[k].fields.Title : "Program"), count: ms.length, budget: budget, consumed: consumed, available: budget - consumed, pct: budget > 0 ? Math.round(consumed / budget * 100) : 0,
+        members: ms.map(function (m) { return { id: m.id, name: m.name, stage: m.stage, pct: m.pct, isExtension: m.isExtension, budget: m.budget, available: m.available }; }) };
+      if (full) { var cost = 0, price = 0; ms.forEach(function (m) { cost += (m.cost || 0); price += (m.price || 0); }); prog.cost = cost; prog.price = price; prog.margin = price > 0 ? Math.round((price - cost) / price * 100) : 0; }
+      return prog;
+    });
+    var portOut = { budget: port.budget, consumed: port.consumed, available: port.budget - port.consumed, pct: port.budget > 0 ? Math.round(port.consumed / port.budget * 100) : 0, count: port.count, pending: port.pending };
+    if (full) {
+      portOut.direct = Math.round(port.direct); portOut.indirect = Math.round(port.indirect); portOut.overhead = Math.round(port.overhead);
+      portOut.cost = Math.round(port.cost); portOut.price = Math.round(port.price);
+      portOut.marginAmt = Math.round(port.price - port.cost);
+      portOut.blendedMargin = port.price > 0 ? Math.round((port.price - port.cost) / port.price * 100) : 0;
+    }
+    return { role: role, full: full, portfolio: portOut, projects: projects, programs: programs };
+  }
+  function buildProposalLines(totals, vatPct) {
+    vatPct = vatPct || 5; var price = Math.round(+totals.price || 0), cost = +totals.cost || 0;
+    var parts = [{ code: "SVC-001", desc: "Professional services", base: +totals.personnel || 0 }, { code: "MAT-001", desc: "Materials & equipment", base: +totals.materials || 0 }, { code: "SUP-001", desc: "Support & other services", base: +totals.other || 0 }].filter(function (p) { return p.base > 0; });
+    var lines;
+    if (!parts.length || cost <= 0) lines = [{ code: "PRJ-001", desc: "Project delivery (turnkey)", qty: 1, uom: "LOT", net: price }];
+    else { lines = parts.map(function (p) { return { code: p.code, desc: p.desc, qty: 1, uom: "LOT", net: Math.round(price * p.base / cost) }; }); var diff = price - lines.reduce(function (a, l) { return a + l.net; }, 0); if (diff) lines[lines.length - 1].net += diff; }
+    var subtotal = lines.reduce(function (a, l) { return a + l.net; }, 0), vat = Math.round(subtotal * vatPct) / 100;
+    return { lines: lines, subtotal: subtotal, vatPct: vatPct, vat: vat, total: subtotal + vat };
+  }
+
+  /* ---------- helpers ---------- */
+  function member(email) { email = (email || "").toLowerCase(); return DB.members.filter(function (m) { return m.email === email; })[0]; }
+  function proj(id) { return DB.projects.filter(function (p) { return String(p.id) === String(id); })[0]; }
+  function kids(id, arr) { var p = proj(id); var t = p ? p.fields.Title : null; return arr.filter(function (x) { return x.projectId === p.id || x.projectTitle === t; }); }
+  var CUR = null;
+  // demo always starts at a clean login
+  try { sessionStorage.removeItem("cp_tok"); sessionStorage.removeItem("cp_user"); } catch (e) {}
+  try { var _a = document.getElementById("app"), _g = document.getElementById("gate"); if (_a) _a.classList.add("hidden"); if (_g) _g.style.display = "flex"; } catch (e) {}
+
+  /* ---------- the mock api ---------- */
+  function err(status, msg) { var e = new Error(msg); e.status = status; return e; }
+  window.api = async function (path, opts) {
+    opts = opts || {}; var method = opts.method || "GET", body = opts.body || {};
+    var u = path.split("?")[0], parts = u.split("/").filter(Boolean);
+    await new Promise(function (r) { setTimeout(r, 120); }); // tiny latency so it feels real
+
+    if (u === "/auth/request-otp") { if (!member(body.email)) return { ok: true, message: "Demo — this email isn't in the member list. Try requester@uxe.ai, finance@uxe.ai, or bassam.youssef@uxe.ai (code 000000)." }; return { ok: true, message: "Demo mode — your code is 000000." }; }
+    if (u === "/auth/verify-otp") { var m = member(body.email); if (!m) throw err(403, "Not authorised."); if (String(body.code).trim() !== CODE) throw err(401, "Incorrect code (demo code is 000000)."); CUR = { email: m.email, role: m.role, name: m.name, entity: m.entity }; return { token: "demo." + m.email, user: CUR }; }
+    if (!CUR) throw err(401, "Not signed in.");
+    if (u === "/auth/me") return CUR;
+    if (u === "/dashboard" && method === "GET") return dashboardData(CUR.role, CUR.email);
+    if (u === "/projects/options" && method === "GET") {
+      return DB.projects.map(function (p) { return { id: p.id, title: p.fields.Title, code: p.fields.Code, entity: p.fields.Entity, stage: p.fields.Stage }; });
+    }
+
+    if (u === "/masters" && method === "GET") return { positions: DB.positions.slice(), benefits: DB.benefits.slice(), matrix: DB.matrix.slice(), domains: DB.domains.slice() };
+    if (parts[0] === "masters" && parts.length >= 2) {
+      var kind = parts[1], coll = kind === "position" ? DB.positions : kind === "benefit" ? DB.benefits : DB.matrix;
+      var roleOk = (kind === "classification") ? ["finance", "admin"] : ["hr", "finance", "admin"];
+      if (CUR.role !== "admin" && roleOk.indexOf(CUR.role) < 0) throw err(403, "Not permitted for your role.");
+      if (method === "POST") { var o = Object.assign({ id: nid() }, body); coll.push(o); return { id: o.id }; }
+      var row = coll.filter(function (x) { return String(x.id) === parts[2]; })[0]; if (!row) throw err(404, "Not found.");
+      if (method === "PATCH") { Object.assign(row, body); return { ok: true }; }
+      if (method === "DELETE") { coll.splice(coll.indexOf(row), 1); return { ok: true }; }
+    }
+
+    if (u === "/projects/inbox") {
+      var role = CUR.role, email = CUR.email;
+      return DB.projects.filter(function (p) { var f = p.fields;
+        if (role === "admin" || role === "finance") return true;
+        if (role === "requester") return (f.RequesterEmail || "") === email;
+        if (role === "itmanager") return f.Stage === "Review-IT";
+        if (role === "hr") return f.Stage === "Costing" && f.HRStatus !== "Done";
+        if (role === "procurement") return f.Stage === "Costing" && f.ProcStatus !== "Done";
+        if (role === "ceo") return f.Stage === "CEO-Approval";
+        if (role === "pm") return f.Stage === "PM-Acceptance"; return false;
+      }).map(function (p) { return { id: p.id, title: p.fields.Title, entity: p.fields.Entity, client: p.fields.Client, stage: p.fields.Stage, requester: p.fields.RequesterEmail }; });
+    }
+    if (u === "/projects" && method === "POST") {
+      var id = nid(); DB.projects.push({ id: id, fields: { Title: body.title || "Untitled project", Entity: body.entity || CUR.entity || "UXE", Stage: "Draft", HRStatus: "Pending", ProcStatus: "Pending", RequesterEmail: CUR.email, Requester: CUR.name, CurrentOwnerEmail: CUR.email, Currency: "AED", PricingMode: "margin", Rate: 45, OverheadPct: 20, IndirectPct: 8, Budget: 0, ParentRef: "" } }); return { id: id };
+    }
+    if (parts[0] === "projects" && parts[1] && parts.length === 2) {
+      var P = proj(parts[1]); if (!P) throw err(404, "Not found.");
+      if (method === "GET") { var rs = kids(P.id, DB.resources), ls = kids(P.id, DB.costlines), tot = computeTotals(P.fields, rs, ls); return shape(CUR.role, P.fields, rs, ls, tot); }
+      if (method === "PATCH") { var chk = filterPatch(CUR.role, P.fields.Stage, "project", (body.fields) || {}); if (!chk.ok) throw err(403, chk.error); Object.assign(P.fields, chk.fields); return { ok: true }; }
+    }
+    if (parts[0] === "projects" && parts[2] === "history") { return DB.history.filter(function (h) { return String(h.ProjectRef) === String(parts[1]); }).sort(function (a, b) { return new Date(a.At) - new Date(b.At); }).map(function (h) { return { actor: h.Actor, action: h.Action, from: h.FromStage, to: h.ToStage, comment: h.Comment, at: h.At }; }); }
+    if (parts[0] === "projects" && parts[2] === "transition") {
+      var P2 = proj(parts[1]); if (!P2) throw err(404, "Not found.");
+      var rs2 = kids(P2.id, DB.resources), ls2 = kids(P2.id, DB.costlines), tot2 = computeTotals(P2.fields, rs2, ls2);
+      var r = applyTransition(P2.fields, body.action, CUR.role, body.comment, tot2, body.params || {});
+      if (!r.ok) throw err(400, r.error);
+      var owners = STAGE_OWNER[r.toStage]; var ownerRoles = owners ? (Array.isArray(owners) ? owners : [owners]) : [];
+      var ownerEmail = DB.members.filter(function (m) { return ownerRoles.indexOf(m.role) >= 0; }).map(function (m) { return m.email; })[0] || "";
+      Object.assign(P2.fields, r.set, { CurrentOwnerEmail: ownerEmail });
+      DB.history.push({ ProjectRef: String(P2.id), Actor: CUR.email, Action: r.history.Action, FromStage: r.history.FromStage, ToStage: r.history.ToStage, Comment: r.history.Comment, At: new Date().toISOString() });
+      return { ok: true, toStage: r.toStage };
+    }
+    if (parts[0] === "projects" && (parts[2] === "resources" || parts[2] === "costlines") && method === "POST") {
+      var P3 = proj(parts[1]); if (!P3) throw err(404, "Not found."); var kind2 = parts[2] === "resources" ? "resource" : "costline";
+      var chk3 = filterPatch(CUR.role, P3.fields.Stage, kind2, body); if (!chk3.ok) throw err(403, chk3.error);
+      var row3 = Object.assign({ id: nid(), projectId: P3.id, projectTitle: P3.fields.Title }, (kind2 === "resource" ? { person: "", position: "", type: "", salary: 0, qty: 1, months: 1, util: 100 } : { item: "", section: "Materials", category: "", vendor: "", uom: "", price: 0, qty: 1 }), chk3.fields);
+      (kind2 === "resource" ? DB.resources : DB.costlines).push(row3); return { id: row3.id };
+    }
+    if ((parts[0] === "resources" || parts[0] === "costlines") && parts[1]) {
+      var kind4 = parts[0] === "resources" ? "resource" : "costline", coll4 = parts[0] === "resources" ? DB.resources : DB.costlines;
+      var row4 = coll4.filter(function (x) { return String(x.id) === parts[1]; })[0]; if (!row4) throw err(404, "Not found.");
+      var P4 = proj(row4.projectId) || { fields: { Stage: "Draft" } };
+      if (method === "PATCH") { var chk4 = filterPatch(CUR.role, P4.fields.Stage, kind4, body); if (!chk4.ok) throw err(403, chk4.error); Object.assign(row4, chk4.fields); return { ok: true }; }
+      if (method === "DELETE") { if (["requester", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only the requester can remove scope lines."); coll4.splice(coll4.indexOf(row4), 1); return { ok: true }; }
+    }
+    if (parts[0] === "projects" && parts[2] === "proposal" && method === "POST") {
+      var P5 = proj(parts[1]); if (!P5) throw err(404, "Not found.");
+      if (["requester", "finance", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only requester or finance can create a proposal.");
+      if (P5.fields.Stage !== "Approved") throw err(400, "Only approved costing sheets can be converted to a proposal.");
+      if (!P5.fields.ProposalNo) { var yr = new Date().getFullYear(); var ex = DB.projects.map(function (p) { return p.fields.ProposalNo; }).filter(Boolean); var max = 0; ex.forEach(function (n) { var mm = (n || "").match(new RegExp("^CP-" + yr + "-(\\d+)$")); if (mm) max = Math.max(max, +mm[1]); }); P5.fields.ProposalNo = "CP-" + yr + "-" + String(max + 1).padStart(4, "0"); }
+      var tot5 = computeTotals(P5.fields, kids(P5.id, DB.resources), kids(P5.id, DB.costlines)); var priced = buildProposalLines(tot5);
+      var now = new Date(), until = new Date(now.getTime() + 30 * 86400000);
+      return Object.assign({ proposalNo: P5.fields.ProposalNo, entity: P5.fields.Entity || "UXE", date: now.toISOString().slice(0, 10), validDays: 30, validUntil: until.toISOString().slice(0, 10), currency: P5.fields.Currency || "AED", subject: P5.fields.Title || "", customer: { name: P5.fields.Client || "", ref: "", contact: "", phoneEmail: "", address: "" }, commercial: { paymentTerms: P5.fields.PaymentTerms || "30% advance, 70% on completion", warranty: "12 months", delivery: "As per project plan", advance: "30%" } }, priced);
+    }
+    throw err(404, "Demo: endpoint not implemented (" + method + " " + u + ").");
+  };
+
+  // demo banner
+  window.addEventListener("DOMContentLoaded", function () {
+    var b = document.createElement("div");
+    b.textContent = "DEMO — mock data, no SharePoint/email · sign-in code 000000 · try requester@uxe.ai then finance@uxe.ai / bassam.youssef@uxe.ai (admin can do every step)";
+    b.style.cssText = "position:fixed;bottom:0;left:0;right:0;background:#ff8b00;color:#1a1200;font:12px/1.4 system-ui;padding:6px 12px;text-align:center;z-index:300";
+    document.body.appendChild(b);
+  });
+})();
+
+</script>
 </body>
 </html>
