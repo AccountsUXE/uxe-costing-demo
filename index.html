@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>UXE &amp; EMCODE · Project Costing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Spline+Sans:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 :root{
   --bg:#f4f6f8;--surface:#fff;--surface-2:#eef2f6;--line:#d8dfe6;--fg:#172029;--muted:#5a6773;--faint:#8794a0;
   --accent:#1f3a86;--accent-weak:#e4e9f6;--accent-ink:#071952;--action:#ff8b00;--barbg:#071952;--baron:#fff;
   --good:#1f8a52;--good-bg:#e2f3e9;--warn:#b3781a;--warn-bg:#f8eed8;--crit:#c23b36;--crit-bg:#f8e2e1;
   --radius:10px;--shadow:0 1px 2px rgba(23,32,41,.06),0 2px 8px rgba(23,32,41,.05);
-  --fdisplay:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
-  --fbody:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--fmono:"SF Mono",ui-monospace,Consolas,monospace;color-scheme:light;
+  --fdisplay:"Spline Sans","Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --fbody:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--fmono:"IBM Plex Mono",ui-monospace,Consolas,monospace;color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f151b;--surface:#19222b;--surface-2:#202b35;--line:#2e3a45;--fg:#e6edf3;--muted:#9fb0bd;--faint:#6f8090;
@@ -28,17 +28,50 @@ h1,h2,h3{margin:0;font-family:var(--fdisplay);font-weight:650}
 .wrap{max-width:1180px;margin:0 auto;padding:0 16px}
 .hidden{display:none!important}
 /* gate */
-#gate{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto;background:radial-gradient(1200px 600px at 15% -10%,#13245e 0,transparent 55%),radial-gradient(1000px 700px at 110% 120%,#0a3f1f 0,transparent 50%),linear-gradient(140deg,#0a1330,#0b1f52 55%,#0a1428)}
-#gate .card{width:100%;max-width:440px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:34px 30px;backdrop-filter:blur(8px);box-shadow:0 30px 80px rgba(0,0,0,.5)}
-#gate .logos{display:flex;align-items:center;gap:16px;margin-bottom:8px}#gate .logos img{height:28px}#gate .logos .div{width:1px;height:24px;background:rgba(255,255,255,.22)}
-#gate h1{color:#fff;font-size:30px;line-height:1.1;margin-top:20px}#gate h1 .g{background:linear-gradient(90deg,#ff8b00,#ffd089);-webkit-background-clip:text;background-clip:text;color:transparent}
-#gate p.sub{color:#b9c4dd;font-size:14px;margin:10px 0 22px}#gate label{display:block;color:#aeb9d4;font-size:12px;font-weight:600;margin:0 0 6px}
-#gate input{width:100%;font:inherit;font-size:15px;padding:12px 14px;border-radius:11px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#fff}
-#gate input:focus{outline:2px solid rgba(255,139,0,.5);border-color:#ff8b00}
-#gate .go{margin-top:16px;width:100%;font:inherit;font-weight:700;font-size:15px;padding:13px;border:none;border-radius:11px;cursor:pointer;color:#1a1200;background:linear-gradient(90deg,#ff8b00,#ffa534)}
+/* ===== Aurora split-screen sign-in ===== */
+#gate{position:fixed;inset:0;z-index:100;display:flex;flex-wrap:wrap;overflow:auto;background:#0B1220}
+#gate .formcol{flex:1 1 440px;max-width:560px;min-width:0;display:flex;flex-direction:column;justify-content:center;padding:48px 60px;background:#0B1220}
+#gate .inner{width:100%;max-width:372px;margin:0 auto}
+#gate .logos{display:flex;align-items:center;gap:13px;margin-bottom:42px}#gate .logos img{height:26px}#gate .logos .div{width:1px;height:18px;background:rgba(255,255,255,.22)}#gate .logos .tag{font-size:11.5px;letter-spacing:.07em;color:#7f8aa6;margin-left:2px}
+#gate h1{color:#fff;font-size:28px;line-height:1.15;letter-spacing:-.015em;margin:0 0 8px}
+#gate p.sub{color:#93a0bb;font-size:15px;line-height:1.5;margin:0 0 28px}
+#gate label{display:block;color:#c3cce0;font-size:13px;font-weight:500;margin:0 0 8px}
+#gate input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;height:50px;padding:0 15px;border-radius:12px;border:1.5px solid #273349;background:#131A2A;color:#fff}
+#gate input:focus{outline:none;border-color:#60A5FA;box-shadow:0 0 0 4px rgba(96,165,250,.28)}
+#gate input::placeholder{color:#55617d}
+#gate #code{text-align:center;letter-spacing:.5em;font-family:var(--fmono);font-size:22px}
+#gate .otp{display:flex;gap:10px;margin-bottom:2px}
+#gate .otpd{width:100%;box-sizing:border-box;min-width:0;height:58px;text-align:center;font-family:var(--fmono);font-size:24px;font-weight:600;padding:0;border-radius:12px;border:1.5px solid #273349;background:#131A2A;color:#fff;transition:border-color .13s,box-shadow .13s,background .13s,transform .13s}
+#gate .otpd:focus{outline:none;border-color:#60A5FA;box-shadow:0 0 0 4px rgba(96,165,250,.28);background:#161f31}
+#gate .otpd.filled{border-color:#3b4b66;background:#16203250}
+#gate .otp.ok .otpd{border-color:#12a673;box-shadow:0 0 0 3px rgba(18,166,115,.22)}
+#gate .otp.shake{animation:otpshake .42s cubic-bezier(.36,.07,.19,.97)}
+@keyframes otpshake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-8px)}40%,60%{transform:translateX(8px)}}
+@media(prefers-reduced-motion:reduce){#gate .otp.shake{animation:none}}
+#gate .go{margin-top:16px;width:100%;font:inherit;font-weight:600;font-size:15px;height:50px;border:none;border-radius:12px;cursor:pointer;color:#0B1220;background:linear-gradient(180deg,#FB923C 0,#F97316 100%);box-shadow:0 12px 30px -10px rgba(249,115,22,.65),inset 0 1px 0 rgba(255,255,255,.4);transition:transform .14s cubic-bezier(.16,1,.3,1),box-shadow .14s,filter .14s}
+#gate .go:hover{filter:brightness(1.05);box-shadow:0 16px 38px -10px rgba(249,115,22,.7),inset 0 1px 0 rgba(255,255,255,.45);transform:translateY(-1px)}#gate .go:active{transform:translateY(1px);filter:brightness(.98)}
 #gate .go:disabled{opacity:.6;cursor:default}
-#gate .msg{font-size:13px;margin-top:12px;min-height:18px}#gate .msg.err{color:#ff9e9e}#gate .msg.ok{color:#9ff0c0}
-#gate .foot{margin-top:22px;color:#8795b5;font-size:11.5px;border-top:1px solid rgba(255,255,255,.1);padding-top:14px}
+#gate .msg{font-size:13px;margin-top:14px;min-height:18px}#gate .msg.err{color:#ff9e9e}#gate .msg.ok{color:#9ff0c0}
+#gate .foot{margin-top:24px;display:flex;align-items:center;gap:8px;color:#6f7b96;font-size:12.5px}
+/* brand panel */
+#gate .brand{flex:999 1 560px;min-width:0;position:relative;overflow:hidden;display:flex}
+#gate .aurora{position:absolute;inset:-25%;z-index:0;filter:blur(70px);opacity:.9;background:radial-gradient(38% 48% at 22% 26%,#1E3A8A 0,transparent 60%),radial-gradient(34% 44% at 80% 18%,#F97316 0,transparent 55%),radial-gradient(44% 54% at 72% 82%,#059669 0,transparent 60%),radial-gradient(40% 50% at 24% 86%,#0B1220 0,transparent 62%);animation:gdrift 24s ease-in-out infinite alternate}
+@keyframes gdrift{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(2%,-3%,0) scale(1.08)}100%{transform:translate3d(-2%,2%,0) scale(1.04)}}
+/* second decorrelated drift layer + film grain — depth without new markup */
+#gate .brand::before{content:"";position:absolute;inset:-25%;z-index:0;filter:blur(84px);opacity:.5;background:radial-gradient(40% 50% at 70% 28%,#2563EB 0,transparent 58%),radial-gradient(34% 44% at 28% 72%,#F97316 0,transparent 54%);animation:gdrift2 38s ease-in-out infinite alternate}
+#gate .brand::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.12;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:150px 150px}
+@keyframes gdrift2{0%{transform:translate3d(0,0,0) scale(1.05)}50%{transform:translate3d(-3%,3%,0) scale(1.13)}100%{transform:translate3d(3%,-2%,0) scale(1)}}
+/* staggered entrance for the form column */
+#gate .inner>*{animation:gin .62s cubic-bezier(.16,1,.3,1) both}
+#gate .inner>*:nth-child(1){animation-delay:.04s}#gate .inner>*:nth-child(2){animation-delay:.12s}#gate .inner>*:nth-child(3){animation-delay:.2s}#gate .inner>*:nth-child(4){animation-delay:.28s}#gate .inner>*:nth-child(5){animation-delay:.36s}#gate .inner>*:nth-child(6){animation-delay:.44s}
+@keyframes gin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){#gate .aurora,#gate .brand::before,#gate .inner>*{animation:none}}
+#gate .binner{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:space-between;padding:60px 64px;width:100%;box-sizing:border-box}
+#gate .bhead{font-family:var(--fdisplay);font-weight:600;font-size:clamp(34px,4vw,50px);line-height:1.06;letter-spacing:-.025em;color:#fff;margin:0}
+#gate .bsub{font-size:18px;line-height:1.55;color:rgba(255,255,255,.72);max-width:500px;margin:18px 0 0}
+#gate .glasscard{position:relative;z-index:2;margin-top:38px;max-width:420px;padding:20px 22px;border-radius:20px;background:rgba(255,255,255,.08);backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 -1px 0 rgba(8,12,24,.35),0 24px 60px -20px rgba(8,12,24,.6)}
+#gate .btrust{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:rgba(255,255,255,.6);margin-top:38px}
+@media(max-width:860px){#gate .brand{display:none}#gate .formcol{max-width:none;flex-basis:100%}}
 /* bar */
 .bar{position:sticky;top:0;z-index:20;background:var(--barbg);color:var(--baron);border-bottom:3px solid var(--action)}
 .bar .wrap{display:flex;align-items:center;gap:10px;padding:9px 16px;flex-wrap:wrap}
@@ -52,26 +85,60 @@ h1,h2,h3{margin:0;font-family:var(--fdisplay);font-weight:650}
 .tabs button{font:inherit;font-weight:600;font-size:13.5px;border:none;background:transparent;color:var(--muted);padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent}
 .tabs button.on{color:var(--accent-ink);border-bottom-color:var(--action)}
 main{padding:18px 0 60px;display:flex;flex-direction:column;gap:18px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-.card>header{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line)}
-.card>header .n{width:24px;height:24px;border-radius:7px;background:var(--accent-weak);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:13px}
-.card>header h2{font-size:15px}.card .body{padding:14px 16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);scroll-margin-top:16px}
+.card>header{display:flex;align-items:center;gap:11px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.card>header .n{width:26px;height:26px;border-radius:8px;background:var(--accent-weak);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:12.5px;font-family:var(--fmono)}
+.card>header h2{font-size:15px;letter-spacing:-.01em}.card .body{padding:16px 18px}
+/* costing sheet — sticky section rail + scroll-spy */
+.costlayout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:22px;align-items:start}
+.costcontent{display:flex;flex-direction:column;gap:18px;min-width:0}
+.secrail{position:sticky;top:12px;align-self:start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:var(--shadow)}
+.secrail .rt{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);font-weight:700;padding:6px 10px 8px}
+.secrail a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;text-decoration:none;color:var(--muted);font-size:13px;font-weight:600;line-height:1.25;transition:background .12s,color .12s}
+.secrail a:hover{background:var(--surface-2);color:var(--fg)}
+.secrail a.on{background:var(--accent-weak);color:var(--accent-ink)}
+.secrail a .sg{flex:none;width:17px;height:17px;border-radius:50%;display:grid;place-items:center}
+.secrail a .sg.ok{background:var(--good);color:#fff}
+.secrail a .sg.warn{background:var(--warn);color:#fff}
+.secrail a .sg.idle{border:1.5px solid #cdd5e1;background:transparent}
+.secrail a .sg svg{width:11px;height:11px}
+.secgroup{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:800;margin:8px 10px 2px}
+@media(max-width:1080px){.costlayout{grid-template-columns:1fr}.secrail{display:none}}
 .grid{display:grid;gap:12px 16px}.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr 1fr}
 @media(max-width:760px){.g4,.g3,.g2{grid-template-columns:1fr 1fr}}@media(max-width:480px){.g4,.g3,.g2{grid-template-columns:1fr}}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0}.field label{font-size:12px;color:var(--muted);font-weight:600}
 .field input,.field select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--fg);min-width:0}
 .field input:disabled{opacity:.7}
-.tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{text-align:left;font-size:11px;text-transform:uppercase;color:var(--muted);font-weight:700;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
-.tbl td{padding:4px 8px;border-bottom:1px solid var(--line)}
-.tbl td input,.tbl td select{font:inherit;width:100%;padding:6px 8px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--fg)}
-.tbl td input:focus{border-color:var(--accent);background:var(--surface-2);outline:none}
+.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.tbl th{text-align:left;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700;font-family:var(--fmono);padding:11px 10px;background:var(--surface-2);border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;z-index:1}
+.tbl th:first-child{border-top-left-radius:10px}.tbl th:last-child{border-top-right-radius:10px}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--line);height:30px}
+.tbl tbody tr{transition:background .12s}
+.tbl tbody tr:hover{background:var(--surface-2)}
+.tbl td input,.tbl td select{font:inherit;width:100%;padding:7px 9px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--fg);transition:border-color .12s,box-shadow .12s}
+.tbl td input:hover,.tbl td select:hover{border-color:var(--line)}
+.tbl td input:focus,.tbl td select:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px var(--accent-weak);outline:none}
 .tbl .num,.tbl td.num{text-align:right;font-family:var(--fmono)}
+.tblwrap{border:1px solid var(--line);border-radius:12px;overflow:auto}
+.tblwrap .tbl th{border-bottom:1px solid var(--line)}
+.tblwrap .tbl tr:last-child td{border-bottom:none}
 .rowscroll{overflow-x:auto}.addrow{margin-top:10px;color:var(--accent-ink);background:var(--accent-weak);border:1px solid var(--line)}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:var(--accent-weak);color:var(--accent-ink)}
-.stagebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
-.step{font-size:11.5px;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--muted);font-weight:600}
-.step.done{background:var(--good-bg);color:var(--good)}.step.cur{background:var(--action);color:#1a1200}
+/* premium stage stepper */
+.stepper{display:flex;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px 14px;overflow-x:auto}
+.stp{flex:1 1 0;min-width:88px;display:flex;flex-direction:column;align-items:center;position:relative}
+.stp .row{display:flex;align-items:center;justify-content:center;width:100%;position:relative;height:28px}
+.stp .ln{position:absolute;top:50%;height:2px;background:var(--line);transform:translateY(-50%)}
+.stp .ln.l{left:0;right:50%}.stp .ln.r{left:50%;right:0}
+.stp.done .ln{background:var(--accent)}.stp.cur .ln.l{background:var(--accent)}
+.stp .node{position:relative;z-index:1;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:1.5px solid #cdd5e1;color:var(--faint);font:700 12px var(--fmono);transition:all .2s ease}
+.stp.done .node{background:var(--accent);border-color:var(--accent);color:#fff}
+.stp.cur .node{border:2px solid var(--accent);color:var(--accent);box-shadow:0 0 0 4px var(--accent-weak)}
+.stp.skip .node{background:var(--surface-2);border:1.5px dashed #cdd5e1;color:var(--faint)}
+.stp .lb{margin-top:9px;font-size:11.5px;font-weight:600;color:var(--muted);text-align:center;line-height:1.3;max-width:96px}
+.stp.cur .lb{color:var(--fg);font-weight:700}
+.stp.skip .lb{color:var(--faint)}
+body.emcode-theme .stp .node{color:var(--faint)}
 .actionbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
 .actionbar .b{font:inherit;font-weight:650;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer;background:var(--surface-2);color:var(--fg)}
 .actionbar .b.ok{background:var(--good);border-color:var(--good);color:#fff}.actionbar .b.no{background:var(--crit-bg);border-color:var(--crit);color:var(--crit)}
@@ -271,23 +338,52 @@ tr.flagged td{background:var(--crit-bg)!important}
 <body>
 <!-- ============ LOGIN GATE (email OTP) ============ -->
 <div id="gate">
-  <div class="card">
-    <div class="logos"><img src="data:image/png;base64,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" alt="UXE"><div class="div"></div><img src="data:image/png;base64,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" alt="EMCODE"></div>
-    <h1>Project Costing <span class="g">Platform</span></h1>
-    <p class="sub">Sign in with your company email. We'll send a one-time code.</p>
-    <div id="step1">
-      <label for="email">Company email</label>
-      <input id="email" type="email" placeholder="name@uxe.ai · name@emcode.ae" autocomplete="email">
-      <button class="go" id="btnSend">Send code</button>
+  <div class="formcol">
+    <div class="inner">
+      <div class="logos"><img src="data:image/png;base64,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" alt="UXE"><div class="div"></div><img src="data:image/png;base64,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" alt="EMCODE"><span class="tag">COSTING</span></div>
+      <div id="step1">
+        <h1>Sign in to UXE Costing</h1>
+        <p class="sub">Project costing &amp; approvals for UXE and EMCODE. We&#39;ll email you a secure sign-in code.</p>
+        <label for="email">Work email</label>
+        <input id="email" type="email" placeholder="name@uxe.ai · name@emcode.ae" autocomplete="email">
+        <button class="go" id="btnSend">Continue →</button>
+      </div>
+      <div id="step2" class="hidden">
+        <h1>Enter your code</h1>
+        <p class="sub">We sent a 6-digit code to your email. It expires in 10 minutes.</p>
+        <label>6-digit code</label>
+        <div id="otp" class="otp">
+          <input class="otpd" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="digit 1">
+          <input class="otpd" inputmode="numeric" maxlength="1" aria-label="digit 2">
+          <input class="otpd" inputmode="numeric" maxlength="1" aria-label="digit 3">
+          <input class="otpd" inputmode="numeric" maxlength="1" aria-label="digit 4">
+          <input class="otpd" inputmode="numeric" maxlength="1" aria-label="digit 5">
+          <input class="otpd" inputmode="numeric" maxlength="1" aria-label="digit 6">
+        </div>
+        <input id="code" type="hidden" maxlength="6">
+        <button class="go" id="btnVerify">Verify &amp; sign in</button>
+        <div style="margin-top:14px"><a href="#" id="backLink" style="color:#93a0bb;font-size:13px">&lsaquo; Use a different email</a></div>
+      </div>
+      <div class="msg" id="gateMsg"></div>
+      <div class="foot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2" stroke="#6f7b96" stroke-width="1.8"/><path d="M8 10V8a4 4 0 0 1 8 0v2" stroke="#6f7b96" stroke-width="1.8"/></svg>Secured sign-in · UXE Group · Dubai-hosted</div>
     </div>
-    <div id="step2" class="hidden">
-      <label for="code">Enter the 6-digit code sent to your email</label>
-      <input id="code" inputmode="numeric" maxlength="6" placeholder="● ● ● ● ● ●" autocomplete="one-time-code">
-      <button class="go" id="btnVerify">Verify &amp; sign in</button>
-      <div style="margin-top:10px"><a href="#" id="backLink" style="color:#9fb3d6;font-size:12px">← use a different email</a></div>
+  </div>
+  <div class="brand">
+    <div class="aurora" aria-hidden="true"></div>
+    <div class="binner">
+      <div></div>
+      <div style="max-width:620px">
+        <h2 class="bhead">Cost it once.<br>Cost it right.</h2>
+        <p class="bsub">One workspace for project costing and approvals across UXE &amp; EMCODE — from the first estimate to the approved SAP budget.</p>
+        <div class="glasscard">
+          <div style="font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:14px">One workspace</div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><span style="width:34px;height:34px;flex:none;border-radius:10px;background:rgba(255,255,255,.1);display:grid;place-items:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="#fff" stroke-width="1.7"/><path d="M14 3v5h5M9 13h6M9 17h6" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg></span><span style="font-size:14.5px;color:rgba(255,255,255,.92)">Build &amp; price project costing sheets</span></div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><span style="width:34px;height:34px;flex:none;border-radius:10px;background:rgba(255,255,255,.1);display:grid;place-items:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span style="font-size:14.5px;color:rgba(255,255,255,.92)">Route multi-stage approvals</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="width:34px;height:34px;flex:none;border-radius:10px;background:rgba(255,255,255,.1);display:grid;place-items:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7a8 3 0 0 0 16 0M4 7a8 3 0 0 1 16 0v10a8 3 0 0 1-16 0V7m0 5a8 3 0 0 0 16 0" stroke="#fff" stroke-width="1.6"/></svg></span><span style="font-size:14.5px;color:rgba(255,255,255,.92)">Post approved SAP S/4HANA budgets</span></div>
+        </div>
+      </div>
+      <div class="btrust"><span>ISO-aligned</span><span>·</span><span>SAP S/4HANA connected</span><span>·</span><span>Dubai-hosted</span></div>
     </div>
-    <div class="msg" id="gateMsg"></div>
-    <div class="foot">Access is limited to users your administrator has added. Your session signs out automatically by the next day.</div>
   </div>
 </div>
 
@@ -393,7 +489,7 @@ $("#btnSend").onclick=async function(){
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){gateMsg("Enter a valid email.","err");return;}
   this.disabled=true;gateMsg("Sending…");
   try{var out=await api("/auth/request-otp",{method:"POST",body:{email:email}});
-    S._email=email;$("#step1").classList.add("hidden");$("#step2").classList.remove("hidden");gateMsg((out&&out.message)||"If the address is authorised, a code is on its way.","ok");$("#code").focus();
+    S._email=email;$("#step1").classList.add("hidden");$("#step2").classList.remove("hidden");gateMsg((out&&out.message)||"If the address is authorised, a code is on its way.","ok");otpReset();var _f=document.querySelector(".otpd");if(_f)_f.focus();
   }catch(e){gateMsg(e.message,"err");}
   this.disabled=false;
 };
@@ -405,10 +501,34 @@ $("#btnVerify").onclick=async function(){
     S.token=out.token;S.user=out.user;
     try{sessionStorage.setItem("cp_tok",S.token);sessionStorage.setItem("cp_user",JSON.stringify(S.user));}catch(e){}
     enterApp();
-  }catch(e){gateMsg(e.message,"err");this.disabled=false;}
+  }catch(e){gateMsg(e.message,"err");this.disabled=false;otpShake();}
 };
-$("#backLink").onclick=function(e){e.preventDefault();$("#step2").classList.add("hidden");$("#step1").classList.remove("hidden");gateMsg("");};
-$("#code").addEventListener("keydown",function(e){if(e.key==="Enter")$("#btnVerify").click()});
+$("#backLink").onclick=function(e){e.preventDefault();$("#step2").classList.add("hidden");$("#step1").classList.remove("hidden");gateMsg("");otpReset();};
+// 6-box OTP: auto-advance, backspace, paste-distribute, auto-submit, shake-on-error
+var OTPB=[].slice.call(document.querySelectorAll(".otpd"));
+function otpSync(){var v=OTPB.map(function(b){return b.value;}).join("");$("#code").value=v;OTPB.forEach(function(b){b.classList.toggle("filled",!!b.value);});return v;}
+function otpReset(){OTPB.forEach(function(b){b.value="";b.classList.remove("filled");});$("#code").value="";var o=$("#otp");if(o)o.classList.remove("ok","shake");var b=$("#btnVerify");if(b)b.disabled=false;}
+function otpShake(){var o=$("#otp");if(!o)return;o.classList.remove("shake");void o.offsetWidth;o.classList.add("shake");setTimeout(function(){OTPB.forEach(function(b){b.value="";b.classList.remove("filled");});$("#code").value="";var f=OTPB[0];if(f)f.focus();},430);}
+OTPB.forEach(function(box,i){
+  box.addEventListener("input",function(e){
+    var d=(box.value||"").replace(/\D/g,"");box.value=d.slice(-1);
+    otpSync();
+    if(box.value&&i<OTPB.length-1)OTPB[i+1].focus();
+    var full=otpSync();
+    if(full.length===6&&/^\d{6}$/.test(full)){$("#otp").classList.add("ok");setTimeout(function(){$("#btnVerify").click();},140);}
+  });
+  box.addEventListener("keydown",function(e){
+    if(e.key==="Backspace"&&!box.value&&i>0){OTPB[i-1].focus();OTPB[i-1].value="";otpSync();e.preventDefault();}
+    else if(e.key==="ArrowLeft"&&i>0){OTPB[i-1].focus();e.preventDefault();}
+    else if(e.key==="ArrowRight"&&i<OTPB.length-1){OTPB[i+1].focus();e.preventDefault();}
+    else if(e.key==="Enter"){otpSync();$("#btnVerify").click();}
+  });
+  box.addEventListener("paste",function(e){
+    e.preventDefault();var t=((e.clipboardData||window.clipboardData).getData("text")||"").replace(/\D/g,"").slice(0,6);
+    if(!t)return;for(var j=0;j<6;j++)OTPB[j].value=t[j]||"";var full=otpSync();var last=Math.min(t.length,6)-1;if(OTPB[last])OTPB[last].focus();
+    if(full.length===6){$("#otp").classList.add("ok");setTimeout(function(){$("#btnVerify").click();},140);}
+  });
+});
 $("#email").addEventListener("keydown",function(e){if(e.key==="Enter")$("#btnSend").click()});
 $("#btnLogout").onclick=function(){signOut(false)};
 function signOut(expired){S.token=null;S.user=null;try{sessionStorage.removeItem("cp_tok");sessionStorage.removeItem("cp_user");}catch(e){}
@@ -671,20 +791,38 @@ function cellInput(val,editable,onsave,type,ph){
 function stageBar(){
   var cur=P().Stage, idx=STAGES.indexOf(cur);
   var partner=(P().Scenario||"internal")==="partner";
-  var bar=el("div",{class:"stagebar"});
-  var sc=el("span",{class:"step cur",text:partner?"🤝 Partner software":"👥 Internal resources"});sc.style.cssText="background:var(--accent-weak);color:var(--accent-ink);border:none";bar.appendChild(sc);
+  var wrap=el("div",{});
+  // scenario chip
+  var chip=el("div",{style:"display:inline-flex;align-items:center;gap:7px;margin-bottom:13px;font-size:12.5px;font-weight:700;color:var(--accent-ink);background:var(--accent-weak);padding:6px 13px;border-radius:999px"});
+  chip.innerHTML="<svg width='15' height='15' viewBox='0 0 24 24' fill='none' style='flex:none'>"+(partner
+    ?"<path d='M8 11V7a4 4 0 118 0v4M6 11h12v9H6z' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/>"
+    :"<path d='M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M10 10a3 3 0 100-6 3 3 0 000 6zM21 20v-2a4 4 0 00-3-3.87' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/>")+
+    "</svg><span>"+(partner?"Partner-implemented software":"Internal-resources project")+"</span>";
+  wrap.appendChild(chip);
+  var bar=el("div",{class:"stepper"});
+  var CHK="<svg width='13' height='13' viewBox='0 0 24 24' fill='none'><path d='M5 12.5l4.2 4.2L19 7' stroke='currentColor' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>";
   STAGES.forEach(function(s,i){
     var skipped=(partner&&s==="Review-IT");   // #1 IT skipped for partner projects
-    var c="step"+(i<idx?" done":"")+(i===idx?" cur":"");
-    var lbl=(STAGE_LABEL[s]||s)+(skipped?" (skipped)":"");
-    var sp=el("span",{class:c,text:lbl});if(skipped){sp.style.opacity=".45";sp.style.textDecoration="line-through";}
-    bar.appendChild(sp);
+    var cls="stp"+(i<idx?" done":"")+(i===idx?" cur":"")+(skipped?" skip":"");
+    var it=el("div",{class:cls});
+    var row=el("div",{class:"row"});
+    if(i>0)row.appendChild(el("span",{class:"ln l"}));
+    if(i<STAGES.length-1)row.appendChild(el("span",{class:"ln r"}));
+    var node=el("span",{class:"node"});
+    if(i<idx&&!skipped)node.innerHTML=CHK; else node.textContent=String(i+1);
+    row.appendChild(node);it.appendChild(row);
+    it.appendChild(el("div",{class:"lb",text:(STAGE_LABEL[s]||s)+(skipped?" · skipped":"")}));
+    bar.appendChild(it);
   });
+  wrap.appendChild(bar);
   if(cur==="Costing"){
-    bar.appendChild(el("span",{class:"step"+(P().HRStatus==="Done"?" done":""),text:"HR "+(P().HRStatus||"Pending")}));
-    bar.appendChild(el("span",{class:"step"+(P().ProcStatus==="Done"?" done":""),text:"Proc "+(P().ProcStatus||"Pending")}));
+    var sub=el("div",{style:"display:flex;gap:9px;margin-top:13px;flex-wrap:wrap"});
+    function st(label,done){var ok=done==="Done";return el("span",{class:"chip",style:"display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:"+(ok?"var(--good-bg)":"var(--warn-bg)")+";color:"+(ok?"var(--good)":"var(--warn)"),text:label+" · "+(done||"Pending")});}
+    sub.appendChild(st("HR",P().HRStatus));
+    sub.appendChild(st("Procurement",P().ProcStatus));
+    wrap.appendChild(sub);
   }
-  return bar;
+  return wrap;
 }
 // #5D validate resource allocations before submission; block over-allocation (admin may override as an exception)
 async function validateAllocations(){
@@ -759,8 +897,53 @@ function actionBar(){
 }
 
 /* ================= COSTING TAB ================= */
-function sectionCard(n,title,bodyNode){
-  return el("div",{class:"card"},[el("header",{},[el("span",{class:"n",text:String(n)}),el("h2",{text:title})]),el("div",{class:"body"},[bodyNode])]);
+function sectionCard(n,title,bodyNode,secId){
+  var c=el("div",{class:"card"},[el("header",{},[el("span",{class:"n",text:String(n)}),el("h2",{text:title})]),el("div",{class:"body"},[bodyNode])]);
+  if(secId)c.id=secId;
+  return c;
+}
+// status glyph for the section rail: ok (green check) · warn (amber) · idle (hollow)
+function secStatus(which){
+  try{
+    var p=P();
+    if(which==="s1")return (p.Title&&p.Code&&p.Client)?"ok":"warn";
+    if(which==="s2")return p.Classification?"ok":"idle";
+    if(which==="s5")return p.HRStatus==="Done"?"ok":((p.resources&&p.resources.length)||S.project.resources&&S.project.resources.length?"warn":"idle");
+    if(which==="s6")return p.ProcStatus==="Done"?"ok":"idle";
+    if(which==="sap"){var ss=sapStatus();return ss&&ss.complete?"ok":"warn";}
+    if(which==="s7")return (S.project.totals&&Object.keys(S.project.totals).length)?"ok":"idle";
+    if(which==="s8"){var st=p.Stage;return (st==="CEO-Approval"||st==="PM-Acceptance"||st==="Approved")?"ok":(st==="Review-Finance"?"warn":"idle");}
+  }catch(e){}
+  return "idle";
+}
+function railGlyph(status){
+  var g=el("span",{class:"sg "+status});
+  if(status==="ok")g.innerHTML="<svg viewBox='0 0 24 24' fill='none'><path d='M5 12.5l4 4L19 7' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>";
+  return g;
+}
+// build the sticky section rail + wire IntersectionObserver scroll-spy
+function buildSectionRail(items){
+  var rail=el("aside",{class:"secrail"});
+  rail.appendChild(el("div",{class:"rt",text:"On this sheet"}));
+  var curGroup=null,links={};
+  items.forEach(function(it){
+    if(it.group!==curGroup){curGroup=it.group;rail.appendChild(el("div",{class:"secgroup",text:it.group}));}
+    var a=el("a",{href:"#"+it.id});
+    a.appendChild(railGlyph(it.status));
+    a.appendChild(el("span",{text:it.label}));
+    a.onclick=function(e){e.preventDefault();var t=document.getElementById(it.id);if(t)t.scrollIntoView({behavior:"smooth",block:"start"});};
+    rail.appendChild(a);links[it.id]=a;
+  });
+  // scroll-spy
+  if(window.__secObs){try{window.__secObs.disconnect();}catch(e){}}
+  setTimeout(function(){
+    var obs=new IntersectionObserver(function(ents){
+      ents.forEach(function(en){if(en.isIntersecting){Object.keys(links).forEach(function(k){links[k].classList.toggle("on",k===en.target.id);});}});
+    },{rootMargin:"-12% 0px -72% 0px",threshold:0});
+    items.forEach(function(it){var t=document.getElementById(it.id);if(t)obs.observe(t);});
+    window.__secObs=obs;
+  },60);
+  return rail;
 }
 function goBack(){S.project=null;S.tab="dashboard";markTabs();setBrand(S.user.entity);renderTab();}
 function renderCosting(v){
@@ -801,23 +984,24 @@ function renderCosting(v){
     pfield("Budget (AED)","Budget",E.scope||E.finance,"number"),
     extensionField(E.scope||E.finance)
   ]);
-  v.appendChild(sectionCard(1,"Project details",g));
+  var isFin=(S.user.role==="finance"||S.user.role==="admin");
+  var content=el("div",{class:"costcontent"}),rail=[];
+  function addSec(n,title,node,id,group,label){content.appendChild(sectionCard(n,title,node,id));rail.push({id:id,group:group,label:label,status:secStatus(id)});}
   // 2 IFRS classification (read-only except finance)
   var c2=el("div",{class:"grid g2"},[pfield("Classification","Classification",E.finance),pfield("SAP code","SAPCode",E.finance)]);
-  v.appendChild(sectionCard(2,"Project type & IFRS classification",c2));
-  // 5 Resource plan
-  v.appendChild(sectionCard(5,"Resource plan",resourceTable(E)));
-  // 6 Materials & other
-  v.appendChild(sectionCard(6,"Materials & other direct costs",costlineTable(E)));
-  // SAP project category mapping (#3/#4) — Finance/admin
-  if(S.user.role==="finance"||S.user.role==="admin") v.appendChild(sectionCard("SAP","SAP project mapping — categories → Main Project + WBS (Finance)",sapMappingNode(E)));
-  // 7 Cost summary (only if role gets totals)
-  if(S.project.totals && Object.keys(S.project.totals).length) v.appendChild(sectionCard(7,"Cost summary",summaryNode()));
-  // 8 Pricing & margin (finance/admin)
-  if(S.user.role==="finance"||S.user.role==="admin") v.appendChild(sectionCard(8,"Pricing & margin",pricingNode(E)));
-  // timeline
-  var tl=el("div",{class:"card"},[el("header",{},[el("span",{class:"n",text:"⏱"}),el("h2",{text:"Status timeline"})]),el("div",{class:"body"},[el("div",{id:"timeline",text:"Loading…"})])]);
-  v.appendChild(tl);renderTimeline();
+  addSec(1,"Project details",g,"s1","Setup","Project details");
+  addSec(2,"Project type & IFRS classification",c2,"s2","Setup","IFRS classification");
+  addSec(5,"Resource plan",resourceTable(E),"s5","Plan","Resource plan");
+  addSec(6,"Materials & other direct costs",costlineTable(E),"s6","Plan","Materials & costs");
+  if(isFin) addSec("SAP","SAP project mapping — categories → Main Project + WBS (Finance)",sapMappingNode(E),"sap","Plan","SAP mapping");
+  if(S.project.totals && Object.keys(S.project.totals).length) addSec(7,"Cost summary",summaryNode(),"s7","Commercials","Cost summary");
+  if(isFin) addSec(8,"Pricing & margin",pricingNode(E),"s8","Commercials","Pricing & margin");
+  // timeline (not in rail)
+  var tl=el("div",{class:"card"},[el("header",{},[el("span",{class:"n",html:"<svg width='14' height='14' viewBox='0 0 24 24' fill='none'><path d='M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>"}),el("h2",{text:"Status timeline"})]),el("div",{class:"body"},[el("div",{id:"timeline",text:"Loading…"})])]);
+  content.appendChild(tl);
+  var layout=el("div",{class:"costlayout"},[buildSectionRail(rail),content]);
+  v.appendChild(layout);
+  renderTimeline();
 }
 function thc(label,key,num){var th=el("th",{class:num?"num":"",text:label});var inf=info(key);if(inf)th.appendChild(inf);return th;}
 function flagRow(tb,note){var fr=el("tr",{class:"flagged"});var td=el("td",{colspan:"99"});var c=el("span",{class:"flagchip",html:"⚑ Finance flagged this line: "+esc(note)});td.appendChild(c);fr.appendChild(td);tb.appendChild(fr);}
@@ -1815,610 +1999,6 @@ async function exportCostingXLSX(){
 
 /* ================= BOOT ================= */
 if(S.token&&S.user){enterApp();}
-</script>
-<script>
-/* ============================================================================
-   DEMO MOCK BACKEND — runs entirely in the browser. No server, no SharePoint,
-   no email. Mirrors the real backend's workflow engine, role access and proposal
-   logic so the full flow can be tested. Sign-in code is always 000000.
-   ========================================================================== */
-(function () {
-  var CODE = "000000";
-
-  /* ---------- seed data ---------- */
-  var DB = {
-    seq: 100,
-    serialSeq: 0,
-    // #4/#5 admin-editable standard work-category list (tech-industry best practice)
-    categories: ["Frontend", "Backend", "UI/UX", "Mobile", "Integration & APIs", "Database", "QA & Testing", "DevOps & Cloud", "Cybersecurity", "Infrastructure (Servers/Network/Firewall)", "Project Management", "Software Licenses", "Professional Services", "Hardware & Materials", "Support & Maintenance"],
-    domains: ["uxe.ai", "emcode.ae"],
-    // #4 each user is assigned one or BOTH companies (entities); they only see data for their entities
-    members: [
-      { email: "bassam.youssef@uxe.ai", name: "Bassam Youssef", entity: "UXE", role: "admin", entities: ["UXE", "EMCODE"] },
-      { email: "mohamed.ishraf@uxe.ai", name: "Mohamed Ishraf", entity: "EMCODE", role: "admin", entities: ["UXE", "EMCODE"] },
-      { email: "requester@uxe.ai", name: "Demo Requester (UXE)", entity: "UXE", role: "requester", entities: ["UXE"] },
-      { email: "requester.emc@emcode.ae", name: "Demo Requester (EMCODE)", entity: "EMCODE", role: "requester", entities: ["EMCODE"] },
-      { email: "it@uxe.ai", name: "Demo IT Manager", entity: "UXE", role: "itmanager", entities: ["UXE", "EMCODE"] },
-      { email: "hr@uxe.ai", name: "Demo HR", entity: "UXE", role: "hr", entities: ["UXE", "EMCODE"] },
-      { email: "procurement@uxe.ai", name: "Demo Procurement", entity: "UXE", role: "procurement", entities: ["UXE", "EMCODE"] },
-      { email: "finance@uxe.ai", name: "Demo Finance", entity: "UXE", role: "finance", entities: ["UXE", "EMCODE"] },
-      { email: "ceo@uxe.ai", name: "Demo CEO", entity: "UXE", role: "ceo", entities: ["UXE", "EMCODE"] },
-      { email: "pm@uxe.ai", name: "Demo PM", entity: "UXE", role: "pm", entities: ["UXE", "EMCODE"] }
-    ],
-    // #5A HR-controlled resource master (per entity): empId, name, designation, entity, availability%
-    resourceMaster: [
-      { id: 9001, empId: "UXE-E-101", name: "A. Rahman", designation: "Security Engineer", entity: "UXE", availability: 100 },
-      { id: 9002, empId: "UXE-E-102", name: "S. Pillai", designation: "Project Manager", entity: "UXE", availability: 100 },
-      { id: 9003, empId: "UXE-E-103", name: "M. Noor", designation: "Security Engineer", entity: "UXE", availability: 100 },
-      { id: 9004, empId: "UXE-E-104", name: "T. Aziz", designation: "Technician", entity: "UXE", availability: 100 },
-      { id: 9005, empId: "UXE-E-105", name: "L. Haddad", designation: "Frontend Engineer", entity: "UXE", availability: 100 },
-      { id: 9006, empId: "UXE-E-106", name: "R. Nair", designation: "Backend Engineer", entity: "UXE", availability: 100 },
-      { id: 9007, empId: "EMC-E-201", name: "K. Das", designation: "Automation Engineer", entity: "EMCODE", availability: 100 },
-      { id: 9008, empId: "EMC-E-202", name: "J. Fernandes", designation: "BMS Specialist", entity: "EMCODE", availability: 100 }
-    ],
-    positions: [
-      { id: 1, position: "Security Engineer", salary: 12000, status: "Pending HR" },
-      { id: 2, position: "Project Manager", salary: 18000, status: "Pending HR" },
-      { id: 3, position: "Technician", salary: 7000, status: "Estimated" }
-    ],
-    benefits: [
-      { id: 1, comp: "End-of-service gratuity", basis: "21 days salary / yr", kind: "salYrDays", value: 21, status: "Actual", sap: true },
-      { id: 2, comp: "Annual leave", basis: "30 days / yr", kind: "salYrDays", value: 30, status: "Actual", sap: false },
-      { id: 3, comp: "Air ticket", basis: "per year", kind: "perYr", value: 3000, status: "Estimated", sap: false },
-      { id: 4, comp: "Medical insurance", basis: "per year", kind: "perYr", value: 6000, status: "Assumption", sap: false }
-    ],
-    matrix: [
-      { id: 1, comp: "Project personnel", price: true, sap: true, cap: "P&L", gl: "pending", wbs: "pending", reason: "Direct labour" },
-      { id: 2, comp: "Materials & equipment", price: true, sap: true, cap: "P&L", gl: "pending", wbs: "pending", reason: "Direct materials" }
-    ],
-    projects: [],
-    resources: [],
-    costlines: [],
-    history: []
-  };
-  function nid() { return ++DB.seq; }
-  // #2 server-generated running serial — requesters can never type or change it
-  function nextSerial() { return "PCS-" + new Date().getFullYear() + "-" + String(++DB.serialSeq).padStart(4, "0"); }
-  // seed one project per stakeholder-relevant stage so inboxes and the dashboard are populated
-  function seedFull(o) {
-    var id = nid();
-    DB.projects.push({ id: id, fields: Object.assign({
-      Title: o.title, Code: o.code || "", Serial: nextSerial(), Entity: o.entity || "UXE", Client: o.client || "",
-      Scenario: o.scenario || "internal", Stage: o.stage, HRStatus: o.hr || "Pending", ProcStatus: o.proc || "Pending",
-      RequesterEmail: "requester@uxe.ai", Requester: "Demo Requester", CurrentOwnerEmail: o.owner || "",
-      PricingMode: "margin", Rate: o.rate || 45, IndirectPct: 8, OverheadPct: 20, Currency: "AED",
-      StartDate: o.start || "", EndDate: o.end || "",
-      Budget: o.budget || 0, Classification: "Project", SAPCode: o.sap || "",
-      SAPMainCode: o.sapMain || "", SAPMap: o.sapMap ? JSON.stringify(o.sapMap) : "{}", AppExtra: "{}"
-    }, o.extra || {}) });
-    (o.resources || []).forEach(function (r) { DB.resources.push(Object.assign({ id: nid(), projectId: id, projectTitle: o.title, person: "", position: "", type: "Staff", category: "Professional Services", empId: "", startDate: "", endDate: "", salary: 0, qty: 1, months: 1, util: 100 }, r)); });
-    (o.costlines || []).forEach(function (l) { DB.costlines.push(Object.assign({ id: nid(), projectId: id, projectTitle: o.title, item: "", section: "Materials", category: "Hardware & Materials", vendor: "", uom: "EA", price: 0, qty: 1 }, l)); });
-    return id;
-  }
-  // Original project (completed / approved) — the base of a program
-  var idCourtsOriginal = seedFull({ title: "Dubai Courts — Phase 1 CCTV", code: "DBC1", client: "Dubai Courts", stage: "Approved", hr: "Done", proc: "Done", budget: 300000, sap: "UXE/PRJ/DBC/001",
-    resources: [{ person: "A. Rahman", position: "Security Engineer", empId: "UXE-E-101", category: "Professional Services", startDate: "2026-11-01", endDate: "2026-12-31", salary: 11000, qty: 1, months: 2, util: 60 }],  // #5 committed 60% Nov–Dec
-    costlines: [{ item: "IP cameras", price: 780, qty: 40, vendor: "Hikvision" }], extra: { ProposalNo: "CP-2026-0004" } });
-  // at Costing (HR pending) — keeps HR/Procurement inboxes non-empty
-  seedFull({ title: "Dubai Courts — CCTV upgrade", code: "DBC", client: "Dubai Courts", stage: "Costing", owner: "hr@uxe.ai", budget: 300000, sap: "UXE/STA/DBC/002",
-    resources: [{ person: "A. Khan", position: "Security Engineer", salary: 0, qty: 2, months: 4, util: 100 }],
-    costlines: [{ item: "IP cameras", price: 0, qty: 40 }] });
-  // at Finance review — fully priced, SAP codes already mapped (happy-path: Finance can Approve now)
-  seedFull({ title: "Access Control — HQ Fit-out", code: "ACH", client: "Sample Customer LLC", stage: "Review-Finance", hr: "Done", proc: "Done", budget: 340000, owner: "finance@uxe.ai", sap: "UXE/PRJ/ACH/014",
-    start: "2026-10-01", sapMain: "ACH-2026",
-    sapMap: { "Professional Services": { mainCode: "ACH-2026", wbsCode: "ACH-2026.1.PS" }, "Project Management": { mainCode: "ACH-2026", wbsCode: "ACH-2026.2.PM" }, "Hardware & Materials": { mainCode: "ACH-2026", wbsCode: "ACH-2026.3.HW" } },
-    resources: [{ person: "A. Rahman", position: "Security Engineer", category: "Professional Services", salary: 12000, qty: 2, months: 4, util: 100 }, { person: "S. Pillai", position: "Project Manager", category: "Project Management", salary: 18000, qty: 1, months: 4, util: 60, marginPct: 60 }],
-    costlines: [{ item: "IP cameras (dome)", category: "Hardware & Materials", price: 850, qty: 24, marginPct: 35 }, { item: "Access controllers", category: "Hardware & Materials", price: 1400, qty: 6 }] });
-  // at Finance review — the user's example: SAP codes NOT yet mapped (gate demo: Finance must map every category before Approve)
-  seedFull({ title: "Dubai Municipality — Facial Recognition", code: "DMFR", client: "Dubai Municipality", stage: "Review-Finance", hr: "Done", proc: "Done", budget: 1250000, owner: "finance@uxe.ai", sap: "UXE/PRJ/DMFR/030",
-    start: "2026-10-05", sapMain: "DM-FR-2026-001",
-    resources: [
-      { person: "L. Haddad", position: "Frontend Engineer", category: "Frontend", salary: 16000, qty: 2, months: 5, util: 100 },
-      { person: "R. Nair", position: "Backend Engineer", category: "Backend", salary: 17000, qty: 3, months: 5, util: 100 },
-      { person: "S. Omar", position: "UI/UX Designer", category: "UI/UX", salary: 14000, qty: 1, months: 3, util: 80 },
-      { person: "D. Fahim", position: "Project Manager", category: "Project Management", salary: 20000, qty: 1, months: 5, util: 60 }
-    ],
-    costlines: [
-      { item: "GPU inference servers", category: "Infrastructure (Servers/Network/Firewall)", section: "Materials", price: 42000, qty: 3, vendor: "Dell" },
-      { item: "Perimeter firewalls", category: "Infrastructure (Servers/Network/Firewall)", section: "Materials", price: 18000, qty: 2, vendor: "Fortinet" },
-      { item: "Face-recognition licenses", category: "Software Licenses", section: "Other", price: 1200, qty: 50, vendor: "NEC" }
-    ] });
-  // EMCODE, partner-implemented software (IT review was skipped), in costing
-  seedFull({ title: "Smart Building — Tower B", code: "SBT", entity: "EMCODE", client: "Emaar", stage: "Costing", proc: "Done", owner: "hr@uxe.ai", budget: 880000, sap: "EMC/PRJ/SBT/003",
-    scenario: "partner", start: "2026-10-10",
-    resources: [{ person: "K. Das", position: "Automation Engineer", empId: "EMC-E-201", category: "Backend", salary: 14000, qty: 2, months: 3, util: 100 }],
-    costlines: [{ item: "BMS controllers", category: "Infrastructure (Servers/Network/Firewall)", price: 2200, qty: 30, vendor: "Siemens" }],
-    extra: { RequesterEmail: "requester.emc@emcode.ae", Requester: "Demo Requester (EMCODE)" } });  // owned by the EMCODE requester (segregation demo)
-  // CEO gate (margin < 30) — EXTENSION of the completed Dubai Courts Phase 1 (linked for reporting)
-  seedFull({ title: "Dubai Courts — Phase 2 extension", code: "CUC", client: "Dubai Courts", stage: "CEO-Approval", hr: "Done", proc: "Done", budget: 410000, rate: 22, owner: "ceo@uxe.ai", sap: "UXE/PRJ/CUC/021",
-    resources: [{ person: "M. Noor", position: "Security Engineer", salary: 11000, qty: 3, months: 5, util: 100 }],
-    costlines: [{ item: "PTZ cameras", price: 3200, qty: 20, vendor: "Axis" }], extra: { ParentRef: String(idCourtsOriginal) } });
-  // PM acceptance
-  seedFull({ title: "Perimeter Intrusion — Ph.2", code: "PIP", client: "Dubai Holding", stage: "PM-Acceptance", hr: "Done", proc: "Done", budget: 320000, owner: "pm@uxe.ai", sap: "UXE/PRJ/PIP/009",
-    resources: [{ person: "T. Aziz", position: "Technician", salary: 8000, qty: 3, months: 3, util: 100 }],
-    costlines: [{ item: "Fence sensors", price: 650, qty: 60, vendor: "Senstar" }] });
-  // Approved
-  seedFull({ title: "Barrier & ANPR — Logistics", code: "BAL", client: "DP World", stage: "Approved", hr: "Done", proc: "Done", budget: 270000, sap: "UXE/PRJ/BAL/017",
-    resources: [{ person: "R. Iyer", position: "Technician", salary: 7500, qty: 2, months: 2, util: 100 }],
-    costlines: [{ item: "ANPR barriers", price: 9500, qty: 4, vendor: "Nedap" }], extra: { ProposalNo: "CP-2026-0007" } });
-
-  /* ---------- pure logic (ported from backend) ---------- */
-  function benefitMonthly(salary) {
-    salary = +salary || 0; var m = 0;
-    DB.benefits.forEach(function (b) { var v = +b.value || 0;
-      if (b.kind === "salYrDays") m += salary * v / 365; else if (b.kind === "perYr") m += v / 12;
-      else if (b.kind === "perMo") m += v; else if (b.kind === "perValid") m += v / 24; });
-    return m;
-  }
-  // per-item % with project defaults: blank line value ("", null, undefined) inherits the project default; 0 is explicit.
-  function pctOf(v, d) { return (v === "" || v === undefined || v === null) ? (+d || 0) : (+v || 0); }
-  function lineBuild(direct, proj, line) {
-    var mode = proj.PricingMode || "margin";
-    var ind = pctOf(line.indPct, proj.IndirectPct);
-    var oh = pctOf(line.ohPct, proj.OverheadPct);
-    var mg = pctOf(line.marginPct, proj.Rate);
-    var indirect = direct * ind / 100;
-    var base = direct + indirect;
-    var overhead = base * oh / 100;
-    var cost = base + overhead;
-    var sell = (mode === "markup") ? cost * (1 + mg / 100) : (mg < 100 ? cost / (1 - mg / 100) : 0);
-    var marginPct = sell > 0 ? (sell - cost) / sell * 100 : 0;
-    return { direct: direct, indirect: indirect, base: base, overhead: overhead, cost: cost, sell: sell, marginPct: marginPct, ind: ind, oh: oh, mg: mg };
-  }
-  function computeTotals(proj, resources, costlines) {
-    var loaded = function (r) { return ((+r.salary || 0) + benefitMonthly(r.salary)) * (+r.qty || 0) * (+r.months || 0) * (+r.util || 0) / 100; };
-    var rLines = resources.map(function (r) { return Object.assign({ _id: r.id }, lineBuild(loaded(r), proj, r)); });
-    var cLines = costlines.map(function (l) { return Object.assign({ _id: l.id, _section: l.section || "Materials" }, lineBuild((+l.price || 0) * (+l.qty || 0), proj, l)); });
-    var sum = function (arr, k) { return arr.reduce(function (a, x) { return a + x[k]; }, 0); };
-    var personnel = sum(rLines, "direct");
-    var materials = cLines.filter(function (l) { return l._section === "Materials"; }).reduce(function (a, l) { return a + l.direct; }, 0);
-    var other = cLines.filter(function (l) { return l._section === "Other"; }).reduce(function (a, l) { return a + l.direct; }, 0);
-    var all = rLines.concat(cLines);
-    var direct = sum(all, "direct"), indirect = sum(all, "indirect"), overhead = sum(all, "overhead"), cost = sum(all, "cost"), price = sum(all, "sell");
-    var marginPct = price > 0 ? (price - cost) / price * 100 : 0;
-    return { personnel: personnel, materials: materials, other: other, direct: direct, indirect: indirect, base: direct + indirect, overhead: overhead, cost: cost, price: price, marginPct: marginPct, lines: { resource: rLines, costline: cLines } };
-  }
-  // #1 conditional routing helpers
-  function enterCosting(set, hasHR, hasProc) { set.HRStatus = hasHR ? "Pending" : "Done"; set.ProcStatus = hasProc ? "Pending" : "Done"; return (set.HRStatus === "Done" && set.ProcStatus === "Done") ? "Review-Finance" : "Costing"; }
-  function isPartner(pf) { return (pf.Scenario || "internal") === "partner"; }
-  // #4/#5 distinct work categories present on a costing (case-insensitive dedupe)
-  function distinctCategories(resources, costlines) { var seen = {}, out = []; (resources || []).concat(costlines || []).forEach(function (x) { var c = (x.category || "").trim(); if (c && !seen[c.toLowerCase()]) { seen[c.toLowerCase()] = 1; out.push(c); } }); return out; }
-  function parseMap(pf) { try { return JSON.parse(pf.SAPMap || "{}") || {}; } catch (e) { return {}; } }
-  // #3 every applicable category needs a Main Project Code + WBS code
-  function sapComplete(categories, map, mainDefault) { var missing = (categories || []).filter(function (c) { var m = map[c] || {}; return !((String(m.mainCode || "").trim() || String(mainDefault || "").trim()) && String(m.wbsCode || "").trim()); }); return { complete: missing.length === 0, missing: missing }; }
-  // ---- #5C/D resource availability engine (pure, date-accurate) ----
-  function dayNum(d) { var t = Date.parse((d || "") + "T00:00:00Z"); return isNaN(t) ? null : Math.floor(t / 86400000); }
-  function dayStr(n) { return new Date(n * 86400000).toISOString().slice(0, 10); }
-  function rangesOverlap(a1, a2, b1, b2) { return a1 <= b2 && b1 <= a2; }   // end 15th vs start 16th → NOT overlapping
-  function peakAllocation(assignments, start, end) {
-    var s = dayNum(start), e = dayNum(end); if (s === null || e === null || e < s) return 0;
-    var pts = [];
-    (assignments || []).forEach(function (a) { var as = dayNum(a.start), ae = dayNum(a.end); if (as === null || ae === null) return; if (!rangesOverlap(as, ae, s, e)) return; var cs = Math.max(as, s), ce = Math.min(ae, e); pts.push([cs, +a.alloc || 0]); pts.push([ce + 1, -(+a.alloc || 0)]); });
-    if (!pts.length) return 0;
-    pts.sort(function (x, y) { return x[0] - y[0] || x[1] - y[1]; });
-    var cur = 0, peak = 0; pts.forEach(function (p) { cur += p[1]; if (cur > peak) peak = cur; }); return peak;
-  }
-  function availabilityFor(assignments, start, end, capacity) {
-    capacity = capacity || 100; var s = dayNum(start), e = dayNum(end);
-    var relevant = (assignments || []).filter(function (a) { var as = dayNum(a.start), ae = dayNum(a.end); return as !== null && ae !== null && s !== null && e !== null && rangesOverlap(as, ae, s, e); });
-    var conflicts = relevant.map(function (a) { var as = dayNum(a.start), ae = dayNum(a.end); return { project: a.project, projectId: a.projectId, alloc: +a.alloc || 0, start: a.start, end: a.end, overlapStart: dayStr(Math.max(as, s)), overlapEnd: dayStr(Math.min(ae, e)) }; });
-    var committed = peakAllocation(relevant, start, end);
-    return { capacity: capacity, committed: committed, remaining: Math.max(0, capacity - committed), conflicts: conflicts };
-  }
-  function checkAllocation(assignments, start, end, requested, capacity) {
-    var a = availabilityFor(assignments, start, end, capacity); a.requested = +requested || 0; a.ok = a.requested <= a.remaining; a.over = Math.max(0, a.requested - a.remaining); return a;
-  }
-  var COMMITTED_STAGES = ["Approved"];   // #5D only approved assignments consume committed capacity (draft/rejected do not)
-  // Gather an employee's committed assignments (optionally excluding one project), respecting entity visibility for names.
-  function committedAssignments(empId, excludeProjectId, cur) {
-    var out = [];
-    DB.projects.forEach(function (p) {
-      if (COMMITTED_STAGES.indexOf(p.fields.Stage) < 0) return;
-      if (excludeProjectId && String(p.id) === String(excludeProjectId)) return;
-      kids(p.id, DB.resources).forEach(function (r) {
-        if (String(r.empId || "") !== String(empId) || !empId) return;
-        var visible = !cur || canSeeEntity(cur, p.fields.Entity);
-        // mask identity of a project in another entity (keep only alloc/dates needed for honest capacity math)
-        out.push({ project: visible ? (p.fields.Title || "") : "Restricted (other company)", projectId: visible ? p.id : null, alloc: +r.util || 0, start: r.startDate || "", end: r.endDate || "" });
-      });
-    });
-    return out;
-  }
-  var STAGE_OWNER = { "Draft": "requester", "Review-IT": "itmanager", "Costing": ["hr", "procurement"], "Review-Finance": "finance", "CEO-Approval": "ceo", "PM-Acceptance": "pm", "Approved": null };
-  var T = {
-    submit: { roles: ["requester"], from: ["Draft"], to: "Review-IT" },
-    it_approve: { roles: ["itmanager"], from: ["Review-IT"], to: "Costing", set: { HRStatus: "Pending", ProcStatus: "Pending" } },
-    it_return: { roles: ["itmanager"], from: ["Review-IT"], to: "Draft", comment: true },
-    hr_submit: { roles: ["hr"], from: ["Costing"], to: null },
-    hr_return: { roles: ["hr"], from: ["Costing"], to: "Draft", comment: true, set: { HRStatus: "Pending" } },
-    proc_submit: { roles: ["procurement"], from: ["Costing"], to: null },
-    proc_return: { roles: ["procurement"], from: ["Costing"], to: "Draft", comment: true, set: { ProcStatus: "Pending" } },
-    finance_approve: { roles: ["finance"], from: ["Review-Finance"], to: null },
-    finance_return: { roles: ["finance"], from: ["Review-Finance"], to: null, comment: true },
-    ceo_approve: { roles: ["ceo"], from: ["CEO-Approval"], to: "PM-Acceptance" },
-    ceo_reject: { roles: ["ceo"], from: ["CEO-Approval"], to: "Review-Finance", comment: true },
-    pm_accept: { roles: ["pm"], from: ["PM-Acceptance"], to: "Approved" },
-    pm_reject: { roles: ["pm"], from: ["PM-Acceptance"], to: "Review-Finance", comment: true }
-  };
-  var THRESHOLD = 30;
-  function applyTransition(pf, action, role, comment, totals, params, counts, sap) {
-    var def = T[action]; if (!def) return { error: "Unknown action." };
-    if (role !== "admin" && def.roles.indexOf(role) < 0) return { error: "Your role can't perform this action." };
-    var from = pf.Stage || "Draft";
-    if (def.from.indexOf(from) < 0) return { error: 'Action not allowed from stage "' + from + '".' };
-    if (def.comment && !(comment && comment.trim())) return { error: "A reason/comment is required." };
-    var hasHR = (!counts || counts.resources === undefined) ? true : counts.resources > 0;   // #1 HR costs present?
-    var hasProc = (!counts || counts.costlines === undefined) ? true : counts.costlines > 0;  // #1 material costs present?
-    var to = def.to, set = Object.assign({}, def.set || {});
-    if (action === "submit") { to = isPartner(pf) ? enterCosting(set, hasHR, hasProc) : "Review-IT"; }   // #1 partner skips IT
-    else if (action === "it_approve") { to = enterCosting(set, hasHR, hasProc); }                        // #1 auto-skip empty HR/Proc
-    else if (action === "hr_submit") { set.HRStatus = "Done"; to = (pf.ProcStatus === "Done") ? "Review-Finance" : "Costing"; }
-    else if (action === "proc_submit") { set.ProcStatus = "Done"; to = (pf.HRStatus === "Done") ? "Review-Finance" : "Costing"; }
-    else if (action === "finance_approve") { if (sap && sap.complete === false) return { error: "Enter SAP Main Project + WBS codes for all categories before approval. Missing: " + (sap.missing || []).join(", ") + "." }; if (params.mode) set.PricingMode = params.mode; if (params.rate !== undefined) set.Rate = +params.rate; set.SellingPrice = Math.round(totals.price); to = (totals.marginPct < THRESHOLD) ? "CEO-Approval" : "PM-Acceptance"; }
-    else if (action === "finance_return") { var tgt = params.target;
-      if (tgt === "hr") { to = "Costing"; set.HRStatus = "Pending"; }
-      else if (tgt === "proc") { to = "Costing"; set.ProcStatus = "Pending"; }
-      else if (tgt === "costing") { to = "Costing"; set.HRStatus = "Pending"; set.ProcStatus = "Pending"; }
-      else { to = "Draft"; } }
-    set.Stage = to;
-    return { ok: true, toStage: to, set: set, history: { Action: action, FromStage: from, ToStage: to, Comment: comment || "" } };
-  }
-  // access (ported)
-  var SCOPE_RES = ["person", "position", "type", "category", "qty", "months", "util", "empId", "startDate", "endDate"];  // #4 category + #5B assignment fields
-  var SCOPE_LINE = ["item", "section", "category", "uom", "qty"];
-  var PRICE_RES = ["marginPct", "indPct", "ohPct", "flagNote"];   // per-line pricing + flag (finance)
-  var PRICE_LINE = ["marginPct", "indPct", "ohPct", "flagNote"];
-  var COST_FIELDS = ["IndirectPct", "OverheadPct", "PricingMode", "Rate", "BudgetCap", "SellingPrice", "CEOThreshold"];
-  var SCOPE_FIELDS = ["Title", "Code", "Serial", "Entity", "Client", "Department", "PM", "Requester", "StartDate", "EndDate", "Support", "PaymentTerms", "CompanyCode", "Currency", "Classification", "SAPCode", "Stage", "HRStatus", "ProcStatus", "RequesterEmail", "CurrentOwnerEmail", "ProposalNo", "Budget", "ParentRef", "Scenario", "SAPMainCode", "SAPMap"];
-  // Serial (#2) is server-generated — readable but NOT in SCOPE_PROJ, so requesters can't write it.
-  var SCOPE_PROJ = ["Title", "Code", "Entity", "Client", "Department", "PM", "Requester", "StartDate", "EndDate", "Support", "PaymentTerms", "CompanyCode", "Currency", "Budget", "ParentRef", "Scenario", "AppExtra"];
-  var PROJECT_WRITE = {
-    requester: { "Draft": SCOPE_PROJ },
-    itmanager: { "Review-IT": SCOPE_PROJ.concat(["Classification", "SAPCode"]) },          // IT can correct scope while reviewing
-    finance: { "Review-Finance": ["IndirectPct", "OverheadPct", "PricingMode", "Rate", "BudgetCap", "Budget", "ParentRef", "Classification", "SAPCode", "SAPMainCode", "SAPMap", "AppExtra"] }, admin: { "*": "ALL" }  // #3/#4 finance sets SAP codes
-  };
-  var CHILD_WRITE = {
-    requester: { "Draft": { resource: SCOPE_RES, costline: SCOPE_LINE } },
-    itmanager: { "Review-IT": { resource: SCOPE_RES, costline: SCOPE_LINE } },             // IT can correct inputs
-    hr: { "Costing": { resource: ["salary"] } }, procurement: { "Costing": { costline: ["vendor", "price"] } },
-    finance: { "Review-Finance": { resource: ["salary"].concat(PRICE_RES), costline: ["vendor", "price"].concat(PRICE_LINE) } }, // finance may correct + set per-line pricing + flag
-    admin: { "*": { resource: "ALL", costline: "ALL" } }
-  };
-  function allowP(role, stage) { if (role === "admin") return "ALL"; var r = PROJECT_WRITE[role]; if (!r) return []; return r[stage] || r["*"] || []; }
-  function allowC(role, stage, kind) { if (role === "admin") return "ALL"; var r = CHILD_WRITE[role]; if (!r) return []; var s = r[stage] || r["*"]; if (!s) return []; return s[kind] || []; }
-  function filterPatch(role, stage, kind, patch) {
-    var allow = kind === "project" ? allowP(role, stage) : allowC(role, stage, kind);
-    if (allow === "ALL") return { ok: true, fields: patch };
-    var out = {}, bad = [];
-    Object.keys(patch || {}).forEach(function (k) { if (allow.indexOf(k) >= 0) out[k] = patch[k]; else bad.push(k); });
-    if (bad.length) return { ok: false, error: "Not allowed to edit: " + bad.join(", ") };
-    return { ok: true, fields: out };
-  }
-  function pickT(t, keys) { var o = {}; keys.forEach(function (k) { if (t[k] !== undefined) o[k] = t[k]; }); return o; }
-  function shape(role, pf, resources, costlines, totals) {
-    var full = role === "admin" || role === "finance";
-    var pick = function (o, ks) { var a = {}; ks.forEach(function (k) { if (o[k] !== undefined) a[k] = o[k]; }); return a; };
-    var proj = full ? pf : pick(pf, SCOPE_FIELDS.concat(role === "pm" ? ["SellingPrice"] : []));
-    var showSal = full || role === "hr", showPr = full || role === "procurement";
-    var lmap = {}; (totals.lines ? totals.lines.resource : []).forEach(function (x) { lmap["r" + x._id] = x; });
-    var cmap = {}; (totals.lines ? totals.lines.costline : []).forEach(function (x) { cmap["c" + x._id] = x; });
-    var res = resources.map(function (r) {
-      var b = { id: r.id, person: r.person, position: r.position, type: r.type, category: r.category, qty: r.qty, months: r.months, util: r.util, empId: r.empId, startDate: r.startDate, endDate: r.endDate };
-      var comp = lmap["r" + r.id];
-      if (showSal) { b.salary = r.salary; if (comp) b.loaded = comp.direct; if (r.flagNote) b.flagNote = r.flagNote; }   // #5 loaded cost -> HR/finance
-      if (full && comp) { b.marginPct = r.marginPct; b.indPct = r.indPct; b.ohPct = r.ohPct; b.lineCost = comp.cost; b.lineSell = comp.sell; b.lineMargin = comp.marginPct; b.effMg = comp.mg; b.effInd = comp.ind; b.effOh = comp.oh; }
-      return b;
-    });
-    var lines = costlines.map(function (l) {
-      var b = { id: l.id, item: l.item, section: l.section, category: l.category, uom: l.uom, qty: l.qty };
-      var comp = cmap["c" + l.id];
-      if (showPr) { b.price = l.price; b.vendor = l.vendor; if (comp) b.total = comp.direct; if (l.flagNote) b.flagNote = l.flagNote; }  // #5 line total -> Procurement/finance
-      if (full && comp) { b.marginPct = l.marginPct; b.indPct = l.indPct; b.ohPct = l.ohPct; b.lineCost = comp.cost; b.lineSell = comp.sell; b.lineMargin = comp.marginPct; b.effMg = comp.mg; b.effInd = comp.ind; b.effOh = comp.oh; }
-      return b;
-    });
-    var BUILD = ["personnel", "materials", "other", "direct", "indirect", "base", "overhead", "cost", "price", "marginPct"];
-    var t = {};
-    if (full) t = totals; else if (role === "pm") t = pickT(totals, ["personnel", "materials", "other", "cost", "price"]);
-    else if (role === "itmanager") t = pickT(totals, ["personnel", "materials", "other", "direct", "cost"]);
-    else if (role === "hr") t = pickT(totals, ["personnel"]); else if (role === "procurement") t = pickT(totals, ["materials", "other"]);
-    else if (role === "requester") t = pickT(totals, ["personnel", "materials", "other", "cost"]);  // aggregate cost only (no per-line, no price/margin) for the requester PDF
-    return { project: proj, resources: res, costlines: lines, totals: t, role: role };
-  }
-  // Role-scoped portfolio dashboard: budget consumption + balance for everyone; cost breakup only for finance/admin.
-  function waitsOn(f, role, email) {
-    if (role === "requester") return f.Stage === "Draft" && (f.RequesterEmail || "") === email;
-    if (role === "itmanager") return f.Stage === "Review-IT";
-    if (role === "hr") return f.Stage === "Costing" && f.HRStatus !== "Done";
-    if (role === "procurement") return f.Stage === "Costing" && f.ProcStatus !== "Done";
-    if (role === "finance") return f.Stage === "Review-Finance";
-    if (role === "ceo") return f.Stage === "CEO-Approval";
-    if (role === "pm") return f.Stage === "PM-Acceptance";
-    return false;
-  }
-  var WAITTEXT = { requester: "draft to submit", itmanager: "IT review", hr: "enter HR salaries", procurement: "enter vendor prices", finance: "set price & margin", ceo: "CEO approval (margin < 30%)", pm: "accept the approved costing" };
-  function dashboardData(cur, onlyEntity) {
-    var role = cur.role, email = cur.email;
-    var full = role === "admin" || role === "finance";
-    // #4 entity-scoped + #2 requester sees only own (both enforced by visibleProjects); onlyEntity = the toggled company
-    var list = visibleProjects(cur, onlyEntity);
-    var port = { budget: 0, consumed: 0, direct: 0, indirect: 0, overhead: 0, cost: 0, price: 0, count: list.length, pending: 0 };
-    // #2/#4 build the parent/program lookup ONLY from projects this user may see — a foreign ParentRef resolves to nothing, so no title can be enumerated across entities/owners
-    var byId = {}; list.forEach(function (p) { byId[String(p.id)] = p; });
-    function programRoot(p) { var seen = {}, cur = p; while (cur && cur.fields.ParentRef && byId[String(cur.fields.ParentRef)] && !seen[String(cur.id)]) { seen[String(cur.id)] = 1; cur = byId[String(cur.fields.ParentRef)]; } return cur ? String(cur.id) : String(p.id); }
-    var projects = list.map(function (p) {
-      var f = p.fields, t = computeTotals(f, kids(p.id, DB.resources), kids(p.id, DB.costlines));
-      var budget = +f.Budget || Math.round(t.price) || 0;
-      var consumed = Math.round(t.cost);
-      var avail = budget - consumed;
-      var pct = budget > 0 ? Math.round(consumed / budget * 100) : 0;
-      var wait = waitsOn(f, role, email);
-      if (wait) port.pending++;
-      port.budget += budget; port.consumed += consumed;
-      if (full) { port.direct += t.direct; port.indirect += t.indirect; port.overhead += t.overhead; port.cost += t.cost; port.price += t.price; }
-      var parent = f.ParentRef && byId[String(f.ParentRef)] ? byId[String(f.ParentRef)] : null;
-      var row = { id: p.id, name: f.Title || "(untitled)", client: f.Client || "", entity: f.Entity || "UXE", stage: f.Stage, budget: budget, consumed: consumed, available: avail, pct: pct, wait: wait, waitText: WAITTEXT[role] || "",
-        parentRef: f.ParentRef || "", parentName: parent ? (parent.fields.Title || "") : "", isExtension: !!parent, _root: programRoot(p) };
-      if (full) { row.margin = Math.round(t.marginPct || 0); row.cost = Math.round(t.cost); row.price = Math.round(t.price); }
-      return row;
-    });
-    // group original + extensions into programs (reporting only)
-    var pg = {};
-    projects.forEach(function (r) { (pg[r._root] = pg[r._root] || []).push(r); });
-    var rootName = {}; projects.forEach(function (r) { if (String(r.id) === r._root) rootName[r._root] = r.name; });
-    var programs = Object.keys(pg).filter(function (k) { return pg[k].length > 1; }).map(function (k) {
-      var ms = pg[k], budget = 0, consumed = 0;
-      ms.forEach(function (m) { budget += m.budget; consumed += m.consumed; });
-      var prog = { root: k, name: rootName[k] || (byId[k] ? byId[k].fields.Title : "Program"), count: ms.length, budget: budget, consumed: consumed, available: budget - consumed, pct: budget > 0 ? Math.round(consumed / budget * 100) : 0,
-        members: ms.map(function (m) { return { id: m.id, name: m.name, stage: m.stage, pct: m.pct, isExtension: m.isExtension, budget: m.budget, available: m.available }; }) };
-      if (full) { var cost = 0, price = 0; ms.forEach(function (m) { cost += (m.cost || 0); price += (m.price || 0); }); prog.cost = cost; prog.price = price; prog.margin = price > 0 ? Math.round((price - cost) / price * 100) : 0; }
-      return prog;
-    });
-    var portOut = { budget: port.budget, consumed: port.consumed, available: port.budget - port.consumed, pct: port.budget > 0 ? Math.round(port.consumed / port.budget * 100) : 0, count: port.count, pending: port.pending };
-    if (full) {
-      portOut.direct = Math.round(port.direct); portOut.indirect = Math.round(port.indirect); portOut.overhead = Math.round(port.overhead);
-      portOut.cost = Math.round(port.cost); portOut.price = Math.round(port.price);
-      portOut.marginAmt = Math.round(port.price - port.cost);
-      portOut.blendedMargin = port.price > 0 ? Math.round((port.price - port.cost) / port.price * 100) : 0;
-    }
-    return { role: role, full: full, portfolio: portOut, projects: projects, programs: programs };
-  }
-  // #7 Finance period-based cost report: costs by main project → category → resource/material, with totals.
-  function reportCosts(period, cur, onlyEntity) {
-    var list = visibleProjects(cur, onlyEntity).filter(function (p) { if (period === "all") return true; return String(p.fields.StartDate || "").slice(0, 7) === period; });  // #4 entity-scoped
-    var projects = list.map(function (p) {
-      var f = p.fields, rs = kids(p.id, DB.resources), ls = kids(p.id, DB.costlines), t = computeTotals(f, rs, ls), sapMap = parseMap(f);
-      var rl = {}; t.lines.resource.forEach(function (x) { rl["r" + x._id] = x; });
-      var cl = {}; t.lines.costline.forEach(function (x) { cl["c" + x._id] = x; });
-      var byCat = {};
-      function bucket(c) { c = c || "Uncategorised"; return (byCat[c] = byCat[c] || { category: c, resources: [], materials: [], planned: 0 }); }
-      rs.forEach(function (r) { var b = bucket(r.category); var d = (rl["r" + r.id] || {}).cost || 0; b.resources.push({ name: r.person || r.position || "—", qty: r.qty, months: r.months, cost: Math.round(d) }); b.planned += d; });
-      ls.forEach(function (l) { var b = bucket(l.category); var d = (cl["c" + l.id] || {}).cost || 0; b.materials.push({ name: l.item || "—", qty: l.qty, cost: Math.round(d) }); b.planned += d; });
-      var cats = Object.keys(byCat).map(function (c) { var o = byCat[c], m = sapMap[c] || {}; return { category: c, mainCode: m.mainCode || f.SAPMainCode || "", wbsCode: m.wbsCode || "", planned: Math.round(o.planned), actual: null, resources: o.resources, materials: o.materials }; });
-      return { id: p.id, name: f.Title, client: f.Client, entity: f.Entity, stage: f.Stage, sapMain: f.SAPMainCode || "", total: Math.round(t.cost), price: Math.round(t.price), categories: cats };
-    });
-    var grand = projects.reduce(function (a, p) { return a + p.total; }, 0);
-    // periods available (distinct YYYY-MM from project start dates)
-    var ps = {}; visibleProjects(cur, onlyEntity).forEach(function (p) { var k = String(p.fields.StartDate || "").slice(0, 7); if (k) ps[k] = 1; });
-    return { period: period, periods: Object.keys(ps).sort(), projects: projects, grandTotal: grand, note: "Planned (committed) cost shown. Actual spend populates from SAP S/4HANA via OData once connected." };
-  }
-  function buildProposalLines(totals, vatPct) {
-    vatPct = vatPct || 5; var price = Math.round(+totals.price || 0), cost = +totals.cost || 0;
-    var parts = [{ code: "SVC-001", desc: "Professional services", base: +totals.personnel || 0 }, { code: "MAT-001", desc: "Materials & equipment", base: +totals.materials || 0 }, { code: "SUP-001", desc: "Support & other services", base: +totals.other || 0 }].filter(function (p) { return p.base > 0; });
-    var lines;
-    if (!parts.length || cost <= 0) lines = [{ code: "PRJ-001", desc: "Project delivery (turnkey)", qty: 1, uom: "LOT", net: price }];
-    else { lines = parts.map(function (p) { return { code: p.code, desc: p.desc, qty: 1, uom: "LOT", net: Math.round(price * p.base / cost) }; }); var diff = price - lines.reduce(function (a, l) { return a + l.net; }, 0); if (diff) lines[lines.length - 1].net += diff; }
-    var subtotal = lines.reduce(function (a, l) { return a + l.net; }, 0), vat = Math.round(subtotal * vatPct) / 100;
-    return { lines: lines, subtotal: subtotal, vatPct: vatPct, vat: vat, total: subtotal + vat };
-  }
-
-  /* ---------- helpers ---------- */
-  function member(email) { email = (email || "").toLowerCase(); return DB.members.filter(function (m) { return m.email === email; })[0]; }
-  function proj(id) { return DB.projects.filter(function (p) { return String(p.id) === String(id); })[0]; }
-  function kids(id, arr) { var p = proj(id); if (!p) return []; return arr.filter(function (x) { return x.projectId === p.id; }); }  // match by id ONLY — title match cross-contaminated same-named drafts
-  // #2/#4 access control — enforced server-side so URL/ID manipulation can't bypass it
-  function curEntities(cur) { return (cur && cur.entities) ? cur.entities : ["UXE"]; }
-  function canSeeEntity(cur, entity) { return curEntities(cur).indexOf(entity || "UXE") >= 0; }           // #4 entity segregation
-  function ownsProject(cur, pf) { return cur.role === "requester" ? ((pf.RequesterEmail || "") === cur.email) : true; } // #2 requester owns only their own
-  function canAccessProject(cur, pf) { return !!pf && canSeeEntity(cur, pf.Entity) && ownsProject(cur, pf); }
-  // visible project list for the current user (used by every list endpoint)
-  function visibleProjects(cur, onlyEntity) { return DB.projects.filter(function (p) { if (!canAccessProject(cur, p.fields)) return false; if (onlyEntity && canSeeEntity(cur, onlyEntity) && (p.fields.Entity || "UXE") !== onlyEntity) return false; return true; }); }
-  function guardProject(cur, P) { if (!P || !canAccessProject(cur, P.fields)) throw err(404, "Not found."); return P; } // 404, not 403, so existence isn't leaked
-  var CUR = null;
-  // demo always starts at a clean login
-  try { sessionStorage.removeItem("cp_tok"); sessionStorage.removeItem("cp_user"); } catch (e) {}
-  try { var _a = document.getElementById("app"), _g = document.getElementById("gate"); if (_a) _a.classList.add("hidden"); if (_g) _g.style.display = "flex"; } catch (e) {}
-
-  /* ---------- the mock api ---------- */
-  function err(status, msg) { var e = new Error(msg); e.status = status; return e; }
-  window.api = async function (path, opts) {
-    opts = opts || {}; var method = opts.method || "GET", body = opts.body || {};
-    var u = path.split("?")[0], parts = u.split("/").filter(Boolean);
-    var QS = {}; (path.split("?")[1] || "").split("&").forEach(function (kv) { var a = kv.split("="); if (a[0]) QS[a[0]] = decodeURIComponent(a[1] || ""); });  // query params (entity, period, …)
-    await new Promise(function (r) { setTimeout(r, 120); }); // tiny latency so it feels real
-
-    if (u === "/auth/request-otp") { if (!member(body.email)) return { ok: true, message: "Demo — this email isn't in the member list. Try requester@uxe.ai, finance@uxe.ai, or bassam.youssef@uxe.ai (code 000000)." }; return { ok: true, message: "Demo mode — your code is 000000." }; }
-    if (u === "/auth/verify-otp") { var m = member(body.email); if (!m) throw err(403, "Not authorised."); if (String(body.code).trim() !== CODE) throw err(401, "Incorrect code (demo code is 000000)."); CUR = { email: m.email, role: m.role, name: m.name, entity: m.entity, entities: (m.entities || [m.entity || "UXE"]).slice() }; return { token: "demo." + m.email, user: CUR }; }
-    if (!CUR) throw err(401, "Not signed in.");
-    if (u === "/auth/me") return CUR;
-    if (u === "/dashboard" && method === "GET") return dashboardData(CUR, QS.entity);
-    if (u === "/reports/costs" && method === "GET") {  // #7 finance period report
-      if (["finance", "admin"].indexOf(CUR.role) < 0) throw err(403, "Finance only.");
-      return reportCosts(QS.period || "all", CUR, QS.entity);   // #4 entity-filtered
-    }
-    if (u === "/projects/options" && method === "GET") {
-      return visibleProjects(CUR, QS.entity).map(function (p) { return { id: p.id, title: p.fields.Title, code: p.fields.Code, entity: p.fields.Entity, stage: p.fields.Stage }; });
-    }
-
-    if (u === "/masters" && method === "GET") return { positions: DB.positions.slice(), benefits: DB.benefits.slice(), matrix: DB.matrix.slice(), domains: DB.domains.slice(), categories: DB.categories.slice() };
-    // #4/#5 admin-editable category master
-    if (u === "/masters/category" && method === "POST") {
-      if (["admin", "finance"].indexOf(CUR.role) < 0) throw err(403, "Only admin/finance can edit categories.");
-      var nc = (body.name || "").trim(); if (!nc) throw err(400, "Category name required.");
-      if (DB.categories.map(function (c) { return c.toLowerCase(); }).indexOf(nc.toLowerCase()) >= 0) throw err(400, "That category already exists.");  // #5 no duplicates
-      DB.categories.push(nc); return { ok: true, categories: DB.categories.slice() };
-    }
-    if (u === "/masters/category" && method === "DELETE") {
-      if (["admin", "finance"].indexOf(CUR.role) < 0) throw err(403, "Only admin/finance can edit categories.");
-      DB.categories = DB.categories.filter(function (c) { return c.toLowerCase() !== (body.name || "").toLowerCase(); }); return { ok: true, categories: DB.categories.slice() };
-    }
-    // ---- #5A HR resource master (per entity) ----
-    if (u === "/resources-master" && method === "GET") {
-      return DB.resourceMaster.filter(function (r) { return canSeeEntity(CUR, r.entity); })   // #4 only your entities
-        .map(function (r) { return Object.assign({}, r); });
-    }
-    if (u === "/resources-master" && method === "POST") {
-      if (["hr", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only HR / admin can manage the resource master.");
-      if (!canSeeEntity(CUR, body.entity)) throw err(403, "You are not authorised for " + (body.entity || "that company") + ".");
-      var rid = nid(); DB.resourceMaster.push({ id: rid, empId: body.empId || "", name: body.name || "", designation: body.designation || "", entity: body.entity || "UXE", availability: (body.availability === undefined ? 100 : +body.availability) });
-      return { id: rid };
-    }
-    if (u === "/resources-master/bulk" && method === "POST") {   // bulk CSV/Excel upload
-      if (["hr", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only HR / admin can upload resources.");
-      var rows = body.rows || [], added = 0, updated = 0, skipped = [];
-      rows.forEach(function (row) {
-        var entity = row.entity || "UXE";
-        if (!canSeeEntity(CUR, entity)) { skipped.push((row.empId || row.name || "?") + " (not your company)"); return; }
-        var ex = DB.resourceMaster.filter(function (x) { return x.empId && row.empId && String(x.empId).toLowerCase() === String(row.empId).toLowerCase() && x.entity === entity; })[0];
-        if (ex) { ex.name = row.name || ex.name; ex.designation = row.designation || ex.designation; if (row.availability !== undefined && row.availability !== "") ex.availability = +row.availability; updated++; }
-        else { DB.resourceMaster.push({ id: nid(), empId: row.empId || "", name: row.name || "", designation: row.designation || "", entity: entity, availability: (row.availability === undefined || row.availability === "") ? 100 : +row.availability }); added++; }
-      });
-      return { ok: true, added: added, updated: updated, skipped: skipped };
-    }
-    if (parts[0] === "resources-master" && parts[1] && parts[1] !== "bulk") {
-      var rrow = DB.resourceMaster.filter(function (x) { return String(x.id) === parts[1]; })[0]; if (!rrow) throw err(404, "Not found.");
-      if (["hr", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only HR / admin can edit the resource master.");
-      if (!canSeeEntity(CUR, rrow.entity)) throw err(403, "Not your company.");
-      if (method === "PATCH") { ["empId", "name", "designation", "entity", "availability"].forEach(function (k) { if (body[k] !== undefined) rrow[k] = (k === "availability") ? +body[k] : body[k]; }); return { ok: true }; }
-      if (method === "DELETE") { DB.resourceMaster.splice(DB.resourceMaster.indexOf(rrow), 1); return { ok: true }; }
-    }
-    // ---- #5C/D availability check ----
-    if (u === "/availability" && method === "GET") {
-      var qp = {}; (path.split("?")[1] || "").split("&").forEach(function (kv) { var a = kv.split("="); qp[a[0]] = decodeURIComponent(a[1] || ""); });
-      var empId = qp.empId || "", master = DB.resourceMaster.filter(function (x) { return String(x.empId) === String(empId); })[0];
-      if (empId && master && !canSeeEntity(CUR, master.entity)) throw err(403, "Not your company.");
-      var asg = committedAssignments(empId, qp.exclude, CUR);
-      var cap = master ? (master.availability || 100) : 100;
-      var res = qp.requested !== undefined && qp.requested !== "" ? checkAllocation(asg, qp.start, qp.end, qp.requested, cap) : availabilityFor(asg, qp.start, qp.end, cap);
-      res.empId = empId; res.name = master ? master.name : "";
-      return res;
-    }
-    // ---- #3/#4 admin user / role / company management ----
-    if (u === "/admin/users" && method === "GET") {
-      if (CUR.role !== "admin") throw err(403, "Admin only.");
-      return DB.members.map(function (m) { return { email: m.email, name: m.name, role: m.role, entities: (m.entities || [m.entity || "UXE"]).slice() }; });
-    }
-    if (u === "/admin/users" && method === "POST") {
-      if (CUR.role !== "admin") throw err(403, "Admin only.");
-      var em = (body.email || "").toLowerCase().trim(); if (!em) throw err(400, "Email required.");
-      if (member(em)) throw err(400, "That user already exists.");
-      var ents = (body.entities && body.entities.length) ? body.entities : ["UXE"];
-      DB.members.push({ email: em, name: body.name || em, entity: ents[0], role: body.role || "requester", entities: ents.slice() });
-      return { ok: true };
-    }
-    if (parts[0] === "admin" && parts[1] === "users" && parts[2] && method === "PATCH") {
-      if (CUR.role !== "admin") throw err(403, "Admin only.");
-      var tgt = member(decodeURIComponent(parts[2])); if (!tgt) throw err(404, "User not found.");
-      // safety: an admin can't demote themselves, and the last admin can't be demoted (lock-out prevention)
-      if (body.role !== undefined && body.role !== "admin" && tgt.role === "admin") {
-        if (String(tgt.email).toLowerCase() === String(CUR.email).toLowerCase()) throw err(400, "You can't change your own admin role.");
-        if (DB.members.filter(function (m) { return m.role === "admin"; }).length <= 1) throw err(400, "At least one admin must remain.");
-      }
-      if (body.role !== undefined) tgt.role = body.role;
-      if (body.name !== undefined) tgt.name = body.name;
-      if (body.entities !== undefined) { tgt.entities = (body.entities.length ? body.entities : ["UXE"]).slice(); tgt.entity = tgt.entities[0]; }
-      return { ok: true };
-    }
-    if (parts[0] === "masters" && parts.length >= 2) {
-      var kind = parts[1], coll = kind === "position" ? DB.positions : kind === "benefit" ? DB.benefits : DB.matrix;
-      var roleOk = (kind === "classification") ? ["finance", "admin"] : ["hr", "finance", "admin"];
-      if (CUR.role !== "admin" && roleOk.indexOf(CUR.role) < 0) throw err(403, "Not permitted for your role.");
-      if (method === "POST") { var o = Object.assign({ id: nid() }, body); coll.push(o); return { id: o.id }; }
-      var row = coll.filter(function (x) { return String(x.id) === parts[2]; })[0]; if (!row) throw err(404, "Not found.");
-      if (method === "PATCH") { Object.assign(row, body); return { ok: true }; }
-      if (method === "DELETE") { coll.splice(coll.indexOf(row), 1); return { ok: true }; }
-    }
-
-    if (u === "/projects/inbox") {
-      var role = CUR.role, email = CUR.email;
-      return visibleProjects(CUR, QS.entity).filter(function (p) { var f = p.fields;   // #4 entity-scoped
-        if (role === "admin" || role === "finance") return true;
-        if (role === "requester") return (f.RequesterEmail || "") === email;
-        if (role === "itmanager") return f.Stage === "Review-IT";
-        if (role === "hr") return f.Stage === "Costing" && f.HRStatus !== "Done";
-        if (role === "procurement") return f.Stage === "Costing" && f.ProcStatus !== "Done";
-        if (role === "ceo") return f.Stage === "CEO-Approval";
-        if (role === "pm") return f.Stage === "PM-Acceptance"; return false;
-      }).map(function (p) { return { id: p.id, title: p.fields.Title, entity: p.fields.Entity, client: p.fields.Client, stage: p.fields.Stage, requester: p.fields.RequesterEmail }; });
-    }
-    if (u === "/projects" && method === "POST") {
-      var ent = body.entity || CUR.entity || "UXE";
-      if (!canSeeEntity(CUR, ent)) throw err(403, "You are not authorised for " + ent + ".");   // #4
-      var id = nid(); var scen = (body.scenario === "partner") ? "partner" : "internal";  // #1 scenario at creation
-      DB.projects.push({ id: id, fields: { Title: body.title || "Untitled project", Serial: nextSerial(), Entity: ent, Scenario: scen, Stage: "Draft", HRStatus: "Pending", ProcStatus: "Pending", RequesterEmail: CUR.email, Requester: CUR.name, CurrentOwnerEmail: CUR.email, Currency: "AED", PricingMode: "margin", Rate: 45, OverheadPct: 20, IndirectPct: 8, Budget: 0, ParentRef: "", SAPMainCode: "", SAPMap: "{}" } }); return { id: id };  // #2 server-assigned serial
-    }
-    if (parts[0] === "projects" && parts[1] && parts.length === 2) {
-      var P = guardProject(CUR, proj(parts[1]));   // #2/#4 access guard (404 if not yours/your entity)
-      if (method === "GET") { var rs = kids(P.id, DB.resources), ls = kids(P.id, DB.costlines), tot = computeTotals(P.fields, rs, ls); return shape(CUR.role, P.fields, rs, ls, tot); }
-      if (method === "PATCH") { var chk = filterPatch(CUR.role, P.fields.Stage, "project", (body.fields) || {}); if (!chk.ok) throw err(403, chk.error); Object.assign(P.fields, chk.fields); return { ok: true }; }
-    }
-    if (parts[0] === "projects" && parts[2] === "history") { guardProject(CUR, proj(parts[1])); return DB.history.filter(function (h) { return String(h.ProjectRef) === String(parts[1]); }).sort(function (a, b) { return new Date(a.At) - new Date(b.At); }).map(function (h) { return { actor: h.Actor, action: h.Action, from: h.FromStage, to: h.ToStage, comment: h.Comment, at: h.At }; }); }
-    if (parts[0] === "projects" && parts[2] === "transition") {
-      var P2 = guardProject(CUR, proj(parts[1]));
-      var rs2 = kids(P2.id, DB.resources), ls2 = kids(P2.id, DB.costlines), tot2 = computeTotals(P2.fields, rs2, ls2);
-      // #5D server-side over-allocation guard on submit (bypass-proof; admin may override as an exception)
-      if (body.action === "submit" && CUR.role !== "admin") {
-        var over = [];
-        rs2.forEach(function (r) {
-          if (!r.empId || !r.startDate || !r.endDate || !(+r.util > 0)) return;
-          var mx = DB.resourceMaster.filter(function (x) { return String(x.empId) === String(r.empId); })[0];
-          var chk = checkAllocation(committedAssignments(r.empId, P2.id, CUR), r.startDate, r.endDate, r.util, mx ? (mx.availability || 100) : 100);
-          if (!chk.ok) over.push((r.person || r.empId) + " (" + chk.requested + "% requested, only " + chk.remaining + "% free)");
-        });
-        if (over.length) throw err(409, "Resource over-allocation — submission blocked: " + over.join("; ") + ". Reduce allocation or shorten dates (an admin may submit as an authorised exception).");
-      }
-      var sap2 = sapComplete(distinctCategories(rs2, ls2), parseMap(P2.fields), P2.fields.SAPMainCode);  // #3 SAP gate (per-cat main inherits project main)
-      var r = applyTransition(P2.fields, body.action, CUR.role, body.comment, tot2, body.params || {}, { resources: rs2.length, costlines: ls2.length }, sap2);
-      if (!r.ok) throw err(400, r.error);
-      var owners = STAGE_OWNER[r.toStage]; var ownerRoles = owners ? (Array.isArray(owners) ? owners : [owners]) : [];
-      var ownerEmail = DB.members.filter(function (m) { return ownerRoles.indexOf(m.role) >= 0; }).map(function (m) { return m.email; })[0] || "";
-      Object.assign(P2.fields, r.set, { CurrentOwnerEmail: ownerEmail });
-      DB.history.push({ ProjectRef: String(P2.id), Actor: CUR.email, Action: r.history.Action, FromStage: r.history.FromStage, ToStage: r.history.ToStage, Comment: r.history.Comment, At: new Date().toISOString() });
-      return { ok: true, toStage: r.toStage };
-    }
-    if (parts[0] === "projects" && (parts[2] === "resources" || parts[2] === "costlines") && method === "POST") {
-      var P3 = guardProject(CUR, proj(parts[1])); var kind2 = parts[2] === "resources" ? "resource" : "costline";
-      var chk3 = filterPatch(CUR.role, P3.fields.Stage, kind2, body); if (!chk3.ok) throw err(403, chk3.error);
-      var row3 = Object.assign({ id: nid(), projectId: P3.id, projectTitle: P3.fields.Title }, (kind2 === "resource" ? { person: "", position: "", type: "", category: "", empId: "", startDate: "", endDate: "", salary: 0, qty: 1, months: 1, util: 100 } : { item: "", section: "Materials", category: "", vendor: "", uom: "", price: 0, qty: 1 }), chk3.fields);
-      (kind2 === "resource" ? DB.resources : DB.costlines).push(row3); return { id: row3.id };
-    }
-    if ((parts[0] === "resources" || parts[0] === "costlines") && parts[1]) {
-      var kind4 = parts[0] === "resources" ? "resource" : "costline", coll4 = parts[0] === "resources" ? DB.resources : DB.costlines;
-      var row4 = coll4.filter(function (x) { return String(x.id) === parts[1]; })[0]; if (!row4) throw err(404, "Not found.");
-      var P4 = guardProject(CUR, proj(row4.projectId));   // #2/#4 can only touch lines of a project you may access
-      if (method === "PATCH") { var chk4 = filterPatch(CUR.role, P4.fields.Stage, kind4, body); if (!chk4.ok) throw err(403, chk4.error); Object.assign(row4, chk4.fields); return { ok: true }; }
-      if (method === "DELETE") { if (["requester", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only the requester can remove scope lines."); coll4.splice(coll4.indexOf(row4), 1); return { ok: true }; }
-    }
-    if (parts[0] === "projects" && parts[2] === "proposal" && method === "POST") {
-      var P5 = guardProject(CUR, proj(parts[1]));
-      if (["requester", "finance", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only requester or finance can create a proposal.");
-      if (P5.fields.Stage !== "Approved") throw err(400, "Only approved costing sheets can be converted to a proposal.");
-      if (!P5.fields.ProposalNo) { var yr = new Date().getFullYear(); var ex = DB.projects.map(function (p) { return p.fields.ProposalNo; }).filter(Boolean); var max = 0; ex.forEach(function (n) { var mm = (n || "").match(new RegExp("^CP-" + yr + "-(\\d+)$")); if (mm) max = Math.max(max, +mm[1]); }); P5.fields.ProposalNo = "CP-" + yr + "-" + String(max + 1).padStart(4, "0"); }
-      var tot5 = computeTotals(P5.fields, kids(P5.id, DB.resources), kids(P5.id, DB.costlines)); var priced = buildProposalLines(tot5);
-      var now = new Date(), until = new Date(now.getTime() + 30 * 86400000);
-      return Object.assign({ proposalNo: P5.fields.ProposalNo, entity: P5.fields.Entity || "UXE", date: now.toISOString().slice(0, 10), validDays: 30, validUntil: until.toISOString().slice(0, 10), currency: P5.fields.Currency || "AED", subject: P5.fields.Title || "", customer: { name: P5.fields.Client || "", ref: "", contact: "", phoneEmail: "", address: "" }, commercial: { paymentTerms: P5.fields.PaymentTerms || "30% advance, 70% on completion", warranty: "12 months", delivery: "As per project plan", advance: "30%" } }, priced);
-    }
-    throw err(404, "Demo: endpoint not implemented (" + method + " " + u + ").");
-  };
-
-  // demo banner
-  window.addEventListener("DOMContentLoaded", function () {
-    var b = document.createElement("div");
-    b.textContent = "DEMO — mock data, no SharePoint/email · sign-in code 000000 · try requester@uxe.ai then finance@uxe.ai / bassam.youssef@uxe.ai (admin can do every step)";
-    b.style.cssText = "position:fixed;bottom:0;left:0;right:0;background:#ff8b00;color:#1a1200;font:12px/1.4 system-ui;padding:6px 12px;text-align:center;z-index:300";
-    document.body.appendChild(b);
-  });
-})();
-
 </script>
 </body>
 </html>
