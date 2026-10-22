@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Spline+Sans:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 :root{
-  --bg:#f4f6f8;--surface:#fff;--surface-2:#eef2f6;--line:#d8dfe6;--fg:#172029;--muted:#5a6773;--faint:#8794a0;
+  --bg:#f4f6f8;--surface:#fff;--surface-2:#eef2f6;--line:#d8dfe6;--fg:#172029;--muted:#5a6773;--faint:#717d8a;
   --accent:#1f3a86;--accent-weak:#e4e9f6;--accent-ink:#071952;--action:#ff8b00;--barbg:#071952;--baron:#fff;
   --good:#1f8a52;--good-bg:#e2f3e9;--warn:#b3781a;--warn-bg:#f8eed8;--crit:#c23b36;--crit-bg:#f8e2e1;
   --radius:10px;--shadow:0 1px 2px rgba(23,32,41,.06),0 2px 8px rgba(23,32,41,.05);
@@ -43,7 +43,7 @@ h1,h2,h3{margin:0;font-family:var(--fdisplay);font-weight:650}
 #gate .otp{display:flex;gap:10px;margin-bottom:2px}
 #gate .otpd{width:100%;box-sizing:border-box;min-width:0;height:58px;text-align:center;font-family:var(--fmono);font-size:24px;font-weight:600;padding:0;border-radius:12px;border:1.5px solid #273349;background:#131A2A;color:#fff;transition:border-color .13s,box-shadow .13s,background .13s,transform .13s}
 #gate .otpd:focus{outline:none;border-color:#60A5FA;box-shadow:0 0 0 4px rgba(96,165,250,.28);background:#161f31}
-#gate .otpd.filled{border-color:#3b4b66;background:#16203250}
+#gate .otpd.filled{border-color:#4a5e82;background:#18233a}
 #gate .otp.ok .otpd{border-color:#12a673;box-shadow:0 0 0 3px rgba(18,166,115,.22)}
 #gate .otp.shake{animation:otpshake .42s cubic-bezier(.36,.07,.19,.97)}
 @keyframes otpshake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-8px)}40%,60%{transform:translateX(8px)}}
@@ -52,7 +52,7 @@ h1,h2,h3{margin:0;font-family:var(--fdisplay);font-weight:650}
 #gate .go:hover{filter:brightness(1.05);box-shadow:0 16px 38px -10px rgba(249,115,22,.7),inset 0 1px 0 rgba(255,255,255,.45);transform:translateY(-1px)}#gate .go:active{transform:translateY(1px);filter:brightness(.98)}
 #gate .go:disabled{opacity:.6;cursor:default}
 #gate .msg{font-size:13px;margin-top:14px;min-height:18px}#gate .msg.err{color:#ff9e9e}#gate .msg.ok{color:#9ff0c0}
-#gate .foot{margin-top:24px;display:flex;align-items:center;gap:8px;color:#6f7b96;font-size:12.5px}
+#gate .foot{margin-top:24px;display:flex;align-items:center;gap:8px;color:#8c98b4;font-size:12.5px}
 /* brand panel */
 #gate .brand{flex:999 1 560px;min-width:0;position:relative;overflow:hidden;display:flex}
 #gate .aurora{position:absolute;inset:-25%;z-index:0;filter:blur(70px);opacity:.9;background:radial-gradient(38% 48% at 22% 26%,#1E3A8A 0,transparent 60%),radial-gradient(34% 44% at 80% 18%,#F97316 0,transparent 55%),radial-gradient(44% 54% at 72% 82%,#059669 0,transparent 60%),radial-gradient(40% 50% at 24% 86%,#0B1220 0,transparent 62%);animation:gdrift 24s ease-in-out infinite alternate}
@@ -90,7 +90,7 @@ main{padding:18px 0 60px;display:flex;flex-direction:column;gap:18px}
 .card>header .n{width:26px;height:26px;border-radius:8px;background:var(--accent-weak);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:12.5px;font-family:var(--fmono)}
 .card>header h2{font-size:15px;letter-spacing:-.01em}.card .body{padding:16px 18px}
 /* costing sheet — sticky section rail + scroll-spy */
-.costlayout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:22px;align-items:start}
+.costlayout{display:grid;grid-template-columns:208px minmax(0,1fr);gap:20px;align-items:start}
 .costcontent{display:flex;flex-direction:column;gap:18px;min-width:0}
 .secrail{position:sticky;top:12px;align-self:start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:var(--shadow)}
 .secrail .rt{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);font-weight:700;padding:6px 10px 8px}
@@ -103,6 +103,10 @@ main{padding:18px 0 60px;display:flex;flex-direction:column;gap:18px}
 .secrail a .sg.idle{border:1.5px solid #cdd5e1;background:transparent}
 .secrail a .sg svg{width:11px;height:11px}
 .secgroup{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:800;margin:8px 10px 2px}
+.seclegend{margin:9px 10px 2px;padding-top:9px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:5px}
+.seclegend span{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}
+.seclegend .lg{width:11px;height:11px;border-radius:50%;flex:none}
+.seclegend .lg.ok{background:var(--good)}.seclegend .lg.warn{background:var(--warn)}.seclegend .lg.idle{border:1.5px solid #cdd5e1}
 @media(max-width:1080px){.costlayout{grid-template-columns:1fr}.secrail{display:none}}
 .grid{display:grid;gap:12px 16px}.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr 1fr}
 @media(max-width:760px){.g4,.g3,.g2{grid-template-columns:1fr 1fr}}@media(max-width:480px){.g4,.g3,.g2{grid-template-columns:1fr}}
@@ -122,7 +126,12 @@ main{padding:18px 0 60px;display:flex;flex-direction:column;gap:18px}
 .tblwrap{border:1px solid var(--line);border-radius:12px;overflow:auto}
 .tblwrap .tbl th{border-bottom:1px solid var(--line)}
 .tblwrap .tbl tr:last-child td{border-bottom:none}
-.rowscroll{overflow-x:auto}.addrow{margin-top:10px;color:var(--accent-ink);background:var(--accent-weak);border:1px solid var(--line)}
+.rowscroll{overflow-x:auto;background:
+  radial-gradient(farthest-side at 100% 50%,rgba(15,23,42,.10),transparent) 100% 0,
+  radial-gradient(farthest-side at 0 50%,rgba(15,23,42,.10),transparent) 0 0;
+  background-repeat:no-repeat;background-size:16px 100%,16px 100%;background-attachment:scroll,scroll}
+.rowscroll .tbl{min-width:840px}
+.addrow{margin-top:10px;color:var(--accent-ink);background:var(--accent-weak);border:1px solid var(--line)}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:var(--accent-weak);color:var(--accent-ink)}
 /* premium stage stepper */
 .stepper{display:flex;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px 14px;overflow-x:auto}
@@ -508,7 +517,7 @@ $("#backLink").onclick=function(e){e.preventDefault();$("#step2").classList.add(
 var OTPB=[].slice.call(document.querySelectorAll(".otpd"));
 function otpSync(){var v=OTPB.map(function(b){return b.value;}).join("");$("#code").value=v;OTPB.forEach(function(b){b.classList.toggle("filled",!!b.value);});return v;}
 function otpReset(){OTPB.forEach(function(b){b.value="";b.classList.remove("filled");});$("#code").value="";var o=$("#otp");if(o)o.classList.remove("ok","shake");var b=$("#btnVerify");if(b)b.disabled=false;}
-function otpShake(){var o=$("#otp");if(!o)return;o.classList.remove("shake");void o.offsetWidth;o.classList.add("shake");setTimeout(function(){OTPB.forEach(function(b){b.value="";b.classList.remove("filled");});$("#code").value="";var f=OTPB[0];if(f)f.focus();},430);}
+function otpShake(){var o=$("#otp");if(!o)return;o.classList.remove("shake","ok");void o.offsetWidth;o.classList.add("shake");setTimeout(function(){OTPB.forEach(function(b){b.value="";b.classList.remove("filled");});$("#code").value="";var f=OTPB[0];if(f)f.focus();},430);}
 OTPB.forEach(function(box,i){
   box.addEventListener("input",function(e){
     var d=(box.value||"").replace(/\D/g,"");box.value=d.slice(-1);
@@ -916,9 +925,12 @@ function secStatus(which){
   }catch(e){}
   return "idle";
 }
+var SEC_STATUS_TXT={ok:"Complete",warn:"Needs your input",idle:"Not started"};
 function railGlyph(status){
   var g=el("span",{class:"sg "+status});
+  g.title=SEC_STATUS_TXT[status]||"";
   if(status==="ok")g.innerHTML="<svg viewBox='0 0 24 24' fill='none'><path d='M5 12.5l4 4L19 7' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>";
+  else if(status==="warn")g.innerHTML="<svg viewBox='0 0 24 24' fill='none'><path d='M12 7v6' stroke='currentColor' stroke-width='3' stroke-linecap='round'/><circle cx='12' cy='17.5' r='1.5' fill='currentColor'/></svg>";
   return g;
 }
 // build the sticky section rail + wire IntersectionObserver scroll-spy
@@ -932,16 +944,29 @@ function buildSectionRail(items){
     a.appendChild(railGlyph(it.status));
     a.appendChild(el("span",{text:it.label}));
     a.onclick=function(e){e.preventDefault();var t=document.getElementById(it.id);if(t)t.scrollIntoView({behavior:"smooth",block:"start"});};
+    a.title=it.label+" — "+(SEC_STATUS_TXT[it.status]||"");
     rail.appendChild(a);links[it.id]=a;
   });
-  // scroll-spy
-  if(window.__secObs){try{window.__secObs.disconnect();}catch(e){}}
+  // legend
+  var lg=el("div",{class:"seclegend"});
+  lg.innerHTML="<span><i class='lg ok'></i>Done</span><span><i class='lg warn'></i>Needs input</span><span><i class='lg idle'></i>Pending</span>";
+  rail.appendChild(lg);
+  // scroll-spy (+ bottom-of-page fallback so the final section can activate)
+  var lastId=items.length?items[items.length-1].id:null;
   setTimeout(function(){
+    if(window.__secObs){try{window.__secObs.disconnect();}catch(e){}}
+    var atBottom=function(){return lastId&&(window.innerHeight+window.scrollY)>=(document.documentElement.scrollHeight-4);};
     var obs=new IntersectionObserver(function(ents){
+      if(atBottom()){Object.keys(links).forEach(function(k){links[k].classList.toggle("on",k===lastId);});return;}
       ents.forEach(function(en){if(en.isIntersecting){Object.keys(links).forEach(function(k){links[k].classList.toggle("on",k===en.target.id);});}});
-    },{rootMargin:"-12% 0px -72% 0px",threshold:0});
+    },{rootMargin:"-10% 0px -55% 0px",threshold:0});
     items.forEach(function(it){var t=document.getElementById(it.id);if(t)obs.observe(t);});
     window.__secObs=obs;
+    if(window.__secScroll)window.removeEventListener("scroll",window.__secScroll);
+    window.__secScroll=function(){
+      if(atBottom()){Object.keys(links).forEach(function(k){links[k].classList.toggle("on",k===lastId);});}
+    };
+    window.addEventListener("scroll",window.__secScroll,{passive:true});
   },60);
   return rail;
 }
@@ -1999,6 +2024,610 @@ async function exportCostingXLSX(){
 
 /* ================= BOOT ================= */
 if(S.token&&S.user){enterApp();}
+</script>
+<script>
+/* ============================================================================
+   DEMO MOCK BACKEND — runs entirely in the browser. No server, no SharePoint,
+   no email. Mirrors the real backend's workflow engine, role access and proposal
+   logic so the full flow can be tested. Sign-in code is always 000000.
+   ========================================================================== */
+(function () {
+  var CODE = "000000";
+
+  /* ---------- seed data ---------- */
+  var DB = {
+    seq: 100,
+    serialSeq: 0,
+    // #4/#5 admin-editable standard work-category list (tech-industry best practice)
+    categories: ["Frontend", "Backend", "UI/UX", "Mobile", "Integration & APIs", "Database", "QA & Testing", "DevOps & Cloud", "Cybersecurity", "Infrastructure (Servers/Network/Firewall)", "Project Management", "Software Licenses", "Professional Services", "Hardware & Materials", "Support & Maintenance"],
+    domains: ["uxe.ai", "emcode.ae"],
+    // #4 each user is assigned one or BOTH companies (entities); they only see data for their entities
+    members: [
+      { email: "bassam.youssef@uxe.ai", name: "Bassam Youssef", entity: "UXE", role: "admin", entities: ["UXE", "EMCODE"] },
+      { email: "mohamed.ishraf@uxe.ai", name: "Mohamed Ishraf", entity: "EMCODE", role: "admin", entities: ["UXE", "EMCODE"] },
+      { email: "requester@uxe.ai", name: "Demo Requester (UXE)", entity: "UXE", role: "requester", entities: ["UXE"] },
+      { email: "requester.emc@emcode.ae", name: "Demo Requester (EMCODE)", entity: "EMCODE", role: "requester", entities: ["EMCODE"] },
+      { email: "it@uxe.ai", name: "Demo IT Manager", entity: "UXE", role: "itmanager", entities: ["UXE", "EMCODE"] },
+      { email: "hr@uxe.ai", name: "Demo HR", entity: "UXE", role: "hr", entities: ["UXE", "EMCODE"] },
+      { email: "procurement@uxe.ai", name: "Demo Procurement", entity: "UXE", role: "procurement", entities: ["UXE", "EMCODE"] },
+      { email: "finance@uxe.ai", name: "Demo Finance", entity: "UXE", role: "finance", entities: ["UXE", "EMCODE"] },
+      { email: "ceo@uxe.ai", name: "Demo CEO", entity: "UXE", role: "ceo", entities: ["UXE", "EMCODE"] },
+      { email: "pm@uxe.ai", name: "Demo PM", entity: "UXE", role: "pm", entities: ["UXE", "EMCODE"] }
+    ],
+    // #5A HR-controlled resource master (per entity): empId, name, designation, entity, availability%
+    resourceMaster: [
+      { id: 9001, empId: "UXE-E-101", name: "A. Rahman", designation: "Security Engineer", entity: "UXE", availability: 100 },
+      { id: 9002, empId: "UXE-E-102", name: "S. Pillai", designation: "Project Manager", entity: "UXE", availability: 100 },
+      { id: 9003, empId: "UXE-E-103", name: "M. Noor", designation: "Security Engineer", entity: "UXE", availability: 100 },
+      { id: 9004, empId: "UXE-E-104", name: "T. Aziz", designation: "Technician", entity: "UXE", availability: 100 },
+      { id: 9005, empId: "UXE-E-105", name: "L. Haddad", designation: "Frontend Engineer", entity: "UXE", availability: 100 },
+      { id: 9006, empId: "UXE-E-106", name: "R. Nair", designation: "Backend Engineer", entity: "UXE", availability: 100 },
+      { id: 9007, empId: "EMC-E-201", name: "K. Das", designation: "Automation Engineer", entity: "EMCODE", availability: 100 },
+      { id: 9008, empId: "EMC-E-202", name: "J. Fernandes", designation: "BMS Specialist", entity: "EMCODE", availability: 100 }
+    ],
+    positions: [
+      { id: 1, position: "Security Engineer", salary: 12000, status: "Pending HR" },
+      { id: 2, position: "Project Manager", salary: 18000, status: "Pending HR" },
+      { id: 3, position: "Technician", salary: 7000, status: "Estimated" }
+    ],
+    benefits: [
+      { id: 1, comp: "End-of-service gratuity", basis: "21 days salary / yr", kind: "salYrDays", value: 21, status: "Actual", sap: true },
+      { id: 2, comp: "Annual leave", basis: "30 days / yr", kind: "salYrDays", value: 30, status: "Actual", sap: false },
+      { id: 3, comp: "Air ticket", basis: "per year", kind: "perYr", value: 3000, status: "Estimated", sap: false },
+      { id: 4, comp: "Medical insurance", basis: "per year", kind: "perYr", value: 6000, status: "Assumption", sap: false }
+    ],
+    matrix: [
+      { id: 1, comp: "Project personnel", price: true, sap: true, cap: "P&L", gl: "pending", wbs: "pending", reason: "Direct labour" },
+      { id: 2, comp: "Materials & equipment", price: true, sap: true, cap: "P&L", gl: "pending", wbs: "pending", reason: "Direct materials" }
+    ],
+    projects: [],
+    resources: [],
+    costlines: [],
+    history: []
+  };
+  function nid() { return ++DB.seq; }
+  // #2 server-generated running serial — requesters can never type or change it
+  function nextSerial() { return "PCS-" + new Date().getFullYear() + "-" + String(++DB.serialSeq).padStart(4, "0"); }
+  // seed one project per stakeholder-relevant stage so inboxes and the dashboard are populated
+  function seedFull(o) {
+    var id = nid();
+    DB.projects.push({ id: id, fields: Object.assign({
+      Title: o.title, Code: o.code || "", Serial: nextSerial(), Entity: o.entity || "UXE", Client: o.client || "",
+      Scenario: o.scenario || "internal", Stage: o.stage, HRStatus: o.hr || "Pending", ProcStatus: o.proc || "Pending",
+      RequesterEmail: "requester@uxe.ai", Requester: "Demo Requester", CurrentOwnerEmail: o.owner || "",
+      PricingMode: "margin", Rate: o.rate || 45, IndirectPct: 8, OverheadPct: 20, Currency: "AED",
+      StartDate: o.start || "", EndDate: o.end || "",
+      Budget: o.budget || 0, Classification: "Project", SAPCode: o.sap || "",
+      SAPMainCode: o.sapMain || "", SAPMap: o.sapMap ? JSON.stringify(o.sapMap) : "{}", AppExtra: "{}"
+    }, o.extra || {}) });
+    (o.resources || []).forEach(function (r) { DB.resources.push(Object.assign({ id: nid(), projectId: id, projectTitle: o.title, person: "", position: "", type: "Staff", category: "Professional Services", empId: "", startDate: "", endDate: "", salary: 0, qty: 1, months: 1, util: 100 }, r)); });
+    (o.costlines || []).forEach(function (l) { DB.costlines.push(Object.assign({ id: nid(), projectId: id, projectTitle: o.title, item: "", section: "Materials", category: "Hardware & Materials", vendor: "", uom: "EA", price: 0, qty: 1 }, l)); });
+    return id;
+  }
+  // Original project (completed / approved) — the base of a program
+  var idCourtsOriginal = seedFull({ title: "Dubai Courts — Phase 1 CCTV", code: "DBC1", client: "Dubai Courts", stage: "Approved", hr: "Done", proc: "Done", budget: 300000, sap: "UXE/PRJ/DBC/001",
+    resources: [{ person: "A. Rahman", position: "Security Engineer", empId: "UXE-E-101", category: "Professional Services", startDate: "2026-11-01", endDate: "2026-12-31", salary: 11000, qty: 1, months: 2, util: 60 }],  // #5 committed 60% Nov–Dec
+    costlines: [{ item: "IP cameras", price: 780, qty: 40, vendor: "Hikvision" }], extra: { ProposalNo: "CP-2026-0004" } });
+  // at Costing (HR pending) — keeps HR/Procurement inboxes non-empty
+  seedFull({ title: "Dubai Courts — CCTV upgrade", code: "DBC", client: "Dubai Courts", stage: "Costing", owner: "hr@uxe.ai", budget: 300000, sap: "UXE/STA/DBC/002",
+    resources: [{ person: "A. Khan", position: "Security Engineer", salary: 0, qty: 2, months: 4, util: 100 }],
+    costlines: [{ item: "IP cameras", price: 0, qty: 40 }] });
+  // at Finance review — fully priced, SAP codes already mapped (happy-path: Finance can Approve now)
+  seedFull({ title: "Access Control — HQ Fit-out", code: "ACH", client: "Sample Customer LLC", stage: "Review-Finance", hr: "Done", proc: "Done", budget: 340000, owner: "finance@uxe.ai", sap: "UXE/PRJ/ACH/014",
+    start: "2026-10-01", sapMain: "ACH-2026",
+    sapMap: { "Professional Services": { mainCode: "ACH-2026", wbsCode: "ACH-2026.1.PS" }, "Project Management": { mainCode: "ACH-2026", wbsCode: "ACH-2026.2.PM" }, "Hardware & Materials": { mainCode: "ACH-2026", wbsCode: "ACH-2026.3.HW" } },
+    resources: [{ person: "A. Rahman", position: "Security Engineer", category: "Professional Services", salary: 12000, qty: 2, months: 4, util: 100 }, { person: "S. Pillai", position: "Project Manager", category: "Project Management", salary: 18000, qty: 1, months: 4, util: 60, marginPct: 60 }],
+    costlines: [{ item: "IP cameras (dome)", category: "Hardware & Materials", price: 850, qty: 24, marginPct: 35 }, { item: "Access controllers", category: "Hardware & Materials", price: 1400, qty: 6 }] });
+  // at Finance review — the user's example: SAP codes NOT yet mapped (gate demo: Finance must map every category before Approve)
+  seedFull({ title: "Dubai Municipality — Facial Recognition", code: "DMFR", client: "Dubai Municipality", stage: "Review-Finance", hr: "Done", proc: "Done", budget: 1250000, owner: "finance@uxe.ai", sap: "UXE/PRJ/DMFR/030",
+    start: "2026-10-05", sapMain: "DM-FR-2026-001",
+    resources: [
+      { person: "L. Haddad", position: "Frontend Engineer", category: "Frontend", salary: 16000, qty: 2, months: 5, util: 100 },
+      { person: "R. Nair", position: "Backend Engineer", category: "Backend", salary: 17000, qty: 3, months: 5, util: 100 },
+      { person: "S. Omar", position: "UI/UX Designer", category: "UI/UX", salary: 14000, qty: 1, months: 3, util: 80 },
+      { person: "D. Fahim", position: "Project Manager", category: "Project Management", salary: 20000, qty: 1, months: 5, util: 60 }
+    ],
+    costlines: [
+      { item: "GPU inference servers", category: "Infrastructure (Servers/Network/Firewall)", section: "Materials", price: 42000, qty: 3, vendor: "Dell" },
+      { item: "Perimeter firewalls", category: "Infrastructure (Servers/Network/Firewall)", section: "Materials", price: 18000, qty: 2, vendor: "Fortinet" },
+      { item: "Face-recognition licenses", category: "Software Licenses", section: "Other", price: 1200, qty: 50, vendor: "NEC" }
+    ] });
+  // EMCODE, partner-implemented software (IT review was skipped), in costing
+  seedFull({ title: "Smart Building — Tower B", code: "SBT", entity: "EMCODE", client: "Emaar", stage: "Costing", proc: "Done", owner: "hr@uxe.ai", budget: 880000, sap: "EMC/PRJ/SBT/003",
+    scenario: "partner", start: "2026-10-10",
+    resources: [{ person: "K. Das", position: "Automation Engineer", empId: "EMC-E-201", category: "Backend", salary: 14000, qty: 2, months: 3, util: 100 }],
+    costlines: [{ item: "BMS controllers", category: "Infrastructure (Servers/Network/Firewall)", price: 2200, qty: 30, vendor: "Siemens" }],
+    extra: { RequesterEmail: "requester.emc@emcode.ae", Requester: "Demo Requester (EMCODE)" } });  // owned by the EMCODE requester (segregation demo)
+  // CEO gate (margin < 30) — EXTENSION of the completed Dubai Courts Phase 1 (linked for reporting)
+  seedFull({ title: "Dubai Courts — Phase 2 extension", code: "CUC", client: "Dubai Courts", stage: "CEO-Approval", hr: "Done", proc: "Done", budget: 410000, rate: 22, owner: "ceo@uxe.ai", sap: "UXE/PRJ/CUC/021",
+    resources: [{ person: "M. Noor", position: "Security Engineer", salary: 11000, qty: 3, months: 5, util: 100 }],
+    costlines: [{ item: "PTZ cameras", price: 3200, qty: 20, vendor: "Axis" }], extra: { ParentRef: String(idCourtsOriginal) } });
+  // PM acceptance
+  seedFull({ title: "Perimeter Intrusion — Ph.2", code: "PIP", client: "Dubai Holding", stage: "PM-Acceptance", hr: "Done", proc: "Done", budget: 320000, owner: "pm@uxe.ai", sap: "UXE/PRJ/PIP/009",
+    resources: [{ person: "T. Aziz", position: "Technician", salary: 8000, qty: 3, months: 3, util: 100 }],
+    costlines: [{ item: "Fence sensors", price: 650, qty: 60, vendor: "Senstar" }] });
+  // Approved
+  seedFull({ title: "Barrier & ANPR — Logistics", code: "BAL", client: "DP World", stage: "Approved", hr: "Done", proc: "Done", budget: 270000, sap: "UXE/PRJ/BAL/017",
+    resources: [{ person: "R. Iyer", position: "Technician", salary: 7500, qty: 2, months: 2, util: 100 }],
+    costlines: [{ item: "ANPR barriers", price: 9500, qty: 4, vendor: "Nedap" }], extra: { ProposalNo: "CP-2026-0007" } });
+
+  /* ---------- pure logic (ported from backend) ---------- */
+  function benefitMonthly(salary) {
+    salary = +salary || 0; var m = 0;
+    DB.benefits.forEach(function (b) { var v = +b.value || 0;
+      if (b.kind === "salYrDays") m += salary * v / 365; else if (b.kind === "perYr") m += v / 12;
+      else if (b.kind === "perMo") m += v; else if (b.kind === "perValid") m += v / 24; });
+    return m;
+  }
+  // per-item % with project defaults: blank line value ("", null, undefined) inherits the project default; 0 is explicit.
+  function pctOf(v, d) { return (v === "" || v === undefined || v === null) ? (+d || 0) : (+v || 0); }
+  function lineBuild(direct, proj, line) {
+    var mode = proj.PricingMode || "margin";
+    var ind = pctOf(line.indPct, proj.IndirectPct);
+    var oh = pctOf(line.ohPct, proj.OverheadPct);
+    var mg = pctOf(line.marginPct, proj.Rate);
+    var indirect = direct * ind / 100;
+    var base = direct + indirect;
+    var overhead = base * oh / 100;
+    var cost = base + overhead;
+    var sell = (mode === "markup") ? cost * (1 + mg / 100) : (mg < 100 ? cost / (1 - mg / 100) : 0);
+    var marginPct = sell > 0 ? (sell - cost) / sell * 100 : 0;
+    return { direct: direct, indirect: indirect, base: base, overhead: overhead, cost: cost, sell: sell, marginPct: marginPct, ind: ind, oh: oh, mg: mg };
+  }
+  function computeTotals(proj, resources, costlines) {
+    var loaded = function (r) { return ((+r.salary || 0) + benefitMonthly(r.salary)) * (+r.qty || 0) * (+r.months || 0) * (+r.util || 0) / 100; };
+    var rLines = resources.map(function (r) { return Object.assign({ _id: r.id }, lineBuild(loaded(r), proj, r)); });
+    var cLines = costlines.map(function (l) { return Object.assign({ _id: l.id, _section: l.section || "Materials" }, lineBuild((+l.price || 0) * (+l.qty || 0), proj, l)); });
+    var sum = function (arr, k) { return arr.reduce(function (a, x) { return a + x[k]; }, 0); };
+    var personnel = sum(rLines, "direct");
+    var materials = cLines.filter(function (l) { return l._section === "Materials"; }).reduce(function (a, l) { return a + l.direct; }, 0);
+    var other = cLines.filter(function (l) { return l._section === "Other"; }).reduce(function (a, l) { return a + l.direct; }, 0);
+    var all = rLines.concat(cLines);
+    var direct = sum(all, "direct"), indirect = sum(all, "indirect"), overhead = sum(all, "overhead"), cost = sum(all, "cost"), price = sum(all, "sell");
+    var marginPct = price > 0 ? (price - cost) / price * 100 : 0;
+    return { personnel: personnel, materials: materials, other: other, direct: direct, indirect: indirect, base: direct + indirect, overhead: overhead, cost: cost, price: price, marginPct: marginPct, lines: { resource: rLines, costline: cLines } };
+  }
+  // #1 conditional routing helpers
+  function enterCosting(set, hasHR, hasProc) { set.HRStatus = hasHR ? "Pending" : "Done"; set.ProcStatus = hasProc ? "Pending" : "Done"; return (set.HRStatus === "Done" && set.ProcStatus === "Done") ? "Review-Finance" : "Costing"; }
+  function isPartner(pf) { return (pf.Scenario || "internal") === "partner"; }
+  // #4/#5 distinct work categories present on a costing (case-insensitive dedupe)
+  function distinctCategories(resources, costlines) { var seen = {}, out = []; (resources || []).concat(costlines || []).forEach(function (x) { var c = (x.category || "").trim(); if (c && !seen[c.toLowerCase()]) { seen[c.toLowerCase()] = 1; out.push(c); } }); return out; }
+  function parseMap(pf) { try { return JSON.parse(pf.SAPMap || "{}") || {}; } catch (e) { return {}; } }
+  // #3 every applicable category needs a Main Project Code + WBS code
+  function sapComplete(categories, map, mainDefault) { var missing = (categories || []).filter(function (c) { var m = map[c] || {}; return !((String(m.mainCode || "").trim() || String(mainDefault || "").trim()) && String(m.wbsCode || "").trim()); }); return { complete: missing.length === 0, missing: missing }; }
+  // ---- #5C/D resource availability engine (pure, date-accurate) ----
+  function dayNum(d) { var t = Date.parse((d || "") + "T00:00:00Z"); return isNaN(t) ? null : Math.floor(t / 86400000); }
+  function dayStr(n) { return new Date(n * 86400000).toISOString().slice(0, 10); }
+  function rangesOverlap(a1, a2, b1, b2) { return a1 <= b2 && b1 <= a2; }   // end 15th vs start 16th → NOT overlapping
+  function peakAllocation(assignments, start, end) {
+    var s = dayNum(start), e = dayNum(end); if (s === null || e === null || e < s) return 0;
+    var pts = [];
+    (assignments || []).forEach(function (a) { var as = dayNum(a.start), ae = dayNum(a.end); if (as === null || ae === null) return; if (!rangesOverlap(as, ae, s, e)) return; var cs = Math.max(as, s), ce = Math.min(ae, e); pts.push([cs, +a.alloc || 0]); pts.push([ce + 1, -(+a.alloc || 0)]); });
+    if (!pts.length) return 0;
+    pts.sort(function (x, y) { return x[0] - y[0] || x[1] - y[1]; });
+    var cur = 0, peak = 0; pts.forEach(function (p) { cur += p[1]; if (cur > peak) peak = cur; }); return peak;
+  }
+  function availabilityFor(assignments, start, end, capacity) {
+    capacity = capacity || 100; var s = dayNum(start), e = dayNum(end);
+    var relevant = (assignments || []).filter(function (a) { var as = dayNum(a.start), ae = dayNum(a.end); return as !== null && ae !== null && s !== null && e !== null && rangesOverlap(as, ae, s, e); });
+    var conflicts = relevant.map(function (a) { var as = dayNum(a.start), ae = dayNum(a.end); return { project: a.project, projectId: a.projectId, alloc: +a.alloc || 0, start: a.start, end: a.end, overlapStart: dayStr(Math.max(as, s)), overlapEnd: dayStr(Math.min(ae, e)) }; });
+    var committed = peakAllocation(relevant, start, end);
+    return { capacity: capacity, committed: committed, remaining: Math.max(0, capacity - committed), conflicts: conflicts };
+  }
+  function checkAllocation(assignments, start, end, requested, capacity) {
+    var a = availabilityFor(assignments, start, end, capacity); a.requested = +requested || 0; a.ok = a.requested <= a.remaining; a.over = Math.max(0, a.requested - a.remaining); return a;
+  }
+  var COMMITTED_STAGES = ["Approved"];   // #5D only approved assignments consume committed capacity (draft/rejected do not)
+  // Gather an employee's committed assignments (optionally excluding one project), respecting entity visibility for names.
+  function committedAssignments(empId, excludeProjectId, cur) {
+    var out = [];
+    DB.projects.forEach(function (p) {
+      if (COMMITTED_STAGES.indexOf(p.fields.Stage) < 0) return;
+      if (excludeProjectId && String(p.id) === String(excludeProjectId)) return;
+      kids(p.id, DB.resources).forEach(function (r) {
+        if (String(r.empId || "") !== String(empId) || !empId) return;
+        var visible = !cur || canSeeEntity(cur, p.fields.Entity);
+        // mask identity of a project in another entity (keep only alloc/dates needed for honest capacity math)
+        out.push({ project: visible ? (p.fields.Title || "") : "Restricted (other company)", projectId: visible ? p.id : null, alloc: +r.util || 0, start: r.startDate || "", end: r.endDate || "" });
+      });
+    });
+    return out;
+  }
+  var STAGE_OWNER = { "Draft": "requester", "Review-IT": "itmanager", "Costing": ["hr", "procurement"], "Review-Finance": "finance", "CEO-Approval": "ceo", "PM-Acceptance": "pm", "Approved": null };
+  var T = {
+    submit: { roles: ["requester"], from: ["Draft"], to: "Review-IT" },
+    it_approve: { roles: ["itmanager"], from: ["Review-IT"], to: "Costing", set: { HRStatus: "Pending", ProcStatus: "Pending" } },
+    it_return: { roles: ["itmanager"], from: ["Review-IT"], to: "Draft", comment: true },
+    hr_submit: { roles: ["hr"], from: ["Costing"], to: null },
+    hr_return: { roles: ["hr"], from: ["Costing"], to: "Draft", comment: true, set: { HRStatus: "Pending" } },
+    proc_submit: { roles: ["procurement"], from: ["Costing"], to: null },
+    proc_return: { roles: ["procurement"], from: ["Costing"], to: "Draft", comment: true, set: { ProcStatus: "Pending" } },
+    finance_approve: { roles: ["finance"], from: ["Review-Finance"], to: null },
+    finance_return: { roles: ["finance"], from: ["Review-Finance"], to: null, comment: true },
+    ceo_approve: { roles: ["ceo"], from: ["CEO-Approval"], to: "PM-Acceptance" },
+    ceo_reject: { roles: ["ceo"], from: ["CEO-Approval"], to: "Review-Finance", comment: true },
+    pm_accept: { roles: ["pm"], from: ["PM-Acceptance"], to: "Approved" },
+    pm_reject: { roles: ["pm"], from: ["PM-Acceptance"], to: "Review-Finance", comment: true }
+  };
+  var THRESHOLD = 30;
+  function applyTransition(pf, action, role, comment, totals, params, counts, sap) {
+    var def = T[action]; if (!def) return { error: "Unknown action." };
+    if (role !== "admin" && def.roles.indexOf(role) < 0) return { error: "Your role can't perform this action." };
+    var from = pf.Stage || "Draft";
+    if (def.from.indexOf(from) < 0) return { error: 'Action not allowed from stage "' + from + '".' };
+    if (def.comment && !(comment && comment.trim())) return { error: "A reason/comment is required." };
+    var hasHR = (!counts || counts.resources === undefined) ? true : counts.resources > 0;   // #1 HR costs present?
+    var hasProc = (!counts || counts.costlines === undefined) ? true : counts.costlines > 0;  // #1 material costs present?
+    var to = def.to, set = Object.assign({}, def.set || {});
+    if (action === "submit") { to = isPartner(pf) ? enterCosting(set, hasHR, hasProc) : "Review-IT"; }   // #1 partner skips IT
+    else if (action === "it_approve") { to = enterCosting(set, hasHR, hasProc); }                        // #1 auto-skip empty HR/Proc
+    else if (action === "hr_submit") { set.HRStatus = "Done"; to = (pf.ProcStatus === "Done") ? "Review-Finance" : "Costing"; }
+    else if (action === "proc_submit") { set.ProcStatus = "Done"; to = (pf.HRStatus === "Done") ? "Review-Finance" : "Costing"; }
+    else if (action === "finance_approve") { if (sap && sap.complete === false) return { error: "Enter SAP Main Project + WBS codes for all categories before approval. Missing: " + (sap.missing || []).join(", ") + "." }; if (params.mode) set.PricingMode = params.mode; if (params.rate !== undefined) set.Rate = +params.rate; set.SellingPrice = Math.round(totals.price); to = (totals.marginPct < THRESHOLD) ? "CEO-Approval" : "PM-Acceptance"; }
+    else if (action === "finance_return") { var tgt = params.target;
+      if (tgt === "hr") { to = "Costing"; set.HRStatus = "Pending"; }
+      else if (tgt === "proc") { to = "Costing"; set.ProcStatus = "Pending"; }
+      else if (tgt === "costing") { to = "Costing"; set.HRStatus = "Pending"; set.ProcStatus = "Pending"; }
+      else { to = "Draft"; } }
+    set.Stage = to;
+    return { ok: true, toStage: to, set: set, history: { Action: action, FromStage: from, ToStage: to, Comment: comment || "" } };
+  }
+  // access (ported)
+  var SCOPE_RES = ["person", "position", "type", "category", "qty", "months", "util", "empId", "startDate", "endDate"];  // #4 category + #5B assignment fields
+  var SCOPE_LINE = ["item", "section", "category", "uom", "qty"];
+  var PRICE_RES = ["marginPct", "indPct", "ohPct", "flagNote"];   // per-line pricing + flag (finance)
+  var PRICE_LINE = ["marginPct", "indPct", "ohPct", "flagNote"];
+  var COST_FIELDS = ["IndirectPct", "OverheadPct", "PricingMode", "Rate", "BudgetCap", "SellingPrice", "CEOThreshold"];
+  var SCOPE_FIELDS = ["Title", "Code", "Serial", "Entity", "Client", "Department", "PM", "Requester", "StartDate", "EndDate", "Support", "PaymentTerms", "CompanyCode", "Currency", "Classification", "SAPCode", "Stage", "HRStatus", "ProcStatus", "RequesterEmail", "CurrentOwnerEmail", "ProposalNo", "Budget", "ParentRef", "Scenario", "SAPMainCode", "SAPMap"];
+  // Serial (#2) is server-generated — readable but NOT in SCOPE_PROJ, so requesters can't write it.
+  var SCOPE_PROJ = ["Title", "Code", "Entity", "Client", "Department", "PM", "Requester", "StartDate", "EndDate", "Support", "PaymentTerms", "CompanyCode", "Currency", "Budget", "ParentRef", "Scenario", "AppExtra"];
+  var PROJECT_WRITE = {
+    requester: { "Draft": SCOPE_PROJ },
+    itmanager: { "Review-IT": SCOPE_PROJ.concat(["Classification", "SAPCode"]) },          // IT can correct scope while reviewing
+    finance: { "Review-Finance": ["IndirectPct", "OverheadPct", "PricingMode", "Rate", "BudgetCap", "Budget", "ParentRef", "Classification", "SAPCode", "SAPMainCode", "SAPMap", "AppExtra"] }, admin: { "*": "ALL" }  // #3/#4 finance sets SAP codes
+  };
+  var CHILD_WRITE = {
+    requester: { "Draft": { resource: SCOPE_RES, costline: SCOPE_LINE } },
+    itmanager: { "Review-IT": { resource: SCOPE_RES, costline: SCOPE_LINE } },             // IT can correct inputs
+    hr: { "Costing": { resource: ["salary"] } }, procurement: { "Costing": { costline: ["vendor", "price"] } },
+    finance: { "Review-Finance": { resource: ["salary"].concat(PRICE_RES), costline: ["vendor", "price"].concat(PRICE_LINE) } }, // finance may correct + set per-line pricing + flag
+    admin: { "*": { resource: "ALL", costline: "ALL" } }
+  };
+  function allowP(role, stage) { if (role === "admin") return "ALL"; var r = PROJECT_WRITE[role]; if (!r) return []; return r[stage] || r["*"] || []; }
+  function allowC(role, stage, kind) { if (role === "admin") return "ALL"; var r = CHILD_WRITE[role]; if (!r) return []; var s = r[stage] || r["*"]; if (!s) return []; return s[kind] || []; }
+  function filterPatch(role, stage, kind, patch) {
+    var allow = kind === "project" ? allowP(role, stage) : allowC(role, stage, kind);
+    if (allow === "ALL") return { ok: true, fields: patch };
+    var out = {}, bad = [];
+    Object.keys(patch || {}).forEach(function (k) { if (allow.indexOf(k) >= 0) out[k] = patch[k]; else bad.push(k); });
+    if (bad.length) return { ok: false, error: "Not allowed to edit: " + bad.join(", ") };
+    return { ok: true, fields: out };
+  }
+  function pickT(t, keys) { var o = {}; keys.forEach(function (k) { if (t[k] !== undefined) o[k] = t[k]; }); return o; }
+  function shape(role, pf, resources, costlines, totals) {
+    var full = role === "admin" || role === "finance";
+    var pick = function (o, ks) { var a = {}; ks.forEach(function (k) { if (o[k] !== undefined) a[k] = o[k]; }); return a; };
+    var proj = full ? pf : pick(pf, SCOPE_FIELDS.concat(role === "pm" ? ["SellingPrice"] : []));
+    var showSal = full || role === "hr", showPr = full || role === "procurement";
+    var lmap = {}; (totals.lines ? totals.lines.resource : []).forEach(function (x) { lmap["r" + x._id] = x; });
+    var cmap = {}; (totals.lines ? totals.lines.costline : []).forEach(function (x) { cmap["c" + x._id] = x; });
+    var res = resources.map(function (r) {
+      var b = { id: r.id, person: r.person, position: r.position, type: r.type, category: r.category, qty: r.qty, months: r.months, util: r.util, empId: r.empId, startDate: r.startDate, endDate: r.endDate };
+      var comp = lmap["r" + r.id];
+      if (showSal) { b.salary = r.salary; if (comp) b.loaded = comp.direct; if (r.flagNote) b.flagNote = r.flagNote; }   // #5 loaded cost -> HR/finance
+      if (full && comp) { b.marginPct = r.marginPct; b.indPct = r.indPct; b.ohPct = r.ohPct; b.lineCost = comp.cost; b.lineSell = comp.sell; b.lineMargin = comp.marginPct; b.effMg = comp.mg; b.effInd = comp.ind; b.effOh = comp.oh; }
+      return b;
+    });
+    var lines = costlines.map(function (l) {
+      var b = { id: l.id, item: l.item, section: l.section, category: l.category, uom: l.uom, qty: l.qty };
+      var comp = cmap["c" + l.id];
+      if (showPr) { b.price = l.price; b.vendor = l.vendor; if (comp) b.total = comp.direct; if (l.flagNote) b.flagNote = l.flagNote; }  // #5 line total -> Procurement/finance
+      if (full && comp) { b.marginPct = l.marginPct; b.indPct = l.indPct; b.ohPct = l.ohPct; b.lineCost = comp.cost; b.lineSell = comp.sell; b.lineMargin = comp.marginPct; b.effMg = comp.mg; b.effInd = comp.ind; b.effOh = comp.oh; }
+      return b;
+    });
+    var BUILD = ["personnel", "materials", "other", "direct", "indirect", "base", "overhead", "cost", "price", "marginPct"];
+    var t = {};
+    if (full) t = totals; else if (role === "pm") t = pickT(totals, ["personnel", "materials", "other", "cost", "price"]);
+    else if (role === "itmanager") t = pickT(totals, ["personnel", "materials", "other", "direct", "cost"]);
+    else if (role === "hr") t = pickT(totals, ["personnel"]); else if (role === "procurement") t = pickT(totals, ["materials", "other"]);
+    else if (role === "requester") t = pickT(totals, ["personnel", "materials", "other", "cost"]);  // aggregate cost only (no per-line, no price/margin) for the requester PDF
+    return { project: proj, resources: res, costlines: lines, totals: t, role: role };
+  }
+  // Role-scoped portfolio dashboard: budget consumption + balance for everyone; cost breakup only for finance/admin.
+  function waitsOn(f, role, email) {
+    if (role === "requester") return f.Stage === "Draft" && (f.RequesterEmail || "") === email;
+    if (role === "itmanager") return f.Stage === "Review-IT";
+    if (role === "hr") return f.Stage === "Costing" && f.HRStatus !== "Done";
+    if (role === "procurement") return f.Stage === "Costing" && f.ProcStatus !== "Done";
+    if (role === "finance") return f.Stage === "Review-Finance";
+    if (role === "ceo") return f.Stage === "CEO-Approval";
+    if (role === "pm") return f.Stage === "PM-Acceptance";
+    return false;
+  }
+  var WAITTEXT = { requester: "draft to submit", itmanager: "IT review", hr: "enter HR salaries", procurement: "enter vendor prices", finance: "set price & margin", ceo: "CEO approval (margin < 30%)", pm: "accept the approved costing" };
+  function dashboardData(cur, onlyEntity) {
+    var role = cur.role, email = cur.email;
+    var full = role === "admin" || role === "finance";
+    // #4 entity-scoped + #2 requester sees only own (both enforced by visibleProjects); onlyEntity = the toggled company
+    var list = visibleProjects(cur, onlyEntity);
+    var port = { budget: 0, consumed: 0, direct: 0, indirect: 0, overhead: 0, cost: 0, price: 0, count: list.length, pending: 0 };
+    // #2/#4 build the parent/program lookup ONLY from projects this user may see — a foreign ParentRef resolves to nothing, so no title can be enumerated across entities/owners
+    var byId = {}; list.forEach(function (p) { byId[String(p.id)] = p; });
+    function programRoot(p) { var seen = {}, cur = p; while (cur && cur.fields.ParentRef && byId[String(cur.fields.ParentRef)] && !seen[String(cur.id)]) { seen[String(cur.id)] = 1; cur = byId[String(cur.fields.ParentRef)]; } return cur ? String(cur.id) : String(p.id); }
+    var projects = list.map(function (p) {
+      var f = p.fields, t = computeTotals(f, kids(p.id, DB.resources), kids(p.id, DB.costlines));
+      var budget = +f.Budget || Math.round(t.price) || 0;
+      var consumed = Math.round(t.cost);
+      var avail = budget - consumed;
+      var pct = budget > 0 ? Math.round(consumed / budget * 100) : 0;
+      var wait = waitsOn(f, role, email);
+      if (wait) port.pending++;
+      port.budget += budget; port.consumed += consumed;
+      if (full) { port.direct += t.direct; port.indirect += t.indirect; port.overhead += t.overhead; port.cost += t.cost; port.price += t.price; }
+      var parent = f.ParentRef && byId[String(f.ParentRef)] ? byId[String(f.ParentRef)] : null;
+      var row = { id: p.id, name: f.Title || "(untitled)", client: f.Client || "", entity: f.Entity || "UXE", stage: f.Stage, budget: budget, consumed: consumed, available: avail, pct: pct, wait: wait, waitText: WAITTEXT[role] || "",
+        parentRef: f.ParentRef || "", parentName: parent ? (parent.fields.Title || "") : "", isExtension: !!parent, _root: programRoot(p) };
+      if (full) { row.margin = Math.round(t.marginPct || 0); row.cost = Math.round(t.cost); row.price = Math.round(t.price); }
+      return row;
+    });
+    // group original + extensions into programs (reporting only)
+    var pg = {};
+    projects.forEach(function (r) { (pg[r._root] = pg[r._root] || []).push(r); });
+    var rootName = {}; projects.forEach(function (r) { if (String(r.id) === r._root) rootName[r._root] = r.name; });
+    var programs = Object.keys(pg).filter(function (k) { return pg[k].length > 1; }).map(function (k) {
+      var ms = pg[k], budget = 0, consumed = 0;
+      ms.forEach(function (m) { budget += m.budget; consumed += m.consumed; });
+      var prog = { root: k, name: rootName[k] || (byId[k] ? byId[k].fields.Title : "Program"), count: ms.length, budget: budget, consumed: consumed, available: budget - consumed, pct: budget > 0 ? Math.round(consumed / budget * 100) : 0,
+        members: ms.map(function (m) { return { id: m.id, name: m.name, stage: m.stage, pct: m.pct, isExtension: m.isExtension, budget: m.budget, available: m.available }; }) };
+      if (full) { var cost = 0, price = 0; ms.forEach(function (m) { cost += (m.cost || 0); price += (m.price || 0); }); prog.cost = cost; prog.price = price; prog.margin = price > 0 ? Math.round((price - cost) / price * 100) : 0; }
+      return prog;
+    });
+    var portOut = { budget: port.budget, consumed: port.consumed, available: port.budget - port.consumed, pct: port.budget > 0 ? Math.round(port.consumed / port.budget * 100) : 0, count: port.count, pending: port.pending };
+    if (full) {
+      portOut.direct = Math.round(port.direct); portOut.indirect = Math.round(port.indirect); portOut.overhead = Math.round(port.overhead);
+      portOut.cost = Math.round(port.cost); portOut.price = Math.round(port.price);
+      portOut.marginAmt = Math.round(port.price - port.cost);
+      portOut.blendedMargin = port.price > 0 ? Math.round((port.price - port.cost) / port.price * 100) : 0;
+    }
+    return { role: role, full: full, portfolio: portOut, projects: projects, programs: programs };
+  }
+  // #7 Finance period-based cost report: costs by main project → category → resource/material, with totals.
+  function reportCosts(period, cur, onlyEntity) {
+    var list = visibleProjects(cur, onlyEntity).filter(function (p) { if (period === "all") return true; return String(p.fields.StartDate || "").slice(0, 7) === period; });  // #4 entity-scoped
+    var projects = list.map(function (p) {
+      var f = p.fields, rs = kids(p.id, DB.resources), ls = kids(p.id, DB.costlines), t = computeTotals(f, rs, ls), sapMap = parseMap(f);
+      var rl = {}; t.lines.resource.forEach(function (x) { rl["r" + x._id] = x; });
+      var cl = {}; t.lines.costline.forEach(function (x) { cl["c" + x._id] = x; });
+      var byCat = {};
+      function bucket(c) { c = c || "Uncategorised"; return (byCat[c] = byCat[c] || { category: c, resources: [], materials: [], planned: 0 }); }
+      rs.forEach(function (r) { var b = bucket(r.category); var d = (rl["r" + r.id] || {}).cost || 0; b.resources.push({ name: r.person || r.position || "—", qty: r.qty, months: r.months, cost: Math.round(d) }); b.planned += d; });
+      ls.forEach(function (l) { var b = bucket(l.category); var d = (cl["c" + l.id] || {}).cost || 0; b.materials.push({ name: l.item || "—", qty: l.qty, cost: Math.round(d) }); b.planned += d; });
+      var cats = Object.keys(byCat).map(function (c) { var o = byCat[c], m = sapMap[c] || {}; return { category: c, mainCode: m.mainCode || f.SAPMainCode || "", wbsCode: m.wbsCode || "", planned: Math.round(o.planned), actual: null, resources: o.resources, materials: o.materials }; });
+      return { id: p.id, name: f.Title, client: f.Client, entity: f.Entity, stage: f.Stage, sapMain: f.SAPMainCode || "", total: Math.round(t.cost), price: Math.round(t.price), categories: cats };
+    });
+    var grand = projects.reduce(function (a, p) { return a + p.total; }, 0);
+    // periods available (distinct YYYY-MM from project start dates)
+    var ps = {}; visibleProjects(cur, onlyEntity).forEach(function (p) { var k = String(p.fields.StartDate || "").slice(0, 7); if (k) ps[k] = 1; });
+    return { period: period, periods: Object.keys(ps).sort(), projects: projects, grandTotal: grand, note: "Planned (committed) cost shown. Actual spend populates from SAP S/4HANA via OData once connected." };
+  }
+  function buildProposalLines(totals, vatPct) {
+    vatPct = vatPct || 5; var price = Math.round(+totals.price || 0), cost = +totals.cost || 0;
+    var parts = [{ code: "SVC-001", desc: "Professional services", base: +totals.personnel || 0 }, { code: "MAT-001", desc: "Materials & equipment", base: +totals.materials || 0 }, { code: "SUP-001", desc: "Support & other services", base: +totals.other || 0 }].filter(function (p) { return p.base > 0; });
+    var lines;
+    if (!parts.length || cost <= 0) lines = [{ code: "PRJ-001", desc: "Project delivery (turnkey)", qty: 1, uom: "LOT", net: price }];
+    else { lines = parts.map(function (p) { return { code: p.code, desc: p.desc, qty: 1, uom: "LOT", net: Math.round(price * p.base / cost) }; }); var diff = price - lines.reduce(function (a, l) { return a + l.net; }, 0); if (diff) lines[lines.length - 1].net += diff; }
+    var subtotal = lines.reduce(function (a, l) { return a + l.net; }, 0), vat = Math.round(subtotal * vatPct) / 100;
+    return { lines: lines, subtotal: subtotal, vatPct: vatPct, vat: vat, total: subtotal + vat };
+  }
+
+  /* ---------- helpers ---------- */
+  function member(email) { email = (email || "").toLowerCase(); return DB.members.filter(function (m) { return m.email === email; })[0]; }
+  function proj(id) { return DB.projects.filter(function (p) { return String(p.id) === String(id); })[0]; }
+  function kids(id, arr) { var p = proj(id); if (!p) return []; return arr.filter(function (x) { return x.projectId === p.id; }); }  // match by id ONLY — title match cross-contaminated same-named drafts
+  // #2/#4 access control — enforced server-side so URL/ID manipulation can't bypass it
+  function curEntities(cur) { return (cur && cur.entities) ? cur.entities : ["UXE"]; }
+  function canSeeEntity(cur, entity) { return curEntities(cur).indexOf(entity || "UXE") >= 0; }           // #4 entity segregation
+  function ownsProject(cur, pf) { return cur.role === "requester" ? ((pf.RequesterEmail || "") === cur.email) : true; } // #2 requester owns only their own
+  function canAccessProject(cur, pf) { return !!pf && canSeeEntity(cur, pf.Entity) && ownsProject(cur, pf); }
+  // visible project list for the current user (used by every list endpoint)
+  function visibleProjects(cur, onlyEntity) { return DB.projects.filter(function (p) { if (!canAccessProject(cur, p.fields)) return false; if (onlyEntity && canSeeEntity(cur, onlyEntity) && (p.fields.Entity || "UXE") !== onlyEntity) return false; return true; }); }
+  function guardProject(cur, P) { if (!P || !canAccessProject(cur, P.fields)) throw err(404, "Not found."); return P; } // 404, not 403, so existence isn't leaked
+  var CUR = null;
+  // demo always starts at a clean login
+  try { sessionStorage.removeItem("cp_tok"); sessionStorage.removeItem("cp_user"); } catch (e) {}
+  try { var _a = document.getElementById("app"), _g = document.getElementById("gate"); if (_a) _a.classList.add("hidden"); if (_g) _g.style.display = "flex"; } catch (e) {}
+
+  /* ---------- the mock api ---------- */
+  function err(status, msg) { var e = new Error(msg); e.status = status; return e; }
+  window.api = async function (path, opts) {
+    opts = opts || {}; var method = opts.method || "GET", body = opts.body || {};
+    var u = path.split("?")[0], parts = u.split("/").filter(Boolean);
+    var QS = {}; (path.split("?")[1] || "").split("&").forEach(function (kv) { var a = kv.split("="); if (a[0]) QS[a[0]] = decodeURIComponent(a[1] || ""); });  // query params (entity, period, …)
+    await new Promise(function (r) { setTimeout(r, 120); }); // tiny latency so it feels real
+
+    if (u === "/auth/request-otp") { if (!member(body.email)) return { ok: true, message: "Demo — this email isn't in the member list. Try requester@uxe.ai, finance@uxe.ai, or bassam.youssef@uxe.ai (code 000000)." }; return { ok: true, message: "Demo mode — your code is 000000." }; }
+    if (u === "/auth/verify-otp") { var m = member(body.email); if (!m) throw err(403, "Not authorised."); if (String(body.code).trim() !== CODE) throw err(401, "Incorrect code (demo code is 000000)."); CUR = { email: m.email, role: m.role, name: m.name, entity: m.entity, entities: (m.entities || [m.entity || "UXE"]).slice() }; return { token: "demo." + m.email, user: CUR }; }
+    if (!CUR) throw err(401, "Not signed in.");
+    if (u === "/auth/me") return CUR;
+    if (u === "/dashboard" && method === "GET") return dashboardData(CUR, QS.entity);
+    if (u === "/reports/costs" && method === "GET") {  // #7 finance period report
+      if (["finance", "admin"].indexOf(CUR.role) < 0) throw err(403, "Finance only.");
+      return reportCosts(QS.period || "all", CUR, QS.entity);   // #4 entity-filtered
+    }
+    if (u === "/projects/options" && method === "GET") {
+      return visibleProjects(CUR, QS.entity).map(function (p) { return { id: p.id, title: p.fields.Title, code: p.fields.Code, entity: p.fields.Entity, stage: p.fields.Stage }; });
+    }
+
+    if (u === "/masters" && method === "GET") return { positions: DB.positions.slice(), benefits: DB.benefits.slice(), matrix: DB.matrix.slice(), domains: DB.domains.slice(), categories: DB.categories.slice() };
+    // #4/#5 admin-editable category master
+    if (u === "/masters/category" && method === "POST") {
+      if (["admin", "finance"].indexOf(CUR.role) < 0) throw err(403, "Only admin/finance can edit categories.");
+      var nc = (body.name || "").trim(); if (!nc) throw err(400, "Category name required.");
+      if (DB.categories.map(function (c) { return c.toLowerCase(); }).indexOf(nc.toLowerCase()) >= 0) throw err(400, "That category already exists.");  // #5 no duplicates
+      DB.categories.push(nc); return { ok: true, categories: DB.categories.slice() };
+    }
+    if (u === "/masters/category" && method === "DELETE") {
+      if (["admin", "finance"].indexOf(CUR.role) < 0) throw err(403, "Only admin/finance can edit categories.");
+      DB.categories = DB.categories.filter(function (c) { return c.toLowerCase() !== (body.name || "").toLowerCase(); }); return { ok: true, categories: DB.categories.slice() };
+    }
+    // ---- #5A HR resource master (per entity) ----
+    if (u === "/resources-master" && method === "GET") {
+      return DB.resourceMaster.filter(function (r) { return canSeeEntity(CUR, r.entity); })   // #4 only your entities
+        .map(function (r) { return Object.assign({}, r); });
+    }
+    if (u === "/resources-master" && method === "POST") {
+      if (["hr", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only HR / admin can manage the resource master.");
+      if (!canSeeEntity(CUR, body.entity)) throw err(403, "You are not authorised for " + (body.entity || "that company") + ".");
+      var rid = nid(); DB.resourceMaster.push({ id: rid, empId: body.empId || "", name: body.name || "", designation: body.designation || "", entity: body.entity || "UXE", availability: (body.availability === undefined ? 100 : +body.availability) });
+      return { id: rid };
+    }
+    if (u === "/resources-master/bulk" && method === "POST") {   // bulk CSV/Excel upload
+      if (["hr", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only HR / admin can upload resources.");
+      var rows = body.rows || [], added = 0, updated = 0, skipped = [];
+      rows.forEach(function (row) {
+        var entity = row.entity || "UXE";
+        if (!canSeeEntity(CUR, entity)) { skipped.push((row.empId || row.name || "?") + " (not your company)"); return; }
+        var ex = DB.resourceMaster.filter(function (x) { return x.empId && row.empId && String(x.empId).toLowerCase() === String(row.empId).toLowerCase() && x.entity === entity; })[0];
+        if (ex) { ex.name = row.name || ex.name; ex.designation = row.designation || ex.designation; if (row.availability !== undefined && row.availability !== "") ex.availability = +row.availability; updated++; }
+        else { DB.resourceMaster.push({ id: nid(), empId: row.empId || "", name: row.name || "", designation: row.designation || "", entity: entity, availability: (row.availability === undefined || row.availability === "") ? 100 : +row.availability }); added++; }
+      });
+      return { ok: true, added: added, updated: updated, skipped: skipped };
+    }
+    if (parts[0] === "resources-master" && parts[1] && parts[1] !== "bulk") {
+      var rrow = DB.resourceMaster.filter(function (x) { return String(x.id) === parts[1]; })[0]; if (!rrow) throw err(404, "Not found.");
+      if (["hr", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only HR / admin can edit the resource master.");
+      if (!canSeeEntity(CUR, rrow.entity)) throw err(403, "Not your company.");
+      if (method === "PATCH") { ["empId", "name", "designation", "entity", "availability"].forEach(function (k) { if (body[k] !== undefined) rrow[k] = (k === "availability") ? +body[k] : body[k]; }); return { ok: true }; }
+      if (method === "DELETE") { DB.resourceMaster.splice(DB.resourceMaster.indexOf(rrow), 1); return { ok: true }; }
+    }
+    // ---- #5C/D availability check ----
+    if (u === "/availability" && method === "GET") {
+      var qp = {}; (path.split("?")[1] || "").split("&").forEach(function (kv) { var a = kv.split("="); qp[a[0]] = decodeURIComponent(a[1] || ""); });
+      var empId = qp.empId || "", master = DB.resourceMaster.filter(function (x) { return String(x.empId) === String(empId); })[0];
+      if (empId && master && !canSeeEntity(CUR, master.entity)) throw err(403, "Not your company.");
+      var asg = committedAssignments(empId, qp.exclude, CUR);
+      var cap = master ? (master.availability || 100) : 100;
+      var res = qp.requested !== undefined && qp.requested !== "" ? checkAllocation(asg, qp.start, qp.end, qp.requested, cap) : availabilityFor(asg, qp.start, qp.end, cap);
+      res.empId = empId; res.name = master ? master.name : "";
+      return res;
+    }
+    // ---- #3/#4 admin user / role / company management ----
+    if (u === "/admin/users" && method === "GET") {
+      if (CUR.role !== "admin") throw err(403, "Admin only.");
+      return DB.members.map(function (m) { return { email: m.email, name: m.name, role: m.role, entities: (m.entities || [m.entity || "UXE"]).slice() }; });
+    }
+    if (u === "/admin/users" && method === "POST") {
+      if (CUR.role !== "admin") throw err(403, "Admin only.");
+      var em = (body.email || "").toLowerCase().trim(); if (!em) throw err(400, "Email required.");
+      if (member(em)) throw err(400, "That user already exists.");
+      var ents = (body.entities && body.entities.length) ? body.entities : ["UXE"];
+      DB.members.push({ email: em, name: body.name || em, entity: ents[0], role: body.role || "requester", entities: ents.slice() });
+      return { ok: true };
+    }
+    if (parts[0] === "admin" && parts[1] === "users" && parts[2] && method === "PATCH") {
+      if (CUR.role !== "admin") throw err(403, "Admin only.");
+      var tgt = member(decodeURIComponent(parts[2])); if (!tgt) throw err(404, "User not found.");
+      // safety: an admin can't demote themselves, and the last admin can't be demoted (lock-out prevention)
+      if (body.role !== undefined && body.role !== "admin" && tgt.role === "admin") {
+        if (String(tgt.email).toLowerCase() === String(CUR.email).toLowerCase()) throw err(400, "You can't change your own admin role.");
+        if (DB.members.filter(function (m) { return m.role === "admin"; }).length <= 1) throw err(400, "At least one admin must remain.");
+      }
+      if (body.role !== undefined) tgt.role = body.role;
+      if (body.name !== undefined) tgt.name = body.name;
+      if (body.entities !== undefined) { tgt.entities = (body.entities.length ? body.entities : ["UXE"]).slice(); tgt.entity = tgt.entities[0]; }
+      return { ok: true };
+    }
+    if (parts[0] === "masters" && parts.length >= 2) {
+      var kind = parts[1], coll = kind === "position" ? DB.positions : kind === "benefit" ? DB.benefits : DB.matrix;
+      var roleOk = (kind === "classification") ? ["finance", "admin"] : ["hr", "finance", "admin"];
+      if (CUR.role !== "admin" && roleOk.indexOf(CUR.role) < 0) throw err(403, "Not permitted for your role.");
+      if (method === "POST") { var o = Object.assign({ id: nid() }, body); coll.push(o); return { id: o.id }; }
+      var row = coll.filter(function (x) { return String(x.id) === parts[2]; })[0]; if (!row) throw err(404, "Not found.");
+      if (method === "PATCH") { Object.assign(row, body); return { ok: true }; }
+      if (method === "DELETE") { coll.splice(coll.indexOf(row), 1); return { ok: true }; }
+    }
+
+    if (u === "/projects/inbox") {
+      var role = CUR.role, email = CUR.email;
+      return visibleProjects(CUR, QS.entity).filter(function (p) { var f = p.fields;   // #4 entity-scoped
+        if (role === "admin" || role === "finance") return true;
+        if (role === "requester") return (f.RequesterEmail || "") === email;
+        if (role === "itmanager") return f.Stage === "Review-IT";
+        if (role === "hr") return f.Stage === "Costing" && f.HRStatus !== "Done";
+        if (role === "procurement") return f.Stage === "Costing" && f.ProcStatus !== "Done";
+        if (role === "ceo") return f.Stage === "CEO-Approval";
+        if (role === "pm") return f.Stage === "PM-Acceptance"; return false;
+      }).map(function (p) { return { id: p.id, title: p.fields.Title, entity: p.fields.Entity, client: p.fields.Client, stage: p.fields.Stage, requester: p.fields.RequesterEmail }; });
+    }
+    if (u === "/projects" && method === "POST") {
+      var ent = body.entity || CUR.entity || "UXE";
+      if (!canSeeEntity(CUR, ent)) throw err(403, "You are not authorised for " + ent + ".");   // #4
+      var id = nid(); var scen = (body.scenario === "partner") ? "partner" : "internal";  // #1 scenario at creation
+      DB.projects.push({ id: id, fields: { Title: body.title || "Untitled project", Serial: nextSerial(), Entity: ent, Scenario: scen, Stage: "Draft", HRStatus: "Pending", ProcStatus: "Pending", RequesterEmail: CUR.email, Requester: CUR.name, CurrentOwnerEmail: CUR.email, Currency: "AED", PricingMode: "margin", Rate: 45, OverheadPct: 20, IndirectPct: 8, Budget: 0, ParentRef: "", SAPMainCode: "", SAPMap: "{}" } }); return { id: id };  // #2 server-assigned serial
+    }
+    if (parts[0] === "projects" && parts[1] && parts.length === 2) {
+      var P = guardProject(CUR, proj(parts[1]));   // #2/#4 access guard (404 if not yours/your entity)
+      if (method === "GET") { var rs = kids(P.id, DB.resources), ls = kids(P.id, DB.costlines), tot = computeTotals(P.fields, rs, ls); return shape(CUR.role, P.fields, rs, ls, tot); }
+      if (method === "PATCH") { var chk = filterPatch(CUR.role, P.fields.Stage, "project", (body.fields) || {}); if (!chk.ok) throw err(403, chk.error); Object.assign(P.fields, chk.fields); return { ok: true }; }
+    }
+    if (parts[0] === "projects" && parts[2] === "history") { guardProject(CUR, proj(parts[1])); return DB.history.filter(function (h) { return String(h.ProjectRef) === String(parts[1]); }).sort(function (a, b) { return new Date(a.At) - new Date(b.At); }).map(function (h) { return { actor: h.Actor, action: h.Action, from: h.FromStage, to: h.ToStage, comment: h.Comment, at: h.At }; }); }
+    if (parts[0] === "projects" && parts[2] === "transition") {
+      var P2 = guardProject(CUR, proj(parts[1]));
+      var rs2 = kids(P2.id, DB.resources), ls2 = kids(P2.id, DB.costlines), tot2 = computeTotals(P2.fields, rs2, ls2);
+      // #5D server-side over-allocation guard on submit (bypass-proof; admin may override as an exception)
+      if (body.action === "submit" && CUR.role !== "admin") {
+        var over = [];
+        rs2.forEach(function (r) {
+          if (!r.empId || !r.startDate || !r.endDate || !(+r.util > 0)) return;
+          var mx = DB.resourceMaster.filter(function (x) { return String(x.empId) === String(r.empId); })[0];
+          var chk = checkAllocation(committedAssignments(r.empId, P2.id, CUR), r.startDate, r.endDate, r.util, mx ? (mx.availability || 100) : 100);
+          if (!chk.ok) over.push((r.person || r.empId) + " (" + chk.requested + "% requested, only " + chk.remaining + "% free)");
+        });
+        if (over.length) throw err(409, "Resource over-allocation — submission blocked: " + over.join("; ") + ". Reduce allocation or shorten dates (an admin may submit as an authorised exception).");
+      }
+      var sap2 = sapComplete(distinctCategories(rs2, ls2), parseMap(P2.fields), P2.fields.SAPMainCode);  // #3 SAP gate (per-cat main inherits project main)
+      var r = applyTransition(P2.fields, body.action, CUR.role, body.comment, tot2, body.params || {}, { resources: rs2.length, costlines: ls2.length }, sap2);
+      if (!r.ok) throw err(400, r.error);
+      var owners = STAGE_OWNER[r.toStage]; var ownerRoles = owners ? (Array.isArray(owners) ? owners : [owners]) : [];
+      var ownerEmail = DB.members.filter(function (m) { return ownerRoles.indexOf(m.role) >= 0; }).map(function (m) { return m.email; })[0] || "";
+      Object.assign(P2.fields, r.set, { CurrentOwnerEmail: ownerEmail });
+      DB.history.push({ ProjectRef: String(P2.id), Actor: CUR.email, Action: r.history.Action, FromStage: r.history.FromStage, ToStage: r.history.ToStage, Comment: r.history.Comment, At: new Date().toISOString() });
+      return { ok: true, toStage: r.toStage };
+    }
+    if (parts[0] === "projects" && (parts[2] === "resources" || parts[2] === "costlines") && method === "POST") {
+      var P3 = guardProject(CUR, proj(parts[1])); var kind2 = parts[2] === "resources" ? "resource" : "costline";
+      var chk3 = filterPatch(CUR.role, P3.fields.Stage, kind2, body); if (!chk3.ok) throw err(403, chk3.error);
+      var row3 = Object.assign({ id: nid(), projectId: P3.id, projectTitle: P3.fields.Title }, (kind2 === "resource" ? { person: "", position: "", type: "", category: "", empId: "", startDate: "", endDate: "", salary: 0, qty: 1, months: 1, util: 100 } : { item: "", section: "Materials", category: "", vendor: "", uom: "", price: 0, qty: 1 }), chk3.fields);
+      (kind2 === "resource" ? DB.resources : DB.costlines).push(row3); return { id: row3.id };
+    }
+    if ((parts[0] === "resources" || parts[0] === "costlines") && parts[1]) {
+      var kind4 = parts[0] === "resources" ? "resource" : "costline", coll4 = parts[0] === "resources" ? DB.resources : DB.costlines;
+      var row4 = coll4.filter(function (x) { return String(x.id) === parts[1]; })[0]; if (!row4) throw err(404, "Not found.");
+      var P4 = guardProject(CUR, proj(row4.projectId));   // #2/#4 can only touch lines of a project you may access
+      if (method === "PATCH") { var chk4 = filterPatch(CUR.role, P4.fields.Stage, kind4, body); if (!chk4.ok) throw err(403, chk4.error); Object.assign(row4, chk4.fields); return { ok: true }; }
+      if (method === "DELETE") { if (["requester", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only the requester can remove scope lines."); coll4.splice(coll4.indexOf(row4), 1); return { ok: true }; }
+    }
+    if (parts[0] === "projects" && parts[2] === "proposal" && method === "POST") {
+      var P5 = guardProject(CUR, proj(parts[1]));
+      if (["requester", "finance", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only requester or finance can create a proposal.");
+      if (P5.fields.Stage !== "Approved") throw err(400, "Only approved costing sheets can be converted to a proposal.");
+      if (!P5.fields.ProposalNo) { var yr = new Date().getFullYear(); var ex = DB.projects.map(function (p) { return p.fields.ProposalNo; }).filter(Boolean); var max = 0; ex.forEach(function (n) { var mm = (n || "").match(new RegExp("^CP-" + yr + "-(\\d+)$")); if (mm) max = Math.max(max, +mm[1]); }); P5.fields.ProposalNo = "CP-" + yr + "-" + String(max + 1).padStart(4, "0"); }
+      var tot5 = computeTotals(P5.fields, kids(P5.id, DB.resources), kids(P5.id, DB.costlines)); var priced = buildProposalLines(tot5);
+      var now = new Date(), until = new Date(now.getTime() + 30 * 86400000);
+      return Object.assign({ proposalNo: P5.fields.ProposalNo, entity: P5.fields.Entity || "UXE", date: now.toISOString().slice(0, 10), validDays: 30, validUntil: until.toISOString().slice(0, 10), currency: P5.fields.Currency || "AED", subject: P5.fields.Title || "", customer: { name: P5.fields.Client || "", ref: "", contact: "", phoneEmail: "", address: "" }, commercial: { paymentTerms: P5.fields.PaymentTerms || "30% advance, 70% on completion", warranty: "12 months", delivery: "As per project plan", advance: "30%" } }, priced);
+    }
+    throw err(404, "Demo: endpoint not implemented (" + method + " " + u + ").");
+  };
+
+  // demo banner
+  window.addEventListener("DOMContentLoaded", function () {
+    var b = document.createElement("div");
+    b.textContent = "DEMO — mock data, no SharePoint/email · sign-in code 000000 · try requester@uxe.ai then finance@uxe.ai / bassam.youssef@uxe.ai (admin can do every step)";
+    b.style.cssText = "position:fixed;bottom:0;left:0;right:0;background:#ff8b00;color:#1a1200;font:12px/1.4 system-ui;padding:6px 12px;text-align:center;z-index:300";
+    document.body.appendChild(b);
+  });
+})();
+
 </script>
 </body>
 </html>
