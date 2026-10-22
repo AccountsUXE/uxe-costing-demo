@@ -136,6 +136,12 @@ tr.flagged td{background:var(--crit-bg)!important}
 .catrow td{background:var(--surface-2);border-top:1.5px solid var(--line)}
 .totrow td{border-top:2px solid var(--fg);font-size:13.5px}
 .subrow td{font-size:12.5px}
+/* #5 availability chips */
+.availchip{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px;white-space:nowrap}
+.availchip.good{background:var(--accent-weak,#e2f3e9);color:#1f7a46}
+.availchip.bad{background:#fdecea;color:#c0392b}
+.availgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:8px}
+@media(max-width:620px){.availgrid{grid-template-columns:1fr 1fr}}
 /* cost build-up (#7) */
 .build{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
 .build .st{flex:1;min-width:120px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--surface-2)}
@@ -291,8 +297,8 @@ tr.flagged td{background:var(--crit-bg)!important}
     <div class="rlogo"><img id="brandLogo" src="data:image/png;base64,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" alt="brand"></div>
     <div class="rsec">MENU</div>
     <nav id="railnav"></nav>
-    <div class="rdiv"></div>
-    <div class="rsec">ENTITY</div>
+    <div class="rdiv" id="entDiv"></div>
+    <div class="rsec" id="entSec">ENTITY</div>
     <div class="rent"><button id="entUXE" class="on" type="button">UXE</button><button id="entEMC" type="button">EMCODE</button></div>
     <div class="ruser">
       <span class="av" id="userAv">—</span>
@@ -416,11 +422,17 @@ function enterApp(){
   $("#userRole").textContent=(ROLE_LABEL[S.user.role]||S.user.role);
   $("#userAv").textContent=initials(S.user.name||S.user.email);
   $("#navNew").style.display=(S.user.role==="requester"||S.user.role==="admin")?"":"none";
+  // #4 entity switch only offers the companies this user is assigned to
+  var ents=(S.user.entities&&S.user.entities.length)?S.user.entities:[S.user.entity||"UXE"];
   var eu=$("#entUXE"),em=$("#entEMC");
-  if(eu)eu.onclick=function(){setBrand("UXE")};
-  if(em)em.onclick=function(){setBrand("EMCODE")};
+  if(eu){eu.style.display=(ents.indexOf("UXE")>=0)?"":"none";eu.onclick=function(){setBrand("UXE")};}
+  if(em){em.style.display=(ents.indexOf("EMCODE")>=0)?"":"none";em.onclick=function(){setBrand("EMCODE")};}
+  var single=(ents.length<2);
+  var rent=document.querySelector(".rent");if(rent)rent.style.display=single?"none":"";
+  if($("#entSec"))$("#entSec").style.display=single?"none":"";
+  if($("#entDiv"))$("#entDiv").style.display=single?"none":"";
   buildTabs();
-  S.project=null;S.tab="dashboard";setBrand(S.user.entity);renderTab();markTabs();
+  S.project=null;S.tab="dashboard";setBrand(ents.indexOf(S.user.entity)>=0?S.user.entity:ents[0]);renderTab();markTabs();
 }
 
 /* ================= RAIL NAV ================= */
@@ -429,15 +441,19 @@ var RAIL_ICON={
   costing:"<svg width='20' height='20' viewBox='0 0 24 24' fill='none'><path d='M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z' stroke='currentColor' stroke-width='1.7'/><path d='M14 3v5h5M9 13h6M9 17h6' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'/></svg>",
   hr:"<svg width='20' height='20' viewBox='0 0 24 24' fill='none'><circle cx='9' cy='8' r='3.2' stroke='currentColor' stroke-width='1.7'/><path d='M3.5 20a5.5 5.5 0 0 1 11 0M16 5.5a3 3 0 0 1 0 5.8M17 20a5 5 0 0 0-3-4.6' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'/></svg>",
   finance:"<svg width='20' height='20' viewBox='0 0 24 24' fill='none'><rect x='3' y='6' width='18' height='13' rx='2' stroke='currentColor' stroke-width='1.7'/><path d='M3 10h18M7 15h4' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'/></svg>",
-  reports:"<svg width='20' height='20' viewBox='0 0 24 24' fill='none'><path d='M4 20V10M10 20V4M16 20v-7M22 20H2' stroke='currentColor' stroke-width='1.8' stroke-linecap='round'/></svg>"
+  reports:"<svg width='20' height='20' viewBox='0 0 24 24' fill='none'><path d='M4 20V10M10 20V4M16 20v-7M22 20H2' stroke='currentColor' stroke-width='1.8' stroke-linecap='round'/></svg>",
+  resources:"<svg width='20' height='20' viewBox='0 0 24 24' fill='none'><circle cx='12' cy='7' r='3.5' stroke='currentColor' stroke-width='1.7'/><path d='M5 20a7 7 0 0 1 14 0' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'/></svg>",
+  admin:"<svg width='20' height='20' viewBox='0 0 24 24' fill='none'><path d='M12 3l7 3v5c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3Z' stroke='currentColor' stroke-width='1.7' stroke-linejoin='round'/><path d='M9 12l2 2 4-4' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/></svg>"
 };
 function visibleTabs(){
   var r=S.user.role, t=[];
   t.push(["dashboard","Dashboard"]);
   t.push(["costing","Costings"]);
+  if(r==="hr"||r==="admin")t.push(["resources","Resources"]);    // #5A HR resource master
   if(r==="hr"||r==="finance"||r==="admin")t.push(["hr","HR masters"]);
   if(r==="finance"||r==="admin")t.push(["finance","Finance"]);
   if(r==="finance"||r==="admin")t.push(["reports","Reports"]);   // #7 period cost reporting
+  if(r==="admin")t.push(["admin","Admin"]);                      // #3/#4 admin console
   return t;
 }
 function buildTabs(){
@@ -449,13 +465,15 @@ function buildTabs(){
   });
   markTabs();
 }
-var TAB_TITLE={dashboard:"Dashboard",costing:"Costings",hr:"HR masters",finance:"Finance",reports:"Finance reports"};
+var TAB_TITLE={dashboard:"Dashboard",costing:"Costings",hr:"HR masters",finance:"Finance",reports:"Finance reports",resources:"Resource master",admin:"Admin console"};
 function markTabs(){Array.prototype.forEach.call($("#railnav").children,function(b){b.classList.toggle("on",b._key===S.tab)});var pt=$("#pageTitle");if(pt)pt.textContent=TAB_TITLE[S.tab]||"Dashboard";}
 
 /* ================= placeholder renderers (filled next) ================= */
 function renderTab(){ var v=$("#view"); v.innerHTML="";
   if(S.tab==="dashboard"){ setBrand(S.user.entity); return renderDashboard(v); }
   if(S.tab==="reports"){ setBrand(S.user.entity); return renderReports(v); }   // #7 standalone finance screen
+  if(S.tab==="resources"){ setBrand(S.user.entity); return renderResourceMaster(v); }  // #5A
+  if(S.tab==="admin"){ setBrand(S.user.entity); return renderAdmin(v); }               // #3/#4
   if(S.tab==="finance"&&!S.project){ setBrand(S.user.entity); return renderFinance(v); }
   if(S.tab==="hr"&&!S.project){ setBrand(S.user.entity); return renderHRMasters(v); }
   if(!S.project){ v.appendChild(el("div",{class:"card"},[el("div",{class:"body",text:"Open an item from your inbox, or create a new costing."})])); return; }
@@ -481,7 +499,7 @@ async function showInbox(){
   }catch(e){toast(e.message);}
 }
 async function openProject(id){
-  try{S._comment="";S.project=await api("/projects/"+id);S.project.id=id;try{await getMasters();}catch(e){}S.tab="costing";markTabs();renderTab();}
+  try{S._comment="";S.project=await api("/projects/"+id);S.project.id=id;try{await getMasters();}catch(e){}try{S._resMaster=await api("/resources-master");}catch(e){S._resMaster=[];}S.tab="costing";markTabs();renderTab();}
   catch(e){toast(e.message);}
 }
 $("#navInbox").onclick=showInbox;
@@ -551,7 +569,11 @@ var HINTS={
   type:"Staff, sub-contractor, etc.",
   qty:"How many people of this position.",
   months:"Number of months each person is engaged.",
-  util:"% of full time spent on this project (100 = full-time).",
+  util:"Allocation % of this resource to this project for the period (20/40/60/100…). Checked against the person's other approved assignments.",
+  empId:"Pick the resource from HR's approved master list. Position fills in automatically.",
+  startDate:"Assignment start date. Availability is checked only for the actual overlapping dates.",
+  endDate:"Assignment end date. An assignment ending the 15th does not overlap one starting the 16th.",
+  avail:"Remaining capacity for this person over the assignment dates, after their other approved allocations. Click for details.",
   salary:"Monthly basic salary (AED). Set/verified by HR.",
   item:"What is being bought — material, equipment or service.",
   section:"Materials = direct equipment; Other = other direct costs.",
@@ -578,6 +600,7 @@ async function saveProject(fields){try{
     if(Object.keys(fields).some(function(k){return reRender.indexOf(k)>=0;}))refresh(true);
   }catch(e){toast(e.message);}}
 async function saveChild(kind,id,field,val){try{await api("/"+(kind==="resource"?"resources":"costlines")+"/"+id,{method:"PATCH",body:defObj(field,val)});toast("Saved");refresh(true);}catch(e){toast(e.message);}}
+async function saveChildMulti(kind,id,obj){try{await api("/"+(kind==="resource"?"resources":"costlines")+"/"+id,{method:"PATCH",body:obj});toast("Saved");refresh(true);}catch(e){toast(e.message);}}
 async function refresh(silent){try{var d=await api("/projects/"+S.project.id);d.id=S.project.id;S.project=d;if(!silent)toast("Refreshed");renderTab();}catch(e){toast(e.message);}}
 
 /* ================= field builders ================= */
@@ -632,7 +655,7 @@ function catCell(val,editable,onsave){
   td.appendChild(s);return td;
 }
 function cellInput(val,editable,onsave,type,ph){
-  var i=el("input",{});if(type==="number")i.type="number";
+  var i=el("input",{});if(type==="number")i.type="number";if(type==="date")i.type="date";
   i.value=(val===0?0:(val||""));i.disabled=!editable;if(editable)i.className="ed";
   if(ph!==undefined&&ph!==null&&ph!=="")i.placeholder=ph;
   if(editable)i.onchange=function(){onsave(type==="number"?(i.value===""?"":(+i.value||0)):i.value)};
@@ -658,6 +681,39 @@ function stageBar(){
   }
   return bar;
 }
+// #5D validate resource allocations before submission; block over-allocation (admin may override as an exception)
+async function validateAllocations(){
+  var rs=(S.project.resources||[]).filter(function(r){return r.empId&&r.startDate&&r.endDate&&(+r.util>0);});
+  var problems=[];
+  for(var i=0;i<rs.length;i++){var r=rs[i];
+    try{var a=await api("/availability?empId="+encodeURIComponent(r.empId)+"&start="+r.startDate+"&end="+r.endDate+"&exclude="+S.project.id+"&requested="+(r.util||0));
+      if(a.requested>a.remaining)problems.push({r:r,a:a});}catch(e){}
+  }
+  return problems;
+}
+function showOverAllocWarning(problems){
+  return new Promise(function(resolve){
+    var isAdmin=S.user.role==="admin";
+    var ov=el("div",{class:"ctmo"});
+    var rows=problems.map(function(p){var a=p.a,r=p.r;var cf=(a.conflicts||[]).map(function(c){return esc(c.project)+" ("+c.alloc+"%, "+(c.overlapStart||"")+"→"+(c.overlapEnd||"")+")";}).join("; ");
+      return "<tr><td><b>"+esc(a.name||r.person||r.empId)+"</b></td><td>"+esc(r.startDate)+"→"+esc(r.endDate)+"</td><td>"+a.committed+"%</td><td>"+a.remaining+"%</td><td style='color:#c0392b'>"+a.requested+"%</td><td class='muted'>"+cf+"</td></tr>";}).join("");
+    ov.innerHTML="<div class='ctmo-card'><div class='ctmo-hd'><div><div class='ctmo-t'>Resource over-allocation</div><div class='ctmo-s'>One or more resources are allocated beyond their available capacity for the overlapping dates. Capacity is 100% per person.</div></div><button class='ctmo-x' type='button'>&times;</button></div>"+
+      "<div style='padding:4px 20px 16px'><table class='tbl'><thead><tr><th>Resource</th><th>Dates</th><th>Committed</th><th>Remaining</th><th>Requested</th><th>Already on</th></tr></thead><tbody>"+rows+"</tbody></table>"+
+      "<div class='ctmo-ft' style='margin-top:14px'><button class='ctmo-skip' type='button'>Go back and fix</button>"+(isAdmin?"<button class='ctmo-go' type='button'>Override &amp; submit (exception)</button>":"")+"</div></div></div>";
+    function close(v){ov.remove();resolve(v);}
+    ov.querySelector(".ctmo-x").onclick=function(){close(false);};
+    ov.querySelector(".ctmo-skip").onclick=function(){close(false);};
+    var go=ov.querySelector(".ctmo-go");if(go)go.onclick=function(){close(true);};
+    ov.onclick=function(e){if(e.target===ov)close(false);};
+    document.body.appendChild(ov);
+  });
+}
+async function submitWithValidation(){
+  try{toast("Checking resource availability…");var probs=await validateAllocations();
+    if(probs.length){var ok=await showOverAllocWarning(probs);if(!ok)return;}
+    doTransition("submit");
+  }catch(e){toast(e.message);}
+}
 async function doTransition(action,needsComment,params){
   var comment=(S._comment||"").trim();   // optional note typed in the comment box (#4)
   if(needsComment&&!comment){comment=window.prompt("Reason / comment (required):")||"";if(!comment.trim()){toast("A reason is required.");return;}}
@@ -678,7 +734,7 @@ function commentBox(){
 function actionBar(){
   var st=P().Stage,r=S.user.role,admin=r==="admin",bar=el("div",{class:"actionbar"}),list=[];
   var add=function(label,cls,fn){list.push({label:label,cls:cls,fn:fn});};
-  if(st==="Draft"&&(r==="requester"||admin))add("Submit for review","ok",function(){doTransition("submit")});
+  if(st==="Draft"&&(r==="requester"||admin))add("Submit for review","ok",function(){submitWithValidation()});
   if(st==="Review-IT"&&(r==="itmanager"||admin)){add("Approve → Costing","ok",function(){doTransition("it_approve")});add("Return to requester","no",function(){doTransition("it_return",true)});}
   if(st==="Costing"&&(r==="hr"||admin)&&P().HRStatus!=="Done"){add("Submit HR costs","ok",function(){doTransition("hr_submit")});add("Return to requester","no",function(){doTransition("hr_return",true)});}
   if(st==="Costing"&&(r==="procurement"||admin)&&P().ProcStatus!=="Done"){add("Submit procurement","ok",function(){doTransition("proc_submit")});add("Return to requester","no",function(){doTransition("proc_return",true)});}
@@ -761,14 +817,60 @@ function renderCosting(v){
 function thc(label,key,num){var th=el("th",{class:num?"num":"",text:label});var inf=info(key);if(inf)th.appendChild(inf);return th;}
 function flagRow(tb,note){var fr=el("tr",{class:"flagged"});var td=el("td",{colspan:"99"});var c=el("span",{class:"flagchip",html:"⚑ Finance flagged this line: "+esc(note)});td.appendChild(c);fr.appendChild(td);tb.appendChild(fr);}
 function phDef(ev){return (ev!==undefined&&ev!==null)?("def "+Math.round(ev)):"";}
+// #5B resource picker from the HR master (requester cannot type names freely)
+function resPickCell(r,editable){
+  var td=el("td",{});
+  if(!editable){td.textContent=r.person||(r.empId?("("+r.empId+")"):"—");return td;}
+  var ent=(S.project.project&&S.project.project.Entity)||"UXE";
+  var master=(S._resMaster||[]).filter(function(m){return m.entity===ent;});
+  var s=el("select",{});s.className="ed";s.appendChild(el("option",{value:"",text:"— select resource —"}));
+  master.forEach(function(m){s.appendChild(el("option",{value:m.empId,text:m.name+" · "+m.designation+" ("+m.empId+")"}));});
+  if(r.empId&&master.map(function(m){return m.empId;}).indexOf(r.empId)<0)s.appendChild(el("option",{value:r.empId,text:(r.person||r.empId)}));
+  s.value=r.empId||"";
+  s.onchange=function(){var m=(S._resMaster||[]).filter(function(x){return x.empId===s.value;})[0];saveChildMulti("resource",r.id,{empId:s.value,person:m?m.name:"",position:m?m.designation:""});};
+  td.appendChild(s);return td;
+}
+function fillAvail(span,r){
+  if(!r.empId||!r.startDate||!r.endDate){span.innerHTML="<span class='muted' style='font-size:11px'>set dates</span>";return;}
+  api("/availability?empId="+encodeURIComponent(r.empId)+"&start="+r.startDate+"&end="+r.endDate+"&exclude="+S.project.id+"&requested="+(r.util||0)).then(function(a){
+    var over=a.requested>a.remaining;
+    span.innerHTML="";
+    var chip=el("span",{class:"availchip "+(over?"bad":"good")});
+    chip.textContent=over?("⚠ "+a.remaining+"% free"):("✓ "+a.remaining+"% free");
+    chip.style.cursor="pointer";chip.title="Capacity 100% · committed "+a.committed+"% · requested "+a.requested+"%";
+    chip.onclick=function(){showAvailDetails(r,a);};
+    span.appendChild(chip);
+  }).catch(function(){span.textContent="";});
+}
+function showAvailDetails(r,a){
+  var ov=el("div",{class:"ctmo"});
+  var over=a.requested>a.remaining;
+  var rows=(a.conflicts||[]).map(function(c){return "<tr><td>"+esc(c.project)+"</td><td>"+c.alloc+"%</td><td>"+(c.overlapStart||"")+" → "+(c.overlapEnd||"")+"</td></tr>";}).join("")||"<tr><td colspan='3' class='muted'>No overlapping committed assignments.</td></tr>";
+  ov.innerHTML="<div class='ctmo-card'><div class='ctmo-hd'><div><div class='ctmo-t'>Resource availability — "+esc(a.name||r.person||r.empId)+"</div><div class='ctmo-s'>Capacity and committed (approved) assignments over "+esc(r.startDate)+" → "+esc(r.endDate)+".</div></div><button class='ctmo-x' type='button'>&times;</button></div>"+
+    "<div style='padding:4px 20px 18px'>"+
+      "<div class='availgrid'>"+
+        "<div><div class='rlab'>Total capacity</div><div class='rval'>"+a.capacity+"%</div></div>"+
+        "<div><div class='rlab'>Already committed</div><div class='rval'>"+a.committed+"%</div></div>"+
+        "<div><div class='rlab'>Remaining</div><div class='rval' style='color:"+(a.remaining>0?'#1f8a52':'#c0392b')+"'>"+a.remaining+"%</div></div>"+
+        "<div><div class='rlab'>You requested</div><div class='rval' style='color:"+(over?'#c0392b':'#1f8a52')+"'>"+a.requested+"%</div></div>"+
+      "</div>"+
+      (over?("<div class='sapbanner warn' style='margin-top:12px'>⚠ Over-allocation: "+esc(a.name||r.empId)+" only has "+a.remaining+"% free in this period, but "+a.requested+"% is requested (over by "+(a.requested-a.remaining)+"%). Reduce the allocation or shorten the dates.</div>"):("<div class='sapbanner ok' style='margin-top:12px'>✓ Within capacity — "+a.requested+"% fits the "+a.remaining+"% remaining.</div>"))+
+      "<table class='tbl' style='margin-top:12px'><thead><tr><th>Committed to project</th><th>Allocation</th><th>Overlapping dates</th></tr></thead><tbody>"+rows+"</tbody></table>"+
+    "</div></div>";
+  ov.querySelector(".ctmo-x").onclick=function(){ov.remove();};ov.onclick=function(e){if(e.target===ov)ov.remove();};
+  document.body.appendChild(ov);
+}
 function resourceTable(E){
   var rs=S.project.resources;
   var hasSalary=rs.some(function(r){return r.salary!==undefined})||E.salary;
   var hasLoaded=rs.some(function(r){return r.loaded!==undefined});       // #5 loaded cost -> HR/finance
   var showPricing=E.pricing||rs.some(function(r){return r.marginPct!==undefined||r.effMg!==undefined}); // #8 finance per-line
+  var showAvail=rs.some(function(r){return r.empId!==undefined});
   var tbl=el("table",{class:"tbl"});var thr=el("tr",{});
-  thr.appendChild(thc("Person","person"));thr.appendChild(thc("Position","position"));thr.appendChild(thc("Type","type"));thr.appendChild(thc("Category","category"));
-  thr.appendChild(thc("Qty","qty",1));thr.appendChild(thc("Months","months",1));thr.appendChild(thc("Util %","util",1));
+  thr.appendChild(thc("Resource","empId"));thr.appendChild(thc("Position","position"));thr.appendChild(thc("Category","category"));
+  thr.appendChild(thc("Start","startDate"));thr.appendChild(thc("End","endDate"));
+  thr.appendChild(thc("Qty","qty",1));thr.appendChild(thc("Months","months",1));thr.appendChild(thc("Alloc %","util",1));
+  if(showAvail)thr.appendChild(thc("Availability","avail"));
   if(hasSalary)thr.appendChild(thc("Salary","salary",1));
   if(hasLoaded)thr.appendChild(thc("Loaded cost","loaded",1));
   if(showPricing){thr.appendChild(thc("Margin %","marginPct",1));thr.appendChild(thc("Indirect %","indPct",1));thr.appendChild(thc("Overhead %","ohPct",1));thr.appendChild(thc("Flag","flagNote"));}
@@ -778,9 +880,12 @@ function resourceTable(E){
   rs.forEach(function(r){
     var tr=el("tr",{});if(r.flagNote)tr.className="flagged";
     function cell(val,editable,field,type,ph){var td=el("td",{class:type==="number"?"num":""});td.appendChild(cellInput(val,editable,function(v){saveChild("resource",r.id,field,v)},type,ph));return td;}
-    tr.appendChild(cell(r.person,E.scope,"person"));tr.appendChild(cell(r.position,E.scope,"position"));tr.appendChild(cell(r.type,E.scope,"type"));
+    tr.appendChild(resPickCell(r,E.scope));
+    tr.appendChild(cell(r.position,E.scope,"position"));
     tr.appendChild(catCell(r.category,E.scope,function(v){saveChild("resource",r.id,"category",v)}));
+    tr.appendChild(cell(r.startDate,E.scope,"startDate","date"));tr.appendChild(cell(r.endDate,E.scope,"endDate","date"));
     tr.appendChild(cell(r.qty,E.scope,"qty","number"));tr.appendChild(cell(r.months,E.scope,"months","number"));tr.appendChild(cell(r.util,E.scope,"util","number"));
+    if(showAvail){var atd=el("td",{});var asp=el("span",{});atd.appendChild(asp);tr.appendChild(atd);fillAvail(asp,r);}
     if(hasSalary)tr.appendChild(cell(r.salary,E.salary,"salary","number"));
     if(hasLoaded)tr.appendChild(el("td",{class:"num rv",text:r.loaded!==undefined?money(r.loaded):"—"}));
     if(showPricing){
@@ -1205,6 +1310,123 @@ function renderReportBody(body,d){
     card.appendChild(bd);body.appendChild(card);
   });
 }
+/* ================= #5A HR RESOURCE MASTER ================= */
+function myEntities(){return (S.user.entities&&S.user.entities.length)?S.user.entities:[S.user.entity||"UXE"];}
+function normRows(rows){
+  return (rows||[]).map(function(r){var o={};Object.keys(r).forEach(function(k){o[String(k).toLowerCase().trim()]=r[k];});
+    var ent=(o.entity||o.company||"UXE");ent=/emc|emcode/i.test(ent)?"EMCODE":"UXE";
+    return {empId:String(o.empid||o["emp id"]||o.id||o["employee id"]||"").trim(),name:String(o.name||o["full name"]||"").trim(),designation:String(o.designation||o.role||o.title||"").trim(),entity:ent,availability:(o.availability===""||o.availability===undefined)?100:o.availability};
+  }).filter(function(r){return r.empId||r.name;});
+}
+function csvToRows(text){
+  var lines=text.split(/\r?\n/).filter(function(l){return l.trim();});if(!lines.length)return [];
+  var head=lines[0].split(",").map(function(h){return h.trim();});
+  return lines.slice(1).map(function(l){var cells=l.split(",");var o={};head.forEach(function(h,i){o[h]=(cells[i]||"").trim();});return o;});
+}
+function parseResourceFile(file){
+  return new Promise(function(resolve,reject){
+    var name=(file.name||"").toLowerCase();
+    if(name.endsWith(".csv")||name.endsWith(".txt")){var fr=new FileReader();fr.onload=function(){resolve(normRows(csvToRows(fr.result)));};fr.onerror=function(){reject(new Error("Could not read file."));};fr.readAsText(file);}
+    else{loadXLSX().then(function(XLSX){var fr=new FileReader();fr.onload=function(){try{var wb=XLSX.read(new Uint8Array(fr.result),{type:"array"});var ws=wb.Sheets[wb.SheetNames[0]];resolve(normRows(XLSX.utils.sheet_to_json(ws,{defval:""})));}catch(e){reject(e);}};fr.onerror=function(){reject(new Error("Could not read file."));};fr.readAsArrayBuffer(file);}).catch(reject);}
+  });
+}
+async function renderResourceMaster(v){
+  v.innerHTML="";
+  var wrap=el("div",{class:"dash"});
+  wrap.appendChild(el("div",{class:"dhero"},[el("div",{},[el("div",{class:"big",text:"HR resource master"}),el("p",{text:"The approved list of people per company. Requesters pick resources from here when building a costing. Bulk-upload via Excel/CSV or add manually."})])]));
+  v.appendChild(wrap);
+  var ents=myEntities();
+  // upload + template
+  var up=el("div",{class:"card"});var ub=el("div",{class:"body"});ub.style.cssText="display:flex;flex-wrap:wrap;gap:12px;align-items:center";
+  ub.appendChild(el("div",{html:"<b>Bulk upload</b> <span class='muted' style='font-size:12px'>— Excel (.xlsx) or CSV with columns: empId, name, designation, entity, availability</span>"}));
+  var fi=el("input",{type:"file"});fi.accept=".xlsx,.xls,.csv";fi.style.fontSize="12px";
+  var ubtn=el("button",{class:"b ok",text:"Upload"});
+  ubtn.onclick=async function(){if(!fi.files||!fi.files[0]){toast("Choose a file first.");return;}try{toast("Reading…");var rows=await parseResourceFile(fi.files[0]);if(!rows.length){toast("No rows found.");return;}var r=await api("/resources-master/bulk",{method:"POST",body:{rows:rows}});toast("Added "+r.added+", updated "+r.updated+(r.skipped&&r.skipped.length?(" · skipped "+r.skipped.length):""));renderTab();}catch(e){toast(e.message);}};
+  var tmpl=el("button",{class:"b",text:"⬇ CSV template"});
+  tmpl.onclick=function(){var csv="empId,name,designation,entity,availability\nUXE-E-110,New Person,Engineer,UXE,100\n";var bl=new Blob([csv],{type:"text/csv"});var a=document.createElement("a");a.href=URL.createObjectURL(bl);a.download="resource_master_template.csv";a.click();};
+  ub.appendChild(fi);ub.appendChild(ubtn);ub.appendChild(tmpl);up.appendChild(ub);v.appendChild(up);
+  // manual add
+  var add=el("div",{class:"card"});var ab=el("div",{class:"body"});ab.style.cssText="display:grid;grid-template-columns:repeat(5,1fr) auto;gap:10px;align-items:end";
+  function f(ph){var i=el("input",{placeholder:ph});i.className="ed";return i;}
+  var iEmp=f("empId"),iName=f("name"),iDes=f("designation");
+  var iEnt=el("select",{});iEnt.className="ed";ents.forEach(function(e){iEnt.appendChild(el("option",{text:e,value:e}));});
+  var iAv=f("availability %");iAv.type="number";iAv.value="100";
+  var addb=el("button",{class:"b ok",text:"＋ Add resource"});
+  addb.onclick=async function(){if(!iName.value.trim()){toast("Name required.");return;}try{await api("/resources-master",{method:"POST",body:{empId:iEmp.value,name:iName.value,designation:iDes.value,entity:iEnt.value,availability:+iAv.value||100}});toast("Added");renderTab();}catch(e){toast(e.message);}};
+  [iEmp,iName,iDes,iEnt,iAv].forEach(function(x){ab.appendChild(x);});ab.appendChild(addb);add.appendChild(el("header",{},[el("span",{class:"n",text:"＋"}),el("h2",{text:"Add a resource manually"})]));add.appendChild(ab);v.appendChild(add);
+  // list
+  try{
+    var list=await api("/resources-master");
+    var card=el("div",{class:"card"});card.appendChild(el("header",{},[el("span",{class:"n",text:"👥"}),el("h2",{text:"Resources ("+list.length+")"})]));
+    var bd=el("div",{class:"body"});var tbl=el("table",{class:"tbl"});
+    var thr=el("tr",{});["Emp ID","Name","Designation","Company","Availability %",""].forEach(function(h){thr.appendChild(el("th",{text:h}));});tbl.appendChild(el("thead",{},[thr]));
+    var tb=el("tbody",{});
+    list.forEach(function(r){
+      var tr=el("tr",{});
+      function ic(val,field,type){var td=el("td",{});var i=el("input",{});if(type)i.type=type;i.value=val==null?"":val;i.className="ed";i.onchange=function(){api("/resources-master/"+r.id,{method:"PATCH",body:defObj(field,type==="number"?(+i.value||0):i.value)}).then(function(){toast("Saved");}).catch(function(e){toast(e.message);});};td.appendChild(i);return td;}
+      tr.appendChild(ic(r.empId,"empId"));tr.appendChild(ic(r.name,"name"));tr.appendChild(ic(r.designation,"designation"));
+      var etd=el("td",{});var es=el("select",{});es.className="ed";ents.forEach(function(e){es.appendChild(el("option",{text:e,value:e}));});es.value=r.entity;es.onchange=function(){api("/resources-master/"+r.id,{method:"PATCH",body:{entity:es.value}}).then(function(){toast("Saved");}).catch(function(e){toast(e.message);});};etd.appendChild(es);tr.appendChild(etd);
+      tr.appendChild(ic(r.availability,"availability","number"));
+      var dtd=el("td",{});var db=el("button",{class:"btn",text:"×"});db.onclick=function(){api("/resources-master/"+r.id,{method:"DELETE"}).then(function(){toast("Removed");renderTab();}).catch(function(e){toast(e.message);});};dtd.appendChild(db);tr.appendChild(dtd);
+      tb.appendChild(tr);
+    });
+    tbl.appendChild(tb);bd.appendChild(el("div",{class:"rowscroll"},[tbl]));card.appendChild(bd);v.appendChild(card);
+    // utilisation review (guard against tab-switch during async load)
+    var uc=await utilisationCard(list);if(S.tab==="resources")v.appendChild(uc);
+  }catch(e){toast(e.message);}
+}
+async function utilisationCard(list){
+  var card=el("div",{class:"card"});card.appendChild(el("header",{},[el("span",{class:"n",text:"📊"}),el("h2",{text:"Resource utilisation — committed (approved) assignments"})]));
+  var bd=el("div",{class:"body"});
+  bd.appendChild(el("p",{class:"muted",text:"Committed allocation from approved projects. Draft/in-review requests are not counted."}));
+  var tbl=el("table",{class:"tbl"});var thr=el("tr",{});["Resource","Company","Committed project","Dates","Allocation"].forEach(function(h){thr.appendChild(el("th",{text:h}));});tbl.appendChild(el("thead",{},[thr]));
+  var tb=el("tbody",{});var any=false;
+  for(var i=0;i<list.length;i++){var r=list[i];
+    try{var a=await api("/availability?empId="+encodeURIComponent(r.empId)+"&start=2026-01-01&end=2027-12-31");
+      (a.conflicts||[]).forEach(function(c){any=true;var tr=el("tr",{});tr.appendChild(el("td",{html:"<b>"+esc(r.name)+"</b> <span class='muted'>"+esc(r.empId)+"</span>"}));tr.appendChild(el("td",{text:r.entity}));tr.appendChild(el("td",{text:c.project}));tr.appendChild(el("td",{text:(c.start||"?")+" → "+(c.end||"?")}));tr.appendChild(el("td",{html:"<b>"+c.alloc+"%</b>"}));tb.appendChild(tr);});
+    }catch(e){}
+  }
+  if(!any)tb.appendChild(el("tr",{},[el("td",{colspan:"5",class:"muted",text:"No committed assignments yet."})]));
+  tbl.appendChild(tb);bd.appendChild(el("div",{class:"rowscroll"},[tbl]));card.appendChild(bd);return card;
+}
+
+/* ================= #3/#4 ADMIN CONSOLE ================= */
+async function renderAdmin(v){
+  v.innerHTML="";
+  var wrap=el("div",{class:"dash"});
+  wrap.appendChild(el("div",{class:"dhero"},[el("div",{},[el("div",{class:"big",text:"Admin console"}),el("p",{text:"Manage users, their role, and the companies (entities) each user is authorised to access. Users only see data for their assigned companies."})])]));
+  v.appendChild(wrap);
+  var ROLES=["requester","itmanager","hr","procurement","finance","ceo","pm","admin"];
+  // add user
+  var add=el("div",{class:"card"});add.appendChild(el("header",{},[el("span",{class:"n",text:"＋"}),el("h2",{text:"Add user"})]));
+  var ab=el("div",{class:"body"});ab.style.cssText="display:grid;grid-template-columns:2fr 2fr 1.3fr auto auto auto;gap:10px;align-items:center";
+  function inp(ph){var i=el("input",{placeholder:ph});i.className="ed";return i;}
+  var uEmail=inp("email@company"),uName=inp("full name");
+  var uRole=el("select",{});uRole.className="ed";ROLES.forEach(function(r){uRole.appendChild(el("option",{text:r,value:r}));});
+  var cU=el("label",{style:"font-size:13px;display:flex;gap:4px;align-items:center"});var cUx=el("input",{type:"checkbox"});cUx.checked=true;cU.appendChild(cUx);cU.appendChild(document.createTextNode("UXE"));
+  var cE=el("label",{style:"font-size:13px;display:flex;gap:4px;align-items:center"});var cEx=el("input",{type:"checkbox"});cE.appendChild(cEx);cE.appendChild(document.createTextNode("EMCODE"));
+  var addb=el("button",{class:"b ok",text:"Add user"});
+  addb.onclick=async function(){var ents=[];if(cUx.checked)ents.push("UXE");if(cEx.checked)ents.push("EMCODE");if(!uEmail.value.trim()){toast("Email required.");return;}if(!ents.length){toast("Assign at least one company.");return;}try{await api("/admin/users",{method:"POST",body:{email:uEmail.value.trim(),name:uName.value.trim(),role:uRole.value,entities:ents}});toast("User added");renderTab();}catch(e){toast(e.message);}};
+  [uEmail,uName,uRole,cU,cE,addb].forEach(function(x){ab.appendChild(x);});add.appendChild(ab);v.appendChild(add);
+  // users table
+  try{
+    var users=await api("/admin/users");
+    var card=el("div",{class:"card"});card.appendChild(el("header",{},[el("span",{class:"n",text:"👤"}),el("h2",{text:"Users ("+users.length+")"})]));
+    var bd=el("div",{class:"body"});var tbl=el("table",{class:"tbl"});
+    var thr=el("tr",{});["User","Role","UXE","EMCODE"].forEach(function(h){thr.appendChild(el("th",{text:h}));});tbl.appendChild(el("thead",{},[thr]));
+    var tb=el("tbody",{});
+    users.forEach(function(u){
+      var tr=el("tr",{});
+      tr.appendChild(el("td",{html:"<b>"+esc(u.name||u.email)+"</b><div class='muted' style='font-size:11.5px'>"+esc(u.email)+"</div>"}));
+      var rtd=el("td",{});var rs=el("select",{});rs.className="ed";ROLES.forEach(function(r){rs.appendChild(el("option",{text:r,value:r}));});rs.value=u.role;rs.onchange=function(){api("/admin/users/"+encodeURIComponent(u.email),{method:"PATCH",body:{role:rs.value}}).then(function(){toast("Role updated");}).catch(function(e){toast(e.message);});};rtd.appendChild(rs);tr.appendChild(rtd);
+      function entBox(ent){var td=el("td",{});var cb=el("input",{type:"checkbox"});cb.checked=(u.entities||[]).indexOf(ent)>=0;cb.onchange=function(){var cur=(u.entities||[]).slice();if(cb.checked){if(cur.indexOf(ent)<0)cur.push(ent);}else{cur=cur.filter(function(e){return e!==ent;});}if(!cur.length){toast("A user must have at least one company.");cb.checked=true;return;}u.entities=cur;api("/admin/users/"+encodeURIComponent(u.email),{method:"PATCH",body:{entities:cur}}).then(function(){toast("Companies updated");}).catch(function(e){toast(e.message);});};td.appendChild(cb);return td;}
+      tr.appendChild(entBox("UXE"));tr.appendChild(entBox("EMCODE"));
+      tb.appendChild(tr);
+    });
+    tbl.appendChild(tb);bd.appendChild(el("div",{class:"rowscroll"},[tbl]));card.appendChild(bd);v.appendChild(card);
+  }catch(e){toast(e.message);}
+}
+
 /* ================= PROPOSAL ================= */
 var DEFAULT_SPECIAL=[
  "Advance payment of 30% is due with the Purchase Order and is non-refundable once project mobilisation has commenced.",
@@ -1381,8 +1603,9 @@ function renderProposal(d){
   var full=docOpen(ent)+page1+page2+"</div>";
   var view=$("#view");view.innerHTML="";
   var bar=el("div",{class:"actionbar"});var back=el("button",{class:"b",text:"← back"});back.onclick=function(){renderTab()};
-  var pr=el("button",{class:"b ok",text:"⎙ Print / Save PDF"});pr.onclick=function(){printDoc(d.proposalNo,full)};
-  bar.appendChild(back);bar.appendChild(pr);bar.appendChild(el("span",{class:"pill",text:d.proposalNo}));view.appendChild(bar);
+  var dl=el("button",{class:"b ok",text:"⬇ Download PDF"});dl.onclick=function(){downloadDocPDF(full,d.proposalNo+"-proposal");};
+  var pr=el("button",{class:"b",text:"⎙ Print"});pr.onclick=function(){printDoc(d.proposalNo,full)};
+  bar.appendChild(back);bar.appendChild(dl);bar.appendChild(pr);bar.appendChild(el("span",{class:"pill",text:d.proposalNo}));view.appendChild(bar);
   var card=el("div",{class:"card"});var ifr=document.createElement("iframe");ifr.style.cssText="width:100%;height:1150px;border:none;background:#fff;border-radius:10px";card.appendChild(ifr);view.appendChild(card);
   ifr.srcdoc="<!doctype html><html><head><meta charset='utf-8'><style>"+PRINT_CSS+"</style></head><body>"+full+"</body></html>";
 }
@@ -1440,7 +1663,7 @@ async function exportCostingPDF(view){
          "<div class='grand'><span class='gk'>TOTAL PROJECT COST</span><span class='gv'>"+cur+" "+money2(totCost)+"</span></div></div></div>"+
      "<div class='rem'><b>NOTE</b> &nbsp; Requester copy — individual salaries, per-line costs, overhead, margin and selling price are not shown. For the full costing sheet, contact Finance.</div>"+
      "<div class='foot'><span>Requester copy — summary figures only.</span><span class='pg'>"+ent+" &middot; Project Costing (Requester)</span></div></div>";
-    printDoc((costingNo(p))+" costing (requester)",docOpen(ent)+rbody+"</div>");
+    showDocPreview((costingNo(p))+" — requester copy",docOpen(ent)+rbody+"</div>",costingNo(p)+"-requester-costing");
     return;
   }
   // ---------- FINANCE VIEW (full) ----------
@@ -1479,11 +1702,37 @@ async function exportCostingPDF(view){
        "<div class='grand'><span class='gk'>SELLING PRICE</span><span class='gv'>"+cur+" "+money2(t.price)+"</span></div></div></div>"+
    "<div class='authrow'><div class='auth'><div class='ah'><div>PREPARED BY &mdash; REQUESTER</div><div>REVIEWED BY &mdash; FINANCE</div><div>APPROVED BY &mdash; "+(ceo?"CEO":"PM")+"</div></div><div class='ab'><div></div><div></div><div></div></div></div><div class='nm'><div><span class='s'>Signature / Date</span></div><div><span class='s'>Signature / Date</span></div><div><span class='s'>Signature / Date</span></div></div></div>"+
    "<div class='foot'><span>Confidential &mdash; internal costing. Figures subject to HR salary verification and approved overhead / margin policy.</span><span class='pg'>"+ent+" &middot; Project Costing Sheet</span></div></div>";
-  printDoc((costingNo(p))+" costing",docOpen(ent)+body+"</div>");
+  showDocPreview((costingNo(p))+" — costing sheet",docOpen(ent)+body+"</div>",costingNo(p)+"-costing-sheet");
 }
 
 /* ================= EXCEL EXPORT (formulas + SAP budget upload) ================= */
 function loadXLSX(){return new Promise(function(res,rej){if(window.XLSX)return res(window.XLSX);var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";s.onload=function(){window.XLSX?res(window.XLSX):rej(new Error("Excel library failed to load."));};s.onerror=function(){rej(new Error("Could not load the Excel library — check your internet connection."));};document.head.appendChild(s);});}
+/* ===== #1 proper PDF download (faithful layout) ===== */
+function loadHtml2Pdf(){return new Promise(function(res,rej){if(window.html2pdf)return res(window.html2pdf);var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";s.onload=function(){window.html2pdf?res(window.html2pdf):rej(new Error("PDF library failed to load."));};s.onerror=function(){rej(new Error("Could not load the PDF library — check your internet connection."));};document.head.appendChild(s);});}
+async function downloadDocPDF(fullHtml,filename){
+  var h2p;try{toast("Preparing PDF…");h2p=await loadHtml2Pdf();}catch(e){toast(e.message);return;}
+  var holder=document.createElement("div");holder.style.cssText="position:fixed;left:-99999px;top:0;width:794px;background:#fff";
+  var st=document.createElement("style");st.textContent=PRINT_CSS;holder.appendChild(st);
+  var content=document.createElement("div");content.innerHTML=fullHtml;holder.appendChild(content);
+  document.body.appendChild(holder);
+  try{
+    await h2p().set({margin:0,filename:(filename||"document").replace(/[\/\\]/g,"-")+".pdf",image:{type:"jpeg",quality:0.98},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["css","legacy"],before:".pb"}}).from(content).save();
+    toast("PDF downloaded");
+  }catch(e){toast("PDF error: "+(e&&e.message||e));}
+  finally{holder.remove();}
+}
+// In-app preview of a generated document with Download PDF + Print + Back
+function showDocPreview(title,fullHtml,filename){
+  var view=$("#view");view.innerHTML="";
+  var bar=el("div",{class:"actionbar"});
+  var back=el("button",{class:"b",text:"← Back"});back.onclick=function(){renderTab();};
+  var dl=el("button",{class:"b ok",text:"⬇ Download PDF"});dl.onclick=function(){downloadDocPDF(fullHtml,filename);};
+  var pr=el("button",{class:"b",text:"⎙ Print"});pr.onclick=function(){printDoc(title,fullHtml);};
+  bar.appendChild(back);bar.appendChild(dl);bar.appendChild(pr);bar.appendChild(el("span",{class:"pill",text:title}));
+  view.appendChild(bar);
+  var card=el("div",{class:"card"});var ifr=document.createElement("iframe");ifr.style.cssText="width:100%;height:1180px;border:none;background:#fff;border-radius:10px";card.appendChild(ifr);view.appendChild(card);
+  ifr.srcdoc="<!doctype html><html><head><meta charset='utf-8'><style>"+PRINT_CSS+"</style></head><body>"+fullHtml+"</body></html>";
+}
 async function exportCostingXLSX(){
   var XLSX;try{toast("Preparing Excel…");XLSX=await loadXLSX();}catch(e){toast(e.message);return;}
   try{await getMasters();}catch(e){}
@@ -1512,7 +1761,7 @@ async function exportCostingXLSX(){
     nm(r,8,ind);fo(r,9,"H"+R+"*I"+R+"/100");
     nm(r,10,oh);fo(r,11,"(H"+R+"+J"+R+")*K"+R+"/100");
     fo(r,12,"H"+R+"+J"+R+"+L"+R);
-    nm(r,13,mg);fo(r,14,markup?("M"+R+"*(1+N"+R+"/100)"):("IF(N"+R+"<100,M"+R+"/(1-N"+R+"/100),M"+R+")"));
+    nm(r,13,mg);fo(r,14,markup?("M"+R+"*(1+N"+R+"/100)"):("IF(N"+R+"<100,M"+R+"/(1-N"+R+"/100),0)"));
     r++;
   }
   res.forEach(function(x){var loadedMo=(+x.salary||0)+benefitMonthlyFE(x.salary);dataRow(x.person||"",x.position||"",x.category,x.qty,x.months,x.util,loadedMo,x.effInd,x.effOh,x.effMg);});
@@ -1575,16 +1824,29 @@ if(S.token&&S.user){enterApp();}
     // #4/#5 admin-editable standard work-category list (tech-industry best practice)
     categories: ["Frontend", "Backend", "UI/UX", "Mobile", "Integration & APIs", "Database", "QA & Testing", "DevOps & Cloud", "Cybersecurity", "Infrastructure (Servers/Network/Firewall)", "Project Management", "Software Licenses", "Professional Services", "Hardware & Materials", "Support & Maintenance"],
     domains: ["uxe.ai", "emcode.ae"],
+    // #4 each user is assigned one or BOTH companies (entities); they only see data for their entities
     members: [
-      { email: "bassam.youssef@uxe.ai", name: "Bassam Youssef", entity: "UXE", role: "admin" },
-      { email: "mohamed.ishraf@uxe.ai", name: "Mohamed Ishraf", entity: "EMCODE", role: "admin" },
-      { email: "requester@uxe.ai", name: "Demo Requester", entity: "UXE", role: "requester" },
-      { email: "it@uxe.ai", name: "Demo IT Manager", entity: "UXE", role: "itmanager" },
-      { email: "hr@uxe.ai", name: "Demo HR", entity: "UXE", role: "hr" },
-      { email: "procurement@uxe.ai", name: "Demo Procurement", entity: "UXE", role: "procurement" },
-      { email: "finance@uxe.ai", name: "Demo Finance", entity: "UXE", role: "finance" },
-      { email: "ceo@uxe.ai", name: "Demo CEO", entity: "UXE", role: "ceo" },
-      { email: "pm@uxe.ai", name: "Demo PM", entity: "UXE", role: "pm" }
+      { email: "bassam.youssef@uxe.ai", name: "Bassam Youssef", entity: "UXE", role: "admin", entities: ["UXE", "EMCODE"] },
+      { email: "mohamed.ishraf@uxe.ai", name: "Mohamed Ishraf", entity: "EMCODE", role: "admin", entities: ["UXE", "EMCODE"] },
+      { email: "requester@uxe.ai", name: "Demo Requester (UXE)", entity: "UXE", role: "requester", entities: ["UXE"] },
+      { email: "requester.emc@emcode.ae", name: "Demo Requester (EMCODE)", entity: "EMCODE", role: "requester", entities: ["EMCODE"] },
+      { email: "it@uxe.ai", name: "Demo IT Manager", entity: "UXE", role: "itmanager", entities: ["UXE", "EMCODE"] },
+      { email: "hr@uxe.ai", name: "Demo HR", entity: "UXE", role: "hr", entities: ["UXE", "EMCODE"] },
+      { email: "procurement@uxe.ai", name: "Demo Procurement", entity: "UXE", role: "procurement", entities: ["UXE", "EMCODE"] },
+      { email: "finance@uxe.ai", name: "Demo Finance", entity: "UXE", role: "finance", entities: ["UXE", "EMCODE"] },
+      { email: "ceo@uxe.ai", name: "Demo CEO", entity: "UXE", role: "ceo", entities: ["UXE", "EMCODE"] },
+      { email: "pm@uxe.ai", name: "Demo PM", entity: "UXE", role: "pm", entities: ["UXE", "EMCODE"] }
+    ],
+    // #5A HR-controlled resource master (per entity): empId, name, designation, entity, availability%
+    resourceMaster: [
+      { id: 9001, empId: "UXE-E-101", name: "A. Rahman", designation: "Security Engineer", entity: "UXE", availability: 100 },
+      { id: 9002, empId: "UXE-E-102", name: "S. Pillai", designation: "Project Manager", entity: "UXE", availability: 100 },
+      { id: 9003, empId: "UXE-E-103", name: "M. Noor", designation: "Security Engineer", entity: "UXE", availability: 100 },
+      { id: 9004, empId: "UXE-E-104", name: "T. Aziz", designation: "Technician", entity: "UXE", availability: 100 },
+      { id: 9005, empId: "UXE-E-105", name: "L. Haddad", designation: "Frontend Engineer", entity: "UXE", availability: 100 },
+      { id: 9006, empId: "UXE-E-106", name: "R. Nair", designation: "Backend Engineer", entity: "UXE", availability: 100 },
+      { id: 9007, empId: "EMC-E-201", name: "K. Das", designation: "Automation Engineer", entity: "EMCODE", availability: 100 },
+      { id: 9008, empId: "EMC-E-202", name: "J. Fernandes", designation: "BMS Specialist", entity: "EMCODE", availability: 100 }
     ],
     positions: [
       { id: 1, position: "Security Engineer", salary: 12000, status: "Pending HR" },
@@ -1621,13 +1883,13 @@ if(S.token&&S.user){enterApp();}
       Budget: o.budget || 0, Classification: "Project", SAPCode: o.sap || "",
       SAPMainCode: o.sapMain || "", SAPMap: o.sapMap ? JSON.stringify(o.sapMap) : "{}", AppExtra: "{}"
     }, o.extra || {}) });
-    (o.resources || []).forEach(function (r) { DB.resources.push(Object.assign({ id: nid(), projectId: id, projectTitle: o.title, person: "", position: "", type: "Staff", category: "Professional Services", salary: 0, qty: 1, months: 1, util: 100 }, r)); });
+    (o.resources || []).forEach(function (r) { DB.resources.push(Object.assign({ id: nid(), projectId: id, projectTitle: o.title, person: "", position: "", type: "Staff", category: "Professional Services", empId: "", startDate: "", endDate: "", salary: 0, qty: 1, months: 1, util: 100 }, r)); });
     (o.costlines || []).forEach(function (l) { DB.costlines.push(Object.assign({ id: nid(), projectId: id, projectTitle: o.title, item: "", section: "Materials", category: "Hardware & Materials", vendor: "", uom: "EA", price: 0, qty: 1 }, l)); });
     return id;
   }
   // Original project (completed / approved) — the base of a program
   var idCourtsOriginal = seedFull({ title: "Dubai Courts — Phase 1 CCTV", code: "DBC1", client: "Dubai Courts", stage: "Approved", hr: "Done", proc: "Done", budget: 300000, sap: "UXE/PRJ/DBC/001",
-    resources: [{ person: "A. Khan", position: "Security Engineer", salary: 11000, qty: 2, months: 4, util: 100 }],
+    resources: [{ person: "A. Rahman", position: "Security Engineer", empId: "UXE-E-101", category: "Professional Services", startDate: "2026-11-01", endDate: "2026-12-31", salary: 11000, qty: 1, months: 2, util: 60 }],  // #5 committed 60% Nov–Dec
     costlines: [{ item: "IP cameras", price: 780, qty: 40, vendor: "Hikvision" }], extra: { ProposalNo: "CP-2026-0004" } });
   // at Costing (HR pending) — keeps HR/Procurement inboxes non-empty
   seedFull({ title: "Dubai Courts — CCTV upgrade", code: "DBC", client: "Dubai Courts", stage: "Costing", owner: "hr@uxe.ai", budget: 300000, sap: "UXE/STA/DBC/002",
@@ -1656,8 +1918,9 @@ if(S.token&&S.user){enterApp();}
   // EMCODE, partner-implemented software (IT review was skipped), in costing
   seedFull({ title: "Smart Building — Tower B", code: "SBT", entity: "EMCODE", client: "Emaar", stage: "Costing", proc: "Done", owner: "hr@uxe.ai", budget: 880000, sap: "EMC/PRJ/SBT/003",
     scenario: "partner", start: "2026-10-10",
-    resources: [{ person: "K. Das", position: "Automation Engineer", category: "Backend", salary: 14000, qty: 2, months: 3, util: 100 }],
-    costlines: [{ item: "BMS controllers", category: "Infrastructure (Servers/Network/Firewall)", price: 2200, qty: 30, vendor: "Siemens" }] });
+    resources: [{ person: "K. Das", position: "Automation Engineer", empId: "EMC-E-201", category: "Backend", salary: 14000, qty: 2, months: 3, util: 100 }],
+    costlines: [{ item: "BMS controllers", category: "Infrastructure (Servers/Network/Firewall)", price: 2200, qty: 30, vendor: "Siemens" }],
+    extra: { RequesterEmail: "requester.emc@emcode.ae", Requester: "Demo Requester (EMCODE)" } });  // owned by the EMCODE requester (segregation demo)
   // CEO gate (margin < 30) — EXTENSION of the completed Dubai Courts Phase 1 (linked for reporting)
   seedFull({ title: "Dubai Courts — Phase 2 extension", code: "CUC", client: "Dubai Courts", stage: "CEO-Approval", hr: "Done", proc: "Done", budget: 410000, rate: 22, owner: "ceo@uxe.ai", sap: "UXE/PRJ/CUC/021",
     resources: [{ person: "M. Noor", position: "Security Engineer", salary: 11000, qty: 3, months: 5, util: 100 }],
@@ -1715,6 +1978,44 @@ if(S.token&&S.user){enterApp();}
   function parseMap(pf) { try { return JSON.parse(pf.SAPMap || "{}") || {}; } catch (e) { return {}; } }
   // #3 every applicable category needs a Main Project Code + WBS code
   function sapComplete(categories, map, mainDefault) { var missing = (categories || []).filter(function (c) { var m = map[c] || {}; return !((String(m.mainCode || "").trim() || String(mainDefault || "").trim()) && String(m.wbsCode || "").trim()); }); return { complete: missing.length === 0, missing: missing }; }
+  // ---- #5C/D resource availability engine (pure, date-accurate) ----
+  function dayNum(d) { var t = Date.parse((d || "") + "T00:00:00Z"); return isNaN(t) ? null : Math.floor(t / 86400000); }
+  function dayStr(n) { return new Date(n * 86400000).toISOString().slice(0, 10); }
+  function rangesOverlap(a1, a2, b1, b2) { return a1 <= b2 && b1 <= a2; }   // end 15th vs start 16th → NOT overlapping
+  function peakAllocation(assignments, start, end) {
+    var s = dayNum(start), e = dayNum(end); if (s === null || e === null || e < s) return 0;
+    var pts = [];
+    (assignments || []).forEach(function (a) { var as = dayNum(a.start), ae = dayNum(a.end); if (as === null || ae === null) return; if (!rangesOverlap(as, ae, s, e)) return; var cs = Math.max(as, s), ce = Math.min(ae, e); pts.push([cs, +a.alloc || 0]); pts.push([ce + 1, -(+a.alloc || 0)]); });
+    if (!pts.length) return 0;
+    pts.sort(function (x, y) { return x[0] - y[0] || x[1] - y[1]; });
+    var cur = 0, peak = 0; pts.forEach(function (p) { cur += p[1]; if (cur > peak) peak = cur; }); return peak;
+  }
+  function availabilityFor(assignments, start, end, capacity) {
+    capacity = capacity || 100; var s = dayNum(start), e = dayNum(end);
+    var relevant = (assignments || []).filter(function (a) { var as = dayNum(a.start), ae = dayNum(a.end); return as !== null && ae !== null && s !== null && e !== null && rangesOverlap(as, ae, s, e); });
+    var conflicts = relevant.map(function (a) { var as = dayNum(a.start), ae = dayNum(a.end); return { project: a.project, projectId: a.projectId, alloc: +a.alloc || 0, start: a.start, end: a.end, overlapStart: dayStr(Math.max(as, s)), overlapEnd: dayStr(Math.min(ae, e)) }; });
+    var committed = peakAllocation(relevant, start, end);
+    return { capacity: capacity, committed: committed, remaining: Math.max(0, capacity - committed), conflicts: conflicts };
+  }
+  function checkAllocation(assignments, start, end, requested, capacity) {
+    var a = availabilityFor(assignments, start, end, capacity); a.requested = +requested || 0; a.ok = a.requested <= a.remaining; a.over = Math.max(0, a.requested - a.remaining); return a;
+  }
+  var COMMITTED_STAGES = ["Approved"];   // #5D only approved assignments consume committed capacity (draft/rejected do not)
+  // Gather an employee's committed assignments (optionally excluding one project), respecting entity visibility for names.
+  function committedAssignments(empId, excludeProjectId, cur) {
+    var out = [];
+    DB.projects.forEach(function (p) {
+      if (COMMITTED_STAGES.indexOf(p.fields.Stage) < 0) return;
+      if (excludeProjectId && String(p.id) === String(excludeProjectId)) return;
+      kids(p.id, DB.resources).forEach(function (r) {
+        if (String(r.empId || "") !== String(empId) || !empId) return;
+        var visible = !cur || canSeeEntity(cur, p.fields.Entity);
+        // mask identity of a project in another entity (keep only alloc/dates needed for honest capacity math)
+        out.push({ project: visible ? (p.fields.Title || "") : "Restricted (other company)", projectId: visible ? p.id : null, alloc: +r.util || 0, start: r.startDate || "", end: r.endDate || "" });
+      });
+    });
+    return out;
+  }
   var STAGE_OWNER = { "Draft": "requester", "Review-IT": "itmanager", "Costing": ["hr", "procurement"], "Review-Finance": "finance", "CEO-Approval": "ceo", "PM-Acceptance": "pm", "Approved": null };
   var T = {
     submit: { roles: ["requester"], from: ["Draft"], to: "Review-IT" },
@@ -1755,7 +2056,7 @@ if(S.token&&S.user){enterApp();}
     return { ok: true, toStage: to, set: set, history: { Action: action, FromStage: from, ToStage: to, Comment: comment || "" } };
   }
   // access (ported)
-  var SCOPE_RES = ["person", "position", "type", "category", "qty", "months", "util"];  // #4 category on resources
+  var SCOPE_RES = ["person", "position", "type", "category", "qty", "months", "util", "empId", "startDate", "endDate"];  // #4 category + #5B assignment fields
   var SCOPE_LINE = ["item", "section", "category", "uom", "qty"];
   var PRICE_RES = ["marginPct", "indPct", "ohPct", "flagNote"];   // per-line pricing + flag (finance)
   var PRICE_LINE = ["marginPct", "indPct", "ohPct", "flagNote"];
@@ -1794,7 +2095,7 @@ if(S.token&&S.user){enterApp();}
     var lmap = {}; (totals.lines ? totals.lines.resource : []).forEach(function (x) { lmap["r" + x._id] = x; });
     var cmap = {}; (totals.lines ? totals.lines.costline : []).forEach(function (x) { cmap["c" + x._id] = x; });
     var res = resources.map(function (r) {
-      var b = { id: r.id, person: r.person, position: r.position, type: r.type, category: r.category, qty: r.qty, months: r.months, util: r.util };
+      var b = { id: r.id, person: r.person, position: r.position, type: r.type, category: r.category, qty: r.qty, months: r.months, util: r.util, empId: r.empId, startDate: r.startDate, endDate: r.endDate };
       var comp = lmap["r" + r.id];
       if (showSal) { b.salary = r.salary; if (comp) b.loaded = comp.direct; if (r.flagNote) b.flagNote = r.flagNote; }   // #5 loaded cost -> HR/finance
       if (full && comp) { b.marginPct = r.marginPct; b.indPct = r.indPct; b.ohPct = r.ohPct; b.lineCost = comp.cost; b.lineSell = comp.sell; b.lineMargin = comp.marginPct; b.effMg = comp.mg; b.effInd = comp.ind; b.effOh = comp.oh; }
@@ -1827,15 +2128,14 @@ if(S.token&&S.user){enterApp();}
     return false;
   }
   var WAITTEXT = { requester: "draft to submit", itmanager: "IT review", hr: "enter HR salaries", procurement: "enter vendor prices", finance: "set price & margin", ceo: "CEO approval (margin < 30%)", pm: "accept the approved costing" };
-  function dashboardData(role, email) {
+  function dashboardData(cur) {
+    var role = cur.role, email = cur.email;
     var full = role === "admin" || role === "finance";
-    var list = DB.projects.filter(function (p) {
-      if (role === "admin" || role === "finance") return true;
-      if (role === "requester") return (p.fields.RequesterEmail || "") === email;
-      return true; // IT / PM / HR / Procurement see portfolio-wide budget health
-    });
+    // #4 entity-scoped + #2 requester sees only own (both enforced by visibleProjects)
+    var list = visibleProjects(cur);
     var port = { budget: 0, consumed: 0, direct: 0, indirect: 0, overhead: 0, cost: 0, price: 0, count: list.length, pending: 0 };
-    var byId = {}; DB.projects.forEach(function (p) { byId[String(p.id)] = p; });
+    // #2/#4 build the parent/program lookup ONLY from projects this user may see — a foreign ParentRef resolves to nothing, so no title can be enumerated across entities/owners
+    var byId = {}; list.forEach(function (p) { byId[String(p.id)] = p; });
     function programRoot(p) { var seen = {}, cur = p; while (cur && cur.fields.ParentRef && byId[String(cur.fields.ParentRef)] && !seen[String(cur.id)]) { seen[String(cur.id)] = 1; cur = byId[String(cur.fields.ParentRef)]; } return cur ? String(cur.id) : String(p.id); }
     var projects = list.map(function (p) {
       var f = p.fields, t = computeTotals(f, kids(p.id, DB.resources), kids(p.id, DB.costlines));
@@ -1875,8 +2175,8 @@ if(S.token&&S.user){enterApp();}
     return { role: role, full: full, portfolio: portOut, projects: projects, programs: programs };
   }
   // #7 Finance period-based cost report: costs by main project → category → resource/material, with totals.
-  function reportCosts(period) {
-    var list = DB.projects.filter(function (p) { if (period === "all") return true; return String(p.fields.StartDate || "").slice(0, 7) === period; });
+  function reportCosts(period, cur) {
+    var list = visibleProjects(cur).filter(function (p) { if (period === "all") return true; return String(p.fields.StartDate || "").slice(0, 7) === period; });  // #4 entity-scoped
     var projects = list.map(function (p) {
       var f = p.fields, rs = kids(p.id, DB.resources), ls = kids(p.id, DB.costlines), t = computeTotals(f, rs, ls), sapMap = parseMap(f);
       var rl = {}; t.lines.resource.forEach(function (x) { rl["r" + x._id] = x; });
@@ -1890,7 +2190,7 @@ if(S.token&&S.user){enterApp();}
     });
     var grand = projects.reduce(function (a, p) { return a + p.total; }, 0);
     // periods available (distinct YYYY-MM from project start dates)
-    var ps = {}; DB.projects.forEach(function (p) { var k = String(p.fields.StartDate || "").slice(0, 7); if (k) ps[k] = 1; });
+    var ps = {}; visibleProjects(cur).forEach(function (p) { var k = String(p.fields.StartDate || "").slice(0, 7); if (k) ps[k] = 1; });
     return { period: period, periods: Object.keys(ps).sort(), projects: projects, grandTotal: grand, note: "Planned (committed) cost shown. Actual spend populates from SAP S/4HANA via OData once connected." };
   }
   function buildProposalLines(totals, vatPct) {
@@ -1907,6 +2207,14 @@ if(S.token&&S.user){enterApp();}
   function member(email) { email = (email || "").toLowerCase(); return DB.members.filter(function (m) { return m.email === email; })[0]; }
   function proj(id) { return DB.projects.filter(function (p) { return String(p.id) === String(id); })[0]; }
   function kids(id, arr) { var p = proj(id); var t = p ? p.fields.Title : null; return arr.filter(function (x) { return x.projectId === p.id || x.projectTitle === t; }); }
+  // #2/#4 access control — enforced server-side so URL/ID manipulation can't bypass it
+  function curEntities(cur) { return (cur && cur.entities) ? cur.entities : ["UXE"]; }
+  function canSeeEntity(cur, entity) { return curEntities(cur).indexOf(entity || "UXE") >= 0; }           // #4 entity segregation
+  function ownsProject(cur, pf) { return cur.role === "requester" ? ((pf.RequesterEmail || "") === cur.email) : true; } // #2 requester owns only their own
+  function canAccessProject(cur, pf) { return !!pf && canSeeEntity(cur, pf.Entity) && ownsProject(cur, pf); }
+  // visible project list for the current user (used by every list endpoint)
+  function visibleProjects(cur) { return DB.projects.filter(function (p) { return canAccessProject(cur, p.fields); }); }
+  function guardProject(cur, P) { if (!P || !canAccessProject(cur, P.fields)) throw err(404, "Not found."); return P; } // 404, not 403, so existence isn't leaked
   var CUR = null;
   // demo always starts at a clean login
   try { sessionStorage.removeItem("cp_tok"); sessionStorage.removeItem("cp_user"); } catch (e) {}
@@ -1920,18 +2228,18 @@ if(S.token&&S.user){enterApp();}
     await new Promise(function (r) { setTimeout(r, 120); }); // tiny latency so it feels real
 
     if (u === "/auth/request-otp") { if (!member(body.email)) return { ok: true, message: "Demo — this email isn't in the member list. Try requester@uxe.ai, finance@uxe.ai, or bassam.youssef@uxe.ai (code 000000)." }; return { ok: true, message: "Demo mode — your code is 000000." }; }
-    if (u === "/auth/verify-otp") { var m = member(body.email); if (!m) throw err(403, "Not authorised."); if (String(body.code).trim() !== CODE) throw err(401, "Incorrect code (demo code is 000000)."); CUR = { email: m.email, role: m.role, name: m.name, entity: m.entity }; return { token: "demo." + m.email, user: CUR }; }
+    if (u === "/auth/verify-otp") { var m = member(body.email); if (!m) throw err(403, "Not authorised."); if (String(body.code).trim() !== CODE) throw err(401, "Incorrect code (demo code is 000000)."); CUR = { email: m.email, role: m.role, name: m.name, entity: m.entity, entities: (m.entities || [m.entity || "UXE"]).slice() }; return { token: "demo." + m.email, user: CUR }; }
     if (!CUR) throw err(401, "Not signed in.");
     if (u === "/auth/me") return CUR;
-    if (u === "/dashboard" && method === "GET") return dashboardData(CUR.role, CUR.email);
+    if (u === "/dashboard" && method === "GET") return dashboardData(CUR);
     if (u === "/reports/costs" && method === "GET") {  // #7 finance period report
       if (["finance", "admin"].indexOf(CUR.role) < 0) throw err(403, "Finance only.");
       var q = (path.split("?")[1] || "").split("&").map(function (kv) { return kv.split("="); }).filter(function (a) { return a[0] === "period"; })[0];
       var period = q ? decodeURIComponent(q[1] || "all") : "all";
-      return reportCosts(period);
+      return reportCosts(period, CUR);   // #4 entity-filtered
     }
     if (u === "/projects/options" && method === "GET") {
-      return DB.projects.map(function (p) { return { id: p.id, title: p.fields.Title, code: p.fields.Code, entity: p.fields.Entity, stage: p.fields.Stage }; });
+      return visibleProjects(CUR).map(function (p) { return { id: p.id, title: p.fields.Title, code: p.fields.Code, entity: p.fields.Entity, stage: p.fields.Stage }; });
     }
 
     if (u === "/masters" && method === "GET") return { positions: DB.positions.slice(), benefits: DB.benefits.slice(), matrix: DB.matrix.slice(), domains: DB.domains.slice(), categories: DB.categories.slice() };
@@ -1946,6 +2254,68 @@ if(S.token&&S.user){enterApp();}
       if (["admin", "finance"].indexOf(CUR.role) < 0) throw err(403, "Only admin/finance can edit categories.");
       DB.categories = DB.categories.filter(function (c) { return c.toLowerCase() !== (body.name || "").toLowerCase(); }); return { ok: true, categories: DB.categories.slice() };
     }
+    // ---- #5A HR resource master (per entity) ----
+    if (u === "/resources-master" && method === "GET") {
+      return DB.resourceMaster.filter(function (r) { return canSeeEntity(CUR, r.entity); })   // #4 only your entities
+        .map(function (r) { return Object.assign({}, r); });
+    }
+    if (u === "/resources-master" && method === "POST") {
+      if (["hr", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only HR / admin can manage the resource master.");
+      if (!canSeeEntity(CUR, body.entity)) throw err(403, "You are not authorised for " + (body.entity || "that company") + ".");
+      var rid = nid(); DB.resourceMaster.push({ id: rid, empId: body.empId || "", name: body.name || "", designation: body.designation || "", entity: body.entity || "UXE", availability: (body.availability === undefined ? 100 : +body.availability) });
+      return { id: rid };
+    }
+    if (u === "/resources-master/bulk" && method === "POST") {   // bulk CSV/Excel upload
+      if (["hr", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only HR / admin can upload resources.");
+      var rows = body.rows || [], added = 0, updated = 0, skipped = [];
+      rows.forEach(function (row) {
+        var entity = row.entity || "UXE";
+        if (!canSeeEntity(CUR, entity)) { skipped.push((row.empId || row.name || "?") + " (not your company)"); return; }
+        var ex = DB.resourceMaster.filter(function (x) { return x.empId && row.empId && String(x.empId).toLowerCase() === String(row.empId).toLowerCase() && x.entity === entity; })[0];
+        if (ex) { ex.name = row.name || ex.name; ex.designation = row.designation || ex.designation; if (row.availability !== undefined && row.availability !== "") ex.availability = +row.availability; updated++; }
+        else { DB.resourceMaster.push({ id: nid(), empId: row.empId || "", name: row.name || "", designation: row.designation || "", entity: entity, availability: (row.availability === undefined || row.availability === "") ? 100 : +row.availability }); added++; }
+      });
+      return { ok: true, added: added, updated: updated, skipped: skipped };
+    }
+    if (parts[0] === "resources-master" && parts[1] && parts[1] !== "bulk") {
+      var rrow = DB.resourceMaster.filter(function (x) { return String(x.id) === parts[1]; })[0]; if (!rrow) throw err(404, "Not found.");
+      if (["hr", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only HR / admin can edit the resource master.");
+      if (!canSeeEntity(CUR, rrow.entity)) throw err(403, "Not your company.");
+      if (method === "PATCH") { ["empId", "name", "designation", "entity", "availability"].forEach(function (k) { if (body[k] !== undefined) rrow[k] = (k === "availability") ? +body[k] : body[k]; }); return { ok: true }; }
+      if (method === "DELETE") { DB.resourceMaster.splice(DB.resourceMaster.indexOf(rrow), 1); return { ok: true }; }
+    }
+    // ---- #5C/D availability check ----
+    if (u === "/availability" && method === "GET") {
+      var qp = {}; (path.split("?")[1] || "").split("&").forEach(function (kv) { var a = kv.split("="); qp[a[0]] = decodeURIComponent(a[1] || ""); });
+      var empId = qp.empId || "", master = DB.resourceMaster.filter(function (x) { return String(x.empId) === String(empId); })[0];
+      if (empId && master && !canSeeEntity(CUR, master.entity)) throw err(403, "Not your company.");
+      var asg = committedAssignments(empId, qp.exclude, CUR);
+      var cap = master ? (master.availability || 100) : 100;
+      var res = qp.requested !== undefined && qp.requested !== "" ? checkAllocation(asg, qp.start, qp.end, qp.requested, cap) : availabilityFor(asg, qp.start, qp.end, cap);
+      res.empId = empId; res.name = master ? master.name : "";
+      return res;
+    }
+    // ---- #3/#4 admin user / role / company management ----
+    if (u === "/admin/users" && method === "GET") {
+      if (CUR.role !== "admin") throw err(403, "Admin only.");
+      return DB.members.map(function (m) { return { email: m.email, name: m.name, role: m.role, entities: (m.entities || [m.entity || "UXE"]).slice() }; });
+    }
+    if (u === "/admin/users" && method === "POST") {
+      if (CUR.role !== "admin") throw err(403, "Admin only.");
+      var em = (body.email || "").toLowerCase().trim(); if (!em) throw err(400, "Email required.");
+      if (member(em)) throw err(400, "That user already exists.");
+      var ents = (body.entities && body.entities.length) ? body.entities : ["UXE"];
+      DB.members.push({ email: em, name: body.name || em, entity: ents[0], role: body.role || "requester", entities: ents.slice() });
+      return { ok: true };
+    }
+    if (parts[0] === "admin" && parts[1] === "users" && parts[2] && method === "PATCH") {
+      if (CUR.role !== "admin") throw err(403, "Admin only.");
+      var tgt = member(decodeURIComponent(parts[2])); if (!tgt) throw err(404, "User not found.");
+      if (body.role !== undefined) tgt.role = body.role;
+      if (body.name !== undefined) tgt.name = body.name;
+      if (body.entities !== undefined) { tgt.entities = (body.entities.length ? body.entities : ["UXE"]).slice(); tgt.entity = tgt.entities[0]; }
+      return { ok: true };
+    }
     if (parts[0] === "masters" && parts.length >= 2) {
       var kind = parts[1], coll = kind === "position" ? DB.positions : kind === "benefit" ? DB.benefits : DB.matrix;
       var roleOk = (kind === "classification") ? ["finance", "admin"] : ["hr", "finance", "admin"];
@@ -1958,7 +2328,7 @@ if(S.token&&S.user){enterApp();}
 
     if (u === "/projects/inbox") {
       var role = CUR.role, email = CUR.email;
-      return DB.projects.filter(function (p) { var f = p.fields;
+      return visibleProjects(CUR).filter(function (p) { var f = p.fields;   // #4 entity-scoped
         if (role === "admin" || role === "finance") return true;
         if (role === "requester") return (f.RequesterEmail || "") === email;
         if (role === "itmanager") return f.Stage === "Review-IT";
@@ -1969,18 +2339,31 @@ if(S.token&&S.user){enterApp();}
       }).map(function (p) { return { id: p.id, title: p.fields.Title, entity: p.fields.Entity, client: p.fields.Client, stage: p.fields.Stage, requester: p.fields.RequesterEmail }; });
     }
     if (u === "/projects" && method === "POST") {
+      var ent = body.entity || CUR.entity || "UXE";
+      if (!canSeeEntity(CUR, ent)) throw err(403, "You are not authorised for " + ent + ".");   // #4
       var id = nid(); var scen = (body.scenario === "partner") ? "partner" : "internal";  // #1 scenario at creation
-      DB.projects.push({ id: id, fields: { Title: body.title || "Untitled project", Serial: nextSerial(), Entity: body.entity || CUR.entity || "UXE", Scenario: scen, Stage: "Draft", HRStatus: "Pending", ProcStatus: "Pending", RequesterEmail: CUR.email, Requester: CUR.name, CurrentOwnerEmail: CUR.email, Currency: "AED", PricingMode: "margin", Rate: 45, OverheadPct: 20, IndirectPct: 8, Budget: 0, ParentRef: "", SAPMainCode: "", SAPMap: "{}" } }); return { id: id };  // #2 server-assigned serial
+      DB.projects.push({ id: id, fields: { Title: body.title || "Untitled project", Serial: nextSerial(), Entity: ent, Scenario: scen, Stage: "Draft", HRStatus: "Pending", ProcStatus: "Pending", RequesterEmail: CUR.email, Requester: CUR.name, CurrentOwnerEmail: CUR.email, Currency: "AED", PricingMode: "margin", Rate: 45, OverheadPct: 20, IndirectPct: 8, Budget: 0, ParentRef: "", SAPMainCode: "", SAPMap: "{}" } }); return { id: id };  // #2 server-assigned serial
     }
     if (parts[0] === "projects" && parts[1] && parts.length === 2) {
-      var P = proj(parts[1]); if (!P) throw err(404, "Not found.");
+      var P = guardProject(CUR, proj(parts[1]));   // #2/#4 access guard (404 if not yours/your entity)
       if (method === "GET") { var rs = kids(P.id, DB.resources), ls = kids(P.id, DB.costlines), tot = computeTotals(P.fields, rs, ls); return shape(CUR.role, P.fields, rs, ls, tot); }
       if (method === "PATCH") { var chk = filterPatch(CUR.role, P.fields.Stage, "project", (body.fields) || {}); if (!chk.ok) throw err(403, chk.error); Object.assign(P.fields, chk.fields); return { ok: true }; }
     }
-    if (parts[0] === "projects" && parts[2] === "history") { return DB.history.filter(function (h) { return String(h.ProjectRef) === String(parts[1]); }).sort(function (a, b) { return new Date(a.At) - new Date(b.At); }).map(function (h) { return { actor: h.Actor, action: h.Action, from: h.FromStage, to: h.ToStage, comment: h.Comment, at: h.At }; }); }
+    if (parts[0] === "projects" && parts[2] === "history") { guardProject(CUR, proj(parts[1])); return DB.history.filter(function (h) { return String(h.ProjectRef) === String(parts[1]); }).sort(function (a, b) { return new Date(a.At) - new Date(b.At); }).map(function (h) { return { actor: h.Actor, action: h.Action, from: h.FromStage, to: h.ToStage, comment: h.Comment, at: h.At }; }); }
     if (parts[0] === "projects" && parts[2] === "transition") {
-      var P2 = proj(parts[1]); if (!P2) throw err(404, "Not found.");
+      var P2 = guardProject(CUR, proj(parts[1]));
       var rs2 = kids(P2.id, DB.resources), ls2 = kids(P2.id, DB.costlines), tot2 = computeTotals(P2.fields, rs2, ls2);
+      // #5D server-side over-allocation guard on submit (bypass-proof; admin may override as an exception)
+      if (body.action === "submit" && CUR.role !== "admin") {
+        var over = [];
+        rs2.forEach(function (r) {
+          if (!r.empId || !r.startDate || !r.endDate || !(+r.util > 0)) return;
+          var mx = DB.resourceMaster.filter(function (x) { return String(x.empId) === String(r.empId); })[0];
+          var chk = checkAllocation(committedAssignments(r.empId, P2.id, CUR), r.startDate, r.endDate, r.util, mx ? (mx.availability || 100) : 100);
+          if (!chk.ok) over.push((r.person || r.empId) + " (" + chk.requested + "% requested, only " + chk.remaining + "% free)");
+        });
+        if (over.length) throw err(409, "Resource over-allocation — submission blocked: " + over.join("; ") + ". Reduce allocation or shorten dates (an admin may submit as an authorised exception).");
+      }
       var sap2 = sapComplete(distinctCategories(rs2, ls2), parseMap(P2.fields), P2.fields.SAPMainCode);  // #3 SAP gate (per-cat main inherits project main)
       var r = applyTransition(P2.fields, body.action, CUR.role, body.comment, tot2, body.params || {}, { resources: rs2.length, costlines: ls2.length }, sap2);
       if (!r.ok) throw err(400, r.error);
@@ -1991,20 +2374,20 @@ if(S.token&&S.user){enterApp();}
       return { ok: true, toStage: r.toStage };
     }
     if (parts[0] === "projects" && (parts[2] === "resources" || parts[2] === "costlines") && method === "POST") {
-      var P3 = proj(parts[1]); if (!P3) throw err(404, "Not found."); var kind2 = parts[2] === "resources" ? "resource" : "costline";
+      var P3 = guardProject(CUR, proj(parts[1])); var kind2 = parts[2] === "resources" ? "resource" : "costline";
       var chk3 = filterPatch(CUR.role, P3.fields.Stage, kind2, body); if (!chk3.ok) throw err(403, chk3.error);
-      var row3 = Object.assign({ id: nid(), projectId: P3.id, projectTitle: P3.fields.Title }, (kind2 === "resource" ? { person: "", position: "", type: "", category: "", salary: 0, qty: 1, months: 1, util: 100 } : { item: "", section: "Materials", category: "", vendor: "", uom: "", price: 0, qty: 1 }), chk3.fields);
+      var row3 = Object.assign({ id: nid(), projectId: P3.id, projectTitle: P3.fields.Title }, (kind2 === "resource" ? { person: "", position: "", type: "", category: "", empId: "", startDate: "", endDate: "", salary: 0, qty: 1, months: 1, util: 100 } : { item: "", section: "Materials", category: "", vendor: "", uom: "", price: 0, qty: 1 }), chk3.fields);
       (kind2 === "resource" ? DB.resources : DB.costlines).push(row3); return { id: row3.id };
     }
     if ((parts[0] === "resources" || parts[0] === "costlines") && parts[1]) {
       var kind4 = parts[0] === "resources" ? "resource" : "costline", coll4 = parts[0] === "resources" ? DB.resources : DB.costlines;
       var row4 = coll4.filter(function (x) { return String(x.id) === parts[1]; })[0]; if (!row4) throw err(404, "Not found.");
-      var P4 = proj(row4.projectId) || { fields: { Stage: "Draft" } };
+      var P4 = guardProject(CUR, proj(row4.projectId));   // #2/#4 can only touch lines of a project you may access
       if (method === "PATCH") { var chk4 = filterPatch(CUR.role, P4.fields.Stage, kind4, body); if (!chk4.ok) throw err(403, chk4.error); Object.assign(row4, chk4.fields); return { ok: true }; }
       if (method === "DELETE") { if (["requester", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only the requester can remove scope lines."); coll4.splice(coll4.indexOf(row4), 1); return { ok: true }; }
     }
     if (parts[0] === "projects" && parts[2] === "proposal" && method === "POST") {
-      var P5 = proj(parts[1]); if (!P5) throw err(404, "Not found.");
+      var P5 = guardProject(CUR, proj(parts[1]));
       if (["requester", "finance", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only requester or finance can create a proposal.");
       if (P5.fields.Stage !== "Approved") throw err(400, "Only approved costing sheets can be converted to a proposal.");
       if (!P5.fields.ProposalNo) { var yr = new Date().getFullYear(); var ex = DB.projects.map(function (p) { return p.fields.ProposalNo; }).filter(Boolean); var max = 0; ex.forEach(function (n) { var mm = (n || "").match(new RegExp("^CP-" + yr + "-(\\d+)$")); if (mm) max = Math.max(max, +mm[1]); }); P5.fields.ProposalNo = "CP-" + yr + "-" + String(max + 1).padStart(4, "0"); }
