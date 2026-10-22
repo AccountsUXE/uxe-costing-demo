@@ -424,16 +424,20 @@ function enterApp(){
   $("#navNew").style.display=(S.user.role==="requester"||S.user.role==="admin")?"":"none";
   // #4 entity switch only offers the companies this user is assigned to
   var ents=(S.user.entities&&S.user.entities.length)?S.user.entities:[S.user.entity||"UXE"];
+  var landing=ents.indexOf(S.user.entity)>=0?S.user.entity:ents[0];
+  S.activeEntity=landing;   // #4 the company the toggle is currently viewing
+  function pickEntity(e){S.activeEntity=e;setBrand(e);if(["dashboard","reports","costing"].indexOf(S.tab)>=0||!S.project){S.project=null;renderTab();}}
   var eu=$("#entUXE"),em=$("#entEMC");
-  if(eu){eu.style.display=(ents.indexOf("UXE")>=0)?"":"none";eu.onclick=function(){setBrand("UXE")};}
-  if(em){em.style.display=(ents.indexOf("EMCODE")>=0)?"":"none";em.onclick=function(){setBrand("EMCODE")};}
+  if(eu){eu.style.display=(ents.indexOf("UXE")>=0)?"":"none";eu.onclick=function(){pickEntity("UXE")};}
+  if(em){em.style.display=(ents.indexOf("EMCODE")>=0)?"":"none";em.onclick=function(){pickEntity("EMCODE")};}
   var single=(ents.length<2);
   var rent=document.querySelector(".rent");if(rent)rent.style.display=single?"none":"";
   if($("#entSec"))$("#entSec").style.display=single?"none":"";
   if($("#entDiv"))$("#entDiv").style.display=single?"none":"";
   buildTabs();
-  S.project=null;S.tab="dashboard";setBrand(ents.indexOf(S.user.entity)>=0?S.user.entity:ents[0]);renderTab();markTabs();
+  S.project=null;S.tab="dashboard";setBrand(landing);renderTab();markTabs();
 }
+function entParam(sep){var ents=(S.user&&S.user.entities)?S.user.entities:[];return (S.activeEntity&&ents.length>1)?((sep||"?")+"entity="+encodeURIComponent(S.activeEntity)):"";}
 
 /* ================= RAIL NAV ================= */
 var RAIL_ICON={
@@ -470,12 +474,13 @@ function markTabs(){Array.prototype.forEach.call($("#railnav").children,function
 
 /* ================= placeholder renderers (filled next) ================= */
 function renderTab(){ var v=$("#view"); v.innerHTML="";
-  if(S.tab==="dashboard"){ setBrand(S.user.entity); return renderDashboard(v); }
-  if(S.tab==="reports"){ setBrand(S.user.entity); return renderReports(v); }   // #7 standalone finance screen
-  if(S.tab==="resources"){ setBrand(S.user.entity); return renderResourceMaster(v); }  // #5A
-  if(S.tab==="admin"){ setBrand(S.user.entity); return renderAdmin(v); }               // #3/#4
-  if(S.tab==="finance"&&!S.project){ setBrand(S.user.entity); return renderFinance(v); }
-  if(S.tab==="hr"&&!S.project){ setBrand(S.user.entity); return renderHRMasters(v); }
+  var ab=S.activeEntity||S.user.entity;
+  if(S.tab==="dashboard"){ setBrand(ab); return renderDashboard(v); }
+  if(S.tab==="reports"){ setBrand(ab); return renderReports(v); }   // #7 standalone finance screen
+  if(S.tab==="resources"){ setBrand(ab); return renderResourceMaster(v); }  // #5A
+  if(S.tab==="admin"){ setBrand(ab); return renderAdmin(v); }               // #3/#4
+  if(S.tab==="finance"&&!S.project){ setBrand(ab); return renderFinance(v); }
+  if(S.tab==="hr"&&!S.project){ setBrand(ab); return renderHRMasters(v); }
   if(!S.project){ v.appendChild(el("div",{class:"card"},[el("div",{class:"body",text:"Open an item from your inbox, or create a new costing."})])); return; }
   setBrand((S.project.project&&S.project.project.Entity)||S.user.entity); // brand follows the open project's entity
   if(S.tab==="costing")return renderCosting(v);
@@ -486,7 +491,7 @@ async function showInbox(){
   S.project=null;S.tab="inbox";markTabs();setBrand(S.user.entity);
   var v=$("#view");v.innerHTML="";
   v.appendChild(el("h2",{text:"Your inbox"}));
-  try{var items=await api("/projects/inbox");
+  try{var items=await api("/projects/inbox"+entParam());
     if(!items.length){v.appendChild(el("div",{class:"card"},[el("div",{class:"body",text:"Nothing waiting on you right now."})]));return;}
     items.forEach(function(p){
       var row=el("div",{class:"inbox-row"},[
@@ -528,7 +533,7 @@ $("#navNew").onclick=async function(){
   try{
     var scenario=await chooseScenario();
     if(scenario===null)return;
-    var r=await api("/projects",{method:"POST",body:{scenario:scenario}});toast("Draft created");openProject(r.id);}
+    var r=await api("/projects",{method:"POST",body:{scenario:scenario,entity:S.activeEntity||S.user.entity}});toast("Draft created");openProject(r.id);}
   catch(e){toast(e.message);}
 };
 
@@ -1076,7 +1081,8 @@ function kpiCard(o){
 }
 async function renderDashboard(v){
   var card=el("div",{class:"dcard"},[el("div",{text:"Loading live data…"})]);v.appendChild(card);
-  var d;try{d=await api("/dashboard");}catch(e){card.firstChild.textContent=e.message;return;}
+  var d;try{d=await api("/dashboard"+entParam());}catch(e){card.firstChild.textContent=e.message;return;}
+  if(S.tab!=="dashboard")return;   // guard: user switched tabs while loading
   v.innerHTML="";
   var po=d.portfolio, first=(S.user.name||"there").split(/[ ,]/)[0];
   var wrap=el("div",{class:"dash"});
@@ -1272,7 +1278,8 @@ async function renderReports(v){
   var body=el("div",{});v.appendChild(body);
   async function load(period){
     body.innerHTML="";body.appendChild(el("p",{class:"muted",text:"Loading…"}));
-    try{var d=await api("/reports/costs?period="+encodeURIComponent(period));
+    try{var d=await api("/reports/costs?period="+encodeURIComponent(period)+entParam("&"));
+      if(S.tab!=="reports")return;   // guard: tab switched during load
       if(!sel._init){sel._init=1;sel.appendChild(el("option",{value:"all",text:"All periods"}));(d.periods||[]).forEach(function(pp){sel.appendChild(el("option",{value:pp,text:pp}));});sel.value=period;sel.onchange=function(){load(sel.value);};}
       renderReportBody(body,d);
     }catch(e){body.innerHTML="";body.appendChild(el("p",{class:"muted",text:e.message}));}
@@ -1370,6 +1377,7 @@ async function renderResourceMaster(v){
       var dtd=el("td",{});var db=el("button",{class:"btn",text:"×"});db.onclick=function(){api("/resources-master/"+r.id,{method:"DELETE"}).then(function(){toast("Removed");renderTab();}).catch(function(e){toast(e.message);});};dtd.appendChild(db);tr.appendChild(dtd);
       tb.appendChild(tr);
     });
+    if(S.tab!=="resources")return;   // guard: user switched tabs while the list loaded
     tbl.appendChild(tb);bd.appendChild(el("div",{class:"rowscroll"},[tbl]));card.appendChild(bd);v.appendChild(card);
     // utilisation review (guard against tab-switch during async load)
     var uc=await utilisationCard(list);if(S.tab==="resources")v.appendChild(uc);
@@ -2128,11 +2136,11 @@ if(S.token&&S.user){enterApp();}
     return false;
   }
   var WAITTEXT = { requester: "draft to submit", itmanager: "IT review", hr: "enter HR salaries", procurement: "enter vendor prices", finance: "set price & margin", ceo: "CEO approval (margin < 30%)", pm: "accept the approved costing" };
-  function dashboardData(cur) {
+  function dashboardData(cur, onlyEntity) {
     var role = cur.role, email = cur.email;
     var full = role === "admin" || role === "finance";
-    // #4 entity-scoped + #2 requester sees only own (both enforced by visibleProjects)
-    var list = visibleProjects(cur);
+    // #4 entity-scoped + #2 requester sees only own (both enforced by visibleProjects); onlyEntity = the toggled company
+    var list = visibleProjects(cur, onlyEntity);
     var port = { budget: 0, consumed: 0, direct: 0, indirect: 0, overhead: 0, cost: 0, price: 0, count: list.length, pending: 0 };
     // #2/#4 build the parent/program lookup ONLY from projects this user may see — a foreign ParentRef resolves to nothing, so no title can be enumerated across entities/owners
     var byId = {}; list.forEach(function (p) { byId[String(p.id)] = p; });
@@ -2175,8 +2183,8 @@ if(S.token&&S.user){enterApp();}
     return { role: role, full: full, portfolio: portOut, projects: projects, programs: programs };
   }
   // #7 Finance period-based cost report: costs by main project → category → resource/material, with totals.
-  function reportCosts(period, cur) {
-    var list = visibleProjects(cur).filter(function (p) { if (period === "all") return true; return String(p.fields.StartDate || "").slice(0, 7) === period; });  // #4 entity-scoped
+  function reportCosts(period, cur, onlyEntity) {
+    var list = visibleProjects(cur, onlyEntity).filter(function (p) { if (period === "all") return true; return String(p.fields.StartDate || "").slice(0, 7) === period; });  // #4 entity-scoped
     var projects = list.map(function (p) {
       var f = p.fields, rs = kids(p.id, DB.resources), ls = kids(p.id, DB.costlines), t = computeTotals(f, rs, ls), sapMap = parseMap(f);
       var rl = {}; t.lines.resource.forEach(function (x) { rl["r" + x._id] = x; });
@@ -2190,7 +2198,7 @@ if(S.token&&S.user){enterApp();}
     });
     var grand = projects.reduce(function (a, p) { return a + p.total; }, 0);
     // periods available (distinct YYYY-MM from project start dates)
-    var ps = {}; visibleProjects(cur).forEach(function (p) { var k = String(p.fields.StartDate || "").slice(0, 7); if (k) ps[k] = 1; });
+    var ps = {}; visibleProjects(cur, onlyEntity).forEach(function (p) { var k = String(p.fields.StartDate || "").slice(0, 7); if (k) ps[k] = 1; });
     return { period: period, periods: Object.keys(ps).sort(), projects: projects, grandTotal: grand, note: "Planned (committed) cost shown. Actual spend populates from SAP S/4HANA via OData once connected." };
   }
   function buildProposalLines(totals, vatPct) {
@@ -2206,14 +2214,14 @@ if(S.token&&S.user){enterApp();}
   /* ---------- helpers ---------- */
   function member(email) { email = (email || "").toLowerCase(); return DB.members.filter(function (m) { return m.email === email; })[0]; }
   function proj(id) { return DB.projects.filter(function (p) { return String(p.id) === String(id); })[0]; }
-  function kids(id, arr) { var p = proj(id); var t = p ? p.fields.Title : null; return arr.filter(function (x) { return x.projectId === p.id || x.projectTitle === t; }); }
+  function kids(id, arr) { var p = proj(id); if (!p) return []; return arr.filter(function (x) { return x.projectId === p.id; }); }  // match by id ONLY — title match cross-contaminated same-named drafts
   // #2/#4 access control — enforced server-side so URL/ID manipulation can't bypass it
   function curEntities(cur) { return (cur && cur.entities) ? cur.entities : ["UXE"]; }
   function canSeeEntity(cur, entity) { return curEntities(cur).indexOf(entity || "UXE") >= 0; }           // #4 entity segregation
   function ownsProject(cur, pf) { return cur.role === "requester" ? ((pf.RequesterEmail || "") === cur.email) : true; } // #2 requester owns only their own
   function canAccessProject(cur, pf) { return !!pf && canSeeEntity(cur, pf.Entity) && ownsProject(cur, pf); }
   // visible project list for the current user (used by every list endpoint)
-  function visibleProjects(cur) { return DB.projects.filter(function (p) { return canAccessProject(cur, p.fields); }); }
+  function visibleProjects(cur, onlyEntity) { return DB.projects.filter(function (p) { if (!canAccessProject(cur, p.fields)) return false; if (onlyEntity && canSeeEntity(cur, onlyEntity) && (p.fields.Entity || "UXE") !== onlyEntity) return false; return true; }); }
   function guardProject(cur, P) { if (!P || !canAccessProject(cur, P.fields)) throw err(404, "Not found."); return P; } // 404, not 403, so existence isn't leaked
   var CUR = null;
   // demo always starts at a clean login
@@ -2225,21 +2233,20 @@ if(S.token&&S.user){enterApp();}
   window.api = async function (path, opts) {
     opts = opts || {}; var method = opts.method || "GET", body = opts.body || {};
     var u = path.split("?")[0], parts = u.split("/").filter(Boolean);
+    var QS = {}; (path.split("?")[1] || "").split("&").forEach(function (kv) { var a = kv.split("="); if (a[0]) QS[a[0]] = decodeURIComponent(a[1] || ""); });  // query params (entity, period, …)
     await new Promise(function (r) { setTimeout(r, 120); }); // tiny latency so it feels real
 
     if (u === "/auth/request-otp") { if (!member(body.email)) return { ok: true, message: "Demo — this email isn't in the member list. Try requester@uxe.ai, finance@uxe.ai, or bassam.youssef@uxe.ai (code 000000)." }; return { ok: true, message: "Demo mode — your code is 000000." }; }
     if (u === "/auth/verify-otp") { var m = member(body.email); if (!m) throw err(403, "Not authorised."); if (String(body.code).trim() !== CODE) throw err(401, "Incorrect code (demo code is 000000)."); CUR = { email: m.email, role: m.role, name: m.name, entity: m.entity, entities: (m.entities || [m.entity || "UXE"]).slice() }; return { token: "demo." + m.email, user: CUR }; }
     if (!CUR) throw err(401, "Not signed in.");
     if (u === "/auth/me") return CUR;
-    if (u === "/dashboard" && method === "GET") return dashboardData(CUR);
+    if (u === "/dashboard" && method === "GET") return dashboardData(CUR, QS.entity);
     if (u === "/reports/costs" && method === "GET") {  // #7 finance period report
       if (["finance", "admin"].indexOf(CUR.role) < 0) throw err(403, "Finance only.");
-      var q = (path.split("?")[1] || "").split("&").map(function (kv) { return kv.split("="); }).filter(function (a) { return a[0] === "period"; })[0];
-      var period = q ? decodeURIComponent(q[1] || "all") : "all";
-      return reportCosts(period, CUR);   // #4 entity-filtered
+      return reportCosts(QS.period || "all", CUR, QS.entity);   // #4 entity-filtered
     }
     if (u === "/projects/options" && method === "GET") {
-      return visibleProjects(CUR).map(function (p) { return { id: p.id, title: p.fields.Title, code: p.fields.Code, entity: p.fields.Entity, stage: p.fields.Stage }; });
+      return visibleProjects(CUR, QS.entity).map(function (p) { return { id: p.id, title: p.fields.Title, code: p.fields.Code, entity: p.fields.Entity, stage: p.fields.Stage }; });
     }
 
     if (u === "/masters" && method === "GET") return { positions: DB.positions.slice(), benefits: DB.benefits.slice(), matrix: DB.matrix.slice(), domains: DB.domains.slice(), categories: DB.categories.slice() };
@@ -2311,6 +2318,11 @@ if(S.token&&S.user){enterApp();}
     if (parts[0] === "admin" && parts[1] === "users" && parts[2] && method === "PATCH") {
       if (CUR.role !== "admin") throw err(403, "Admin only.");
       var tgt = member(decodeURIComponent(parts[2])); if (!tgt) throw err(404, "User not found.");
+      // safety: an admin can't demote themselves, and the last admin can't be demoted (lock-out prevention)
+      if (body.role !== undefined && body.role !== "admin" && tgt.role === "admin") {
+        if (String(tgt.email).toLowerCase() === String(CUR.email).toLowerCase()) throw err(400, "You can't change your own admin role.");
+        if (DB.members.filter(function (m) { return m.role === "admin"; }).length <= 1) throw err(400, "At least one admin must remain.");
+      }
       if (body.role !== undefined) tgt.role = body.role;
       if (body.name !== undefined) tgt.name = body.name;
       if (body.entities !== undefined) { tgt.entities = (body.entities.length ? body.entities : ["UXE"]).slice(); tgt.entity = tgt.entities[0]; }
@@ -2328,7 +2340,7 @@ if(S.token&&S.user){enterApp();}
 
     if (u === "/projects/inbox") {
       var role = CUR.role, email = CUR.email;
-      return visibleProjects(CUR).filter(function (p) { var f = p.fields;   // #4 entity-scoped
+      return visibleProjects(CUR, QS.entity).filter(function (p) { var f = p.fields;   // #4 entity-scoped
         if (role === "admin" || role === "finance") return true;
         if (role === "requester") return (f.RequesterEmail || "") === email;
         if (role === "itmanager") return f.Stage === "Review-IT";
