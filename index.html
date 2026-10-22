@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Spline+Sans:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 :root{
-  --bg:#f4f6f8;--surface:#fff;--surface-2:#eef2f6;--line:#d8dfe6;--fg:#172029;--muted:#5a6773;--faint:#717d8a;
+  --bg:#f4f6f8;--surface:#fff;--surface-2:#eef2f6;--line:#d8dfe6;--fg:#172029;--muted:#5a6773;--faint:#6a7480;
   --accent:#1f3a86;--accent-weak:#e4e9f6;--accent-ink:#071952;--action:#ff8b00;--barbg:#071952;--baron:#fff;
   --good:#1f8a52;--good-bg:#e2f3e9;--warn:#b3781a;--warn-bg:#f8eed8;--crit:#c23b36;--crit-bg:#f8e2e1;
   --radius:10px;--shadow:0 1px 2px rgba(23,32,41,.06),0 2px 8px rgba(23,32,41,.05);
@@ -43,7 +43,7 @@ h1,h2,h3{margin:0;font-family:var(--fdisplay);font-weight:650}
 #gate .otp{display:flex;gap:10px;margin-bottom:2px}
 #gate .otpd{width:100%;box-sizing:border-box;min-width:0;height:58px;text-align:center;font-family:var(--fmono);font-size:24px;font-weight:600;padding:0;border-radius:12px;border:1.5px solid #273349;background:#131A2A;color:#fff;transition:border-color .13s,box-shadow .13s,background .13s,transform .13s}
 #gate .otpd:focus{outline:none;border-color:#60A5FA;box-shadow:0 0 0 4px rgba(96,165,250,.28);background:#161f31}
-#gate .otpd.filled{border-color:#4a5e82;background:#18233a}
+#gate .otpd.filled{border-color:#5a7099;background:#1b2740}
 #gate .otp.ok .otpd{border-color:#12a673;box-shadow:0 0 0 3px rgba(18,166,115,.22)}
 #gate .otp.shake{animation:otpshake .42s cubic-bezier(.36,.07,.19,.97)}
 @keyframes otpshake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-8px)}40%,60%{transform:translateX(8px)}}
@@ -2150,6 +2150,16 @@ if(S.token&&S.user){enterApp();}
   seedFull({ title: "Barrier & ANPR — Logistics", code: "BAL", client: "DP World", stage: "Approved", hr: "Done", proc: "Done", budget: 270000, sap: "UXE/PRJ/BAL/017",
     resources: [{ person: "R. Iyer", position: "Technician", salary: 7500, qty: 2, months: 2, util: 100 }],
     costlines: [{ item: "ANPR barriers", price: 9500, qty: 4, vendor: "Nedap" }], extra: { ProposalNo: "CP-2026-0007" } });
+  // Draft — requester-owned, internal (demo: requester fills the sheet, then Submits for IT review)
+  seedFull({ title: "Expo City — CCTV & Access", code: "EXC", client: "Expo City Dubai", stage: "Draft", budget: 450000, owner: "requester@uxe.ai", start: "2026-11-15", sap: "UXE/STA/EXC/041",
+    resources: [{ person: "N. Farouk", position: "Security Engineer", category: "Professional Services", salary: 13000, qty: 2, months: 4, util: 100 }],
+    costlines: [{ item: "Dome cameras", category: "Hardware & Materials", price: 820, qty: 60, vendor: "Hikvision" }],
+    extra: { RequesterEmail: "requester@uxe.ai", Requester: "Demo Requester" } });
+  // Review-IT — internal project awaiting IT sign-off (demo: IT reviews, then routes to Costing)
+  seedFull({ title: "Palm Jumeirah — Smart Surveillance", code: "PJS", client: "Nakheel", stage: "Review-IT", budget: 620000, owner: "it@uxe.ai", start: "2026-11-20", sap: "UXE/STA/PJS/042",
+    resources: [{ person: "H. Saleh", position: "Backend Engineer", category: "Backend", salary: 16000, qty: 2, months: 5, util: 100 }],
+    costlines: [{ item: "Edge AI servers", category: "Infrastructure (Servers/Network/Firewall)", section: "Materials", price: 28000, qty: 2, vendor: "Dell" }],
+    extra: { RequesterEmail: "requester@uxe.ai", Requester: "Demo Requester" } });
 
   /* ---------- pure logic (ported from backend) ---------- */
   function benefitMonthly(salary) {
