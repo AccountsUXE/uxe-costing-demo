@@ -448,6 +448,7 @@ var LOGOS={UXE:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAmwAAADfCAYAAABLVI
 var ROLE_LABEL={admin:"Administrator",requester:"Requester",itmanager:"IT Manager",hr:"HR",procurement:"Procurement",finance:"Finance",ceo:"CEO",pm:"Project Manager"};
 var STAGES=["Draft","Review-IT","Costing","Review-Finance","CEO-Approval","PM-Acceptance","Approved"];
 var STAGE_LABEL={"Draft":"Draft","Review-IT":"IT review","Costing":"Costing (HR + Procurement)","Review-Finance":"Finance","CEO-Approval":"CEO","PM-Acceptance":"PM acceptance","Approved":"Approved"};
+var STAGE_SHORT={"Draft":"Draft","Review-IT":"IT review","Costing":"Costing","Review-Finance":"Finance","CEO-Approval":"CEO","PM-Acceptance":"PM acceptance","Approved":"Approved"};
 var SCENARIO_LABEL={internal:"Internal-resources project",partner:"Partner-implemented software"};
 
 /* ===== #4/#5 work categories (admin-editable; list comes from /masters) ===== */
@@ -1260,7 +1261,7 @@ async function renderTimeline(){
 function moneyK(n){n=+n||0;var neg=n<0?"-":"";n=Math.abs(n);if(n>=1e6)return neg+"AED "+(n/1e6).toFixed(2)+"M";if(n>=1e3)return neg+"AED "+Math.round(n/1e3)+"K";return neg+"AED "+Math.round(n);}
 function pctColor(p){return p>=100?"#c23b36":(p>=85?"#e0892a":"var(--action)");}
 var STAGE_BADGE={ "Draft":["#5a6773","#e8ebef"],"Review-IT":["#2563eb","#e2ebfd"],"Costing":["#2563eb","#e2ebfd"],"Review-Finance":["#8a5a12","#f8eed8"],"CEO-Approval":["#9333ea","#f1e4fb"],"PM-Acceptance":["#0e7490","#dcf0f5"],"Approved":["#1f8a52","#e2f3e9"] };
-function stageBadge(stage){var c=STAGE_BADGE[stage]||["#5a6773","#e8ebef"];var s=el("span",{class:"sbadge",text:STAGE_LABEL[stage]||stage});s.style.color=c[0];s.style.background=c[1];return s;}
+function stageBadge(stage){var c=STAGE_BADGE[stage]||["#5a6773","#e8ebef"];var s=el("span",{class:"sbadge",text:STAGE_SHORT[stage]||STAGE_LABEL[stage]||stage});s.style.color=c[0];s.style.background=c[1];return s;}
 function gaugeEl(pct,size,label){
   var sw=Math.round(size*0.105), r=(size/2)-sw/2-2, c=2*Math.PI*r, p=Math.max(0,Math.min(100,pct)), dash=(p/100*c).toFixed(1), col=pctColor(pct);
   var w=el("div",{class:"gaugewrap"});w.style.width=size+"px";w.style.height=size+"px";
@@ -1306,6 +1307,25 @@ function kpiCard(o){
   e.appendChild(el("div",{html:"<svg width='100%' height='34' viewBox='0 0 160 34' preserveAspectRatio='none' aria-hidden='true'><path d='"+sp.fill+"' fill='"+o.sf+"' stroke='none'/><path d='"+sp.line+"' fill='none' stroke='"+o.sc+"' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>"}));
   return e;
 }
+// permission-safe secondary panel for non-finance roles: project pipeline by workflow stage
+function pipelinePanel(d){
+  var order=["Draft","Review-IT","Costing","Review-Finance","CEO-Approval","PM-Acceptance","Approved"];
+  var colors={"Draft":"#8aa3e8","Review-IT":"#4d6fd4","Costing":"#1f3a86","Review-Finance":"var(--action)","CEO-Approval":"#7a3fcf","PM-Acceptance":"#12a673","Approved":"#0b7a53"};
+  var counts={};(d.projects||[]).forEach(function(p){counts[p.stage]=(counts[p.stage]||0)+1;});
+  var present=order.filter(function(s){return counts[s];});
+  var total=(d.projects||[]).length;
+  var c=el("div",{class:"dcard soft"});
+  var h=el("div");h.style.cssText="display:flex;align-items:center;gap:10px";h.appendChild(el("div",{class:"t",text:"Your pipeline"}));
+  h.appendChild(el("span",{class:"finchip",html:"<svg width='11' height='11' viewBox='0 0 24 24' fill='none'><path d='M4 7h16M7 12h10M10 17h4' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'/></svg> by stage"}));
+  c.appendChild(h);
+  c.appendChild(el("p",{class:"muted",html:"Where your "+total+" project"+(total===1?"":"s")+" "+(total===1?"sits":"sit")+" in the approval workflow right now."}));
+  if(!present.length){c.appendChild(el("div",{class:"muted",style:"padding:24px 0",text:"No active projects in your pipeline."}));return c;}
+  var bar=el("div",{class:"buildbar"});present.forEach(function(s){var seg=el("div",{text:String(counts[s])});seg.style.flex=String(counts[s]);seg.style.background=colors[s]||"#8aa3e8";bar.appendChild(seg);});c.appendChild(bar);
+  var leg=el("div",{class:"bleg"});present.forEach(function(s){var e=el("div");e.innerHTML="<div class='k' style='white-space:nowrap'><span style='width:10px;height:10px;border-radius:3px;background:"+(colors[s]||"#8aa3e8")+"'></span>"+(STAGE_SHORT[s]||s)+"</div><div class='v'>"+counts[s]+"</div>";leg.appendChild(e);});c.appendChild(leg);
+  var inflow=(counts["Review-IT"]||0)+(counts["Costing"]||0)+(counts["Review-Finance"]||0)+(counts["CEO-Approval"]||0)+(counts["PM-Acceptance"]||0);
+  var sum=el("div",{class:"bsum"});sum.innerHTML="<div><div class='sl'>Drafts</div><div class='sv'>"+(counts["Draft"]||0)+"</div></div><div><div class='sl'>In workflow</div><div class='sv'>"+inflow+"</div></div><div style='text-align:right'><div class='sl'>Approved</div><div class='sv' style='color:#0b7a53'>"+(counts["Approved"]||0)+"</div></div>";c.appendChild(sum);
+  return c;
+}
 async function renderDashboard(v){
   var card=el("div",{class:"dcard"},[el("div",{text:"Loading live data…"})]);v.appendChild(card);
   var d;try{d=await api("/dashboard"+entParam());}catch(e){card.firstChild.textContent=e.message;return;}
@@ -1316,8 +1336,9 @@ async function renderDashboard(v){
   // hero
   var hero=el("div",{class:"dhero"});var hl=el("div");
   var _hr=new Date().getHours();var _greet=_hr<12?"Good morning":(_hr<18?"Good afternoon":"Good evening");
-  hl.appendChild(el("div",{class:"big",text:(d.full?(_greet+", "+first):"Your projects — budget health")}));
-  hl.appendChild(el("p",{text:d.full?("Portfolio budget health across "+po.count+" active projects · figures stream live from SAP."):"Budget consumed and balance remaining. The cost breakdown stays with Finance."}));
+  var _subt={requester:"Your projects — budget consumed and balance remaining across your workspace.",hr:"Costings awaiting your HR input, with budget health across your queue.",procurement:"Costings awaiting your vendor pricing, across your queue.",itmanager:"Projects awaiting your IT review, across your queue.",ceo:"Costings awaiting your approval — margin below 30%.",pm:"Approved costings awaiting your acceptance."};
+  hl.appendChild(el("div",{class:"big",text:_greet+", "+first}));
+  hl.appendChild(el("p",{text:d.full?("Portfolio budget health across "+po.count+" active projects · figures stream live from SAP S/4HANA."):(_subt[d.role||S.user.role]||("Budget health across your "+po.count+" project"+(po.count===1?"":"s")+"."))}));
   hero.appendChild(hl);wrap.appendChild(hero);
 
   if(d.full){
@@ -1386,38 +1407,61 @@ async function renderDashboard(v){
     scroll.appendChild(rows);tc.appendChild(scroll);wrap.appendChild(tc);
 
   } else {
-    // stakeholder — budget consumption + available balance only (no cost breakdown shown)
-    var h3=el("div");h3.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:18px";
-    if(window.matchMedia&&window.matchMedia("(max-width:1000px)").matches)h3.style.gridTemplateColumns="1fr";
-    var g=el("div",{class:"dcard soft"});var gt=el("div",{class:"t",text:"Overall budget consumed"});g.appendChild(gt);g.appendChild(gaugeEl(po.pct,200,"of "+moneyK(po.budget)));h3.appendChild(g);
-    var bal=el("div",{class:"dcard soft"});bal.style.cssText+=";display:flex;flex-direction:column;justify-content:center";
-    bal.appendChild(el("div",{class:"t",text:"Available balance"}));
-    var bn=el("div",{text:moneyK(po.available)});bn.style.cssText="font-size:44px;font-weight:800;letter-spacing:-.03em;color:#0b7a53;line-height:1.05;margin-top:10px";bal.appendChild(bn);
-    bal.appendChild(el("div",{class:"muted",html:"remaining across your "+po.count+" project"+(po.count===1?"":"s")}));
-    var pbar=el("div",{class:"pbar"});pbar.style.cssText="margin-top:18px;height:10px";var pf=el("div");pf.style.width=Math.min(100,po.pct)+"%";pf.style.background=pctColor(po.pct);pbar.appendChild(pf);bal.appendChild(pbar);
-    var brow=el("div");brow.style.cssText="display:flex;justify-content:space-between;font-size:11.5px;color:var(--faint);margin-top:7px;font-weight:600";brow.innerHTML="<span>"+moneyK(po.consumed)+" committed</span><span>"+(100-po.pct)+"% left</span>";bal.appendChild(brow);h3.appendChild(bal);
-    wrap.appendChild(h3);
+    // premium stakeholder dashboard — same visual language as finance, minus the finance-only cost breakdown
+    var _wal="<svg width='19' height='19' viewBox='0 0 24 24' fill='none'><rect x='3' y='6' width='18' height='13' rx='2' stroke='currentColor' stroke-width='1.7'/><path d='M3 10h18' stroke='currentColor' stroke-width='1.7'/></svg>";
+    var _clk="<svg width='19' height='19' viewBox='0 0 24 24' fill='none'><circle cx='12' cy='12' r='8' stroke='currentColor' stroke-width='1.7'/><path d='M12 12V7M12 12l4 2' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'/></svg>";
+    var _cn="<svg width='19' height='19' viewBox='0 0 24 24' fill='none'><path d='M12 3v18M17 7a4 4 0 0 0-5-2c-3 1-3 4 0 5s3 4 0 5a4 4 0 0 1-5-2' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'/></svg>";
+    var _bl="<svg width='19' height='19' viewBox='0 0 24 24' fill='none'><path d='M12 8v4l3 2' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'/><circle cx='12' cy='12' r='8' stroke='currentColor' stroke-width='1.7'/></svg>";
+    var ks=el("div",{class:"kpis"});
+    ks.appendChild(kpiCard({label:"Budget in view",value:moneyK(po.budget),icon:_wal,ib:"var(--accent-weak)",ic:"var(--accent-ink)",delta:po.count+" project"+(po.count===1?"":"s"),dc:"var(--muted)",db:"var(--surface-2)",pts:[4,5,4.5,6,6.5,7,8.2],sc:"#4d6fd4",sf:"rgba(77,111,212,.1)"}));
+    ks.appendChild(kpiCard({label:"Consumed",value:po.pct+"%",vc:"var(--action)",icon:_clk,ib:"var(--accent-weak)",ic:"var(--action)",delta:moneyK(po.consumed),dc:"#b3541e",db:"#fdf0e5",pts:[6,6.5,7,6.8,7.5,8,9],sc:"var(--action)",sf:"rgba(245,130,31,.1)"}));
+    ks.appendChild(kpiCard({label:"Available balance",value:moneyK(po.available),vc:"#0b7a53",icon:_cn,ib:"var(--good-bg)",ic:"#0b7a53",delta:(100-po.pct)+"% left",dc:"#0b7a53",db:"var(--good-bg)",pts:[9,8,8.5,7.5,7,6.5,6.2],sc:"#12a673",sf:"rgba(18,166,115,.1)"}));
+    ks.appendChild(kpiCard({label:"Awaiting you",value:String(po.pending),vc:"#7a3fcf",icon:_bl,ib:"#f3e9fb",ic:"#7a3fcf",delta:(po.pending?"need action":"all clear"),dc:"#7a3fcf",db:"#f3e9fb",pts:[2,3,2.5,4,3.5,5,5],sc:"#7a3fcf",sf:"rgba(122,63,207,.1)"}));
+    wrap.appendChild(ks);
+
+    var row=el("div",{class:"dgrid2"});
+    var gc=el("div",{class:"dcard soft"});gc.appendChild(el("div",{class:"t",text:"Budget consumption"}));gc.appendChild(gaugeEl(po.pct,216,"of "+moneyK(po.budget)));
+    var gs=el("div",{class:"gstat"});gs.innerHTML="<div><div class='gl'><span style='width:9px;height:9px;border-radius:3px;background:var(--action)'></span>Committed</div><div class='gv'>"+moneyK(po.consumed)+"</div></div><div><div class='gl'><span style='width:9px;height:9px;border-radius:3px;background:#12a673'></span>Available</div><div class='gv' style='color:#0b7a53'>"+moneyK(po.available)+"</div></div>";gc.appendChild(gs);row.appendChild(gc);
+    row.appendChild(pipelinePanel(d));
+    wrap.appendChild(row);
 
     var _spp=programsPanel(d);if(_spp)wrap.appendChild(_spp);
 
-    var ph2=el("div");ph2.style.cssText="display:flex;align-items:center;justify-content:space-between";ph2.innerHTML="<div style='font-size:16px;font-weight:800'>Projects assigned to you</div><span style='font-size:12.5px;color:var(--faint);font-weight:600'>"+po.count+" project"+(po.count===1?"":"s")+" · updates in real time</span>";wrap.appendChild(ph2);
-    var cards=el("div",{class:"pcards"});
-    if(!d.projects.length)cards.appendChild(el("div",{class:"pcard",text:"No projects assigned to you yet."}));
+    var _anote={requester:"drafts that need you to submit",hr:"costings that need your HR salaries",procurement:"costings that need your vendor prices",itmanager:"projects that need your IT review",ceo:"costings that need your approval",pm:"approved costings that need your acceptance"};
+    var pend=d.projects.filter(function(p){return p.wait;});
+    if(pend.length){
+      var ap=el("div",{class:"dcard soft"});ap.style.padding="18px 22px";
+      var apH=el("div");apH.style.cssText="display:flex;align-items:center;gap:9px;margin-bottom:14px;flex-wrap:wrap";apH.innerHTML="<div style='font-size:15px;font-weight:800'>Awaiting you</div><span style='font-size:11.5px;font-weight:800;color:var(--action);background:var(--accent-weak);border-radius:999px;padding:2px 9px'>"+pend.length+"</span><span class='muted' style='font-size:12.5px;margin-left:4px'>"+(_anote[d.role||S.user.role]||("item"+(pend.length===1?"":"s")+" that need your action"))+"</span>";ap.appendChild(apH);
+      var aprow=el("div");aprow.style.cssText="display:flex;gap:12px;flex-wrap:wrap";
+      pend.forEach(function(p,i){
+        var ai=el("div");ai.style.cssText="display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;padding:12px 14px;flex:1 1 340px;min-width:280px";
+        var av=avatarEl(p.name,i,34);av.style.borderRadius="10px";ai.appendChild(av);
+        var info=el("div");info.style.cssText="flex:1;min-width:0";info.innerHTML="<div style='font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'>"+p.name+"</div><div style='font-size:11.5px;color:var(--faint)'>"+p.client+" · "+(p.waitText||"awaiting you")+"</div>";ai.appendChild(info);
+        var open=el("button",{text:"Open"});open.style.cssText="font:inherit;font-size:12.5px;font-weight:700;color:#fff;background:#12a673;border:none;border-radius:9px;padding:9px 18px;cursor:pointer;flex:none";open.onclick=function(){openProject(p.id)};ai.appendChild(open);
+        aprow.appendChild(ai);
+      });
+      ap.appendChild(aprow);wrap.appendChild(ap);
+    }
+
+    // projects table — same premium style as finance, without the finance-only margin column
+    var tc=el("div",{class:"ptbl soft"});
+    var ph=el("div",{class:"ph"});ph.innerHTML="<div class='pt'>Your projects</div><span style='font-size:12px;color:var(--faint);font-weight:600'>"+po.count+" active</span>";tc.appendChild(ph);
+    var scroll=el("div");scroll.style.overflowX="auto";
+    var rows=el("div");rows.style.cssText="padding:6px 0 10px;min-width:760px";
+    if(!d.projects.length)rows.appendChild(el("div",{class:"muted",style:"padding:22px 4px",text:"No projects assigned to you yet."}));
     d.projects.forEach(function(p,i){
-      var c=el("div",{class:"pcard soft"});
-      var top=el("div");top.style.cssText="display:flex;align-items:flex-start;gap:13px";
-      top.appendChild(avatarEl(p.name,i,44));
-      var nm=el("div");nm.style.cssText="flex:1;min-width:0";nm.innerHTML="<div style='font-size:15.5px;font-weight:700'>"+p.name+"</div><div style='font-size:12.5px;color:var(--faint);margin-top:1px'>"+p.client+" · "+p.entity+(p.isExtension?" · ↳ ext":"")+"</div>";top.appendChild(nm);
-      top.appendChild(stageBadge(p.stage));c.appendChild(top);
-      var pw=el("div");pw.style.marginTop="17px";pw.innerHTML="<div style='display:flex;justify-content:space-between;font-size:11.5px;color:var(--faint);margin-bottom:6px;font-weight:600'><span>Budget consumed</span><span style='font-weight:800;color:var(--fg)'>"+p.pct+"%</span></div>";
-      var pb=el("div",{class:"pbar"});pb.style.height="9px";var pf2=el("div");pf2.style.width=Math.min(100,p.pct)+"%";pf2.style.background=pctColor(p.pct);pb.appendChild(pf2);pw.appendChild(pb);c.appendChild(pw);
-      var ft=el("div");ft.style.cssText="display:flex;justify-content:space-between;border-top:1px solid var(--line);margin-top:17px;padding-top:14px";
-      ft.innerHTML="<div><div style='font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;font-weight:600'>Budget</div><div style='font-size:16px;font-weight:800'>"+moneyK(p.budget)+"</div></div><div style='text-align:right'><div style='font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;font-weight:600'>Available</div><div style='font-size:16px;font-weight:800;color:"+(p.available<0?"#c23b36":"#0b7a53")+"'>"+moneyK(p.available)+"</div></div>";c.appendChild(ft);
-      if(p.wait){var wz=el("div");wz.style.cssText="margin-top:15px;display:flex;align-items:center;gap:9px;background:var(--warn-bg);border-radius:11px;padding:10px 13px";var ob=el("a",{href:"#",text:"Open →"});ob.style.cssText="font-size:12.5px;font-weight:800;color:var(--accent-ink);margin-left:auto";ob.onclick=function(e){e.preventDefault();openProject(p.id);};wz.innerHTML="<span style='width:8px;height:8px;border-radius:50%;background:var(--warn)'></span><span style='font-size:12.5px;color:var(--warn);font-weight:700;flex:1'>Waiting on you — "+p.waitText+"</span>";wz.appendChild(ob);c.appendChild(wz);}
-      else{var oc=el("a",{href:"#",text:"View details →"});oc.style.cssText="display:inline-block;margin-top:14px;font-size:12.5px;font-weight:700;color:var(--accent-ink)";oc.onclick=function(e){e.preventDefault();openProject(p.id);};c.appendChild(oc);}
-      cards.appendChild(c);
+      var r=el("div",{class:"prow"});
+      r.appendChild(avatarEl(p.name,i,40));
+      var nm=el("div");nm.style.cssText="flex:2;min-width:0";nm.innerHTML="<div style='font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'>"+p.name+"</div><div style='font-size:12px;color:var(--faint)'>"+p.client+" · "+p.entity+(p.isExtension?" · ↳ ext":"")+"</div>";r.appendChild(nm);
+      var bd=el("div");bd.style.cssText="flex:none;width:86px;text-align:right";bd.innerHTML="<div style='font-size:13px;font-weight:700'>"+moneyK(p.budget)+"</div><div style='font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em'>budget</div>";r.appendChild(bd);
+      var cb=el("div");cb.style.cssText="flex:1.4;min-width:140px";cb.innerHTML="<div style='display:flex;justify-content:space-between;font-size:10.5px;color:var(--faint);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em'><span>consumed</span><span style='font-weight:800;color:var(--fg);text-transform:none'>"+p.pct+"%</span></div>";
+      var pb=el("div",{class:"pbar"});var pf=el("div");pf.style.width=Math.min(100,p.pct)+"%";pf.style.background=pctColor(p.pct);pb.appendChild(pf);cb.appendChild(pb);r.appendChild(cb);
+      var bl=el("div");bl.style.cssText="flex:none;width:92px;text-align:right";bl.innerHTML="<div style='font-size:13.5px;font-weight:800;color:"+(p.available<0?"#c23b36":"#0b7a53")+"'>"+moneyK(p.available)+"</div><div style='font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em'>available</div>";r.appendChild(bl);
+      var sw=el("div");sw.style.cssText="flex:none;width:130px;text-align:right";sw.appendChild(stageBadge(p.stage));r.appendChild(sw);
+      r.style.cursor="pointer";r.onclick=function(){openProject(p.id)};
+      rows.appendChild(r);
     });
-    wrap.appendChild(cards);
+    scroll.appendChild(rows);tc.appendChild(scroll);wrap.appendChild(tc);
   }
   wrap.appendChild(el("p",{class:"muted",html:"Live from SAP S/4HANA via OData · amounts in AED. Demo data shown."}));
   v.appendChild(wrap);
