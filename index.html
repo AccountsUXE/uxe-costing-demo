@@ -456,6 +456,600 @@ tr.flagged td{background:var(--crit-bg)!important}
 <div id="toast" class="toast hidden"></div>
 
 <script>
+/*
+ * Working-hours SLA clock for a UAE company (Asia/Dubai, fixed UTC+4, no DST).
+ *
+ * ES5-safe (var only, no imports, no external libs). Works in browser and Node.
+ *
+ * TIMEZONE MODEL
+ * --------------
+ * All timestamps are epoch milliseconds (numbers, UTC-based as JS Date uses).
+ * Dubai is a fixed UTC+4 offset year-round (no daylight saving). To read the
+ * Dubai-local wall clock from an epoch ms value we add DUBAI_OFFSET_MS and then
+ * use the UTC getters (getUTCDay / getUTCHours / getUTCMinutes / getUTCFullYear
+ * etc.) on the shifted Date. This makes the logic independent of the host
+ * machine's local timezone. To convert a Dubai-local wall-clock moment back to
+ * epoch ms we build it with Date.UTC(...) and subtract DUBAI_OFFSET_MS.
+ */
+
+(function (root, factory) {
+  var mod = factory();
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = mod;
+  } else {
+    root.SLAClock = mod;
+  }
+})(typeof self !== "undefined" ? self : this, function () {
+  "use strict";
+
+  var DUBAI_OFFSET_MS = 4 * 3600 * 1000; // fixed UTC+4
+  var MS_PER_DAY = 24 * 3600 * 1000;
+  var MS_PER_HOUR = 3600 * 1000;
+
+  /*
+   * WORK_CALENDAR: the single editable config object.
+   *   days:     map keyed by weekday number (0=Sun .. 6=Sat). Each value is an
+   *             array of {start:"HH:MM", end:"HH:MM"} working windows in Dubai
+   *             local time. An empty array means a non-working day.
+   *   holidays: array of "YYYY-MM-DD" Dubai-local dates that are fully
+   *             non-working (override the day's windows).
+   *
+   * Dubai schedule:
+   *   Mon-Thu: 07:30-15:30 (8.0h)   Fri: 07:00-12:30 (5.5h)   Sat/Sun: off
+   */
+  var WORK_CALENDAR = {
+    days: {
+      0: [], // Sunday     - non-working
+      1: [{ start: "07:30", end: "15:30" }], // Monday    8.0h
+      2: [{ start: "07:30", end: "15:30" }], // Tuesday   8.0h
+      3: [{ start: "07:30", end: "15:30" }], // Wednesday 8.0h
+      4: [{ start: "07:30", end: "15:30" }], // Thursday  8.0h
+      5: [{ start: "07:00", end: "12:30" }], // Friday    5.5h
+      6: [] // Saturday    - non-working
+    },
+    holidays: ["2026-01-01", "2026-12-02", "2026-12-03"] // default UAE 2026 (editable)
+  };
+
+  // ---- time helpers (all in Dubai-local via UTC-shift trick) ----
+
+  // "HH:MM" -> minutes since midnight
+  function hhmmToMin(s) {
+    var h = parseInt(s.slice(0, 2), 10);
+    var m = parseInt(s.slice(3, 5), 10);
+    return h * 60 + m;
+  }
+
+  // two-digit zero pad
+  function pad2(n) {
+    return n < 10 ? "0" + n : "" + n;
+  }
+
+  // Dubai-local "YYYY-MM-DD" key for an epoch ms
+  function dubaiDateKey(ms) {
+    var d = new Date(ms + DUBAI_OFFSET_MS);
+    return (
+      d.getUTCFullYear() +
+      "-" +
+      pad2(d.getUTCMonth() + 1) +
+      "-" +
+      pad2(d.getUTCDate())
+    );
+  }
+
+  // Dubai-local weekday (0=Sun..6=Sat) for an epoch ms
+  function dubaiWeekday(ms) {
+    return new Date(ms + DUBAI_OFFSET_MS).getUTCDay();
+  }
+
+  // epoch ms of Dubai-local midnight (00:00) of the day containing `ms`
+  function dubaiMidnight(ms) {
+    var d = new Date(ms + DUBAI_OFFSET_MS);
+    var utcMid = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    return utcMid - DUBAI_OFFSET_MS;
+  }
+
+  function isHoliday(ms, cal) {
+    var key = dubaiDateKey(ms);
+    var h = cal.holidays || [];
+    for (var i = 0; i < h.length; i++) {
+      if (h[i] === key) return true;
+    }
+    return false;
+  }
+
+  // Return the list of working windows for the day containing `ms`, as
+  // absolute epoch-ms {s, e} pairs. Empty if non-working (weekend/holiday).
+  function windowsForDay(ms, cal) {
+    var out = [];
+    if (isHoliday(ms, cal)) return out;
+    var wd = dubaiWeekday(ms);
+    var specs = cal.days[wd] || [];
+    var mid = dubaiMidnight(ms);
+    for (var i = 0; i < specs.length; i++) {
+      out.push({
+        s: mid + hhmmToMin(specs[i].start) * 60000,
+        e: mid + hhmmToMin(specs[i].end) * 60000
+      });
+    }
+    return out;
+  }
+
+  // ---- public: workingMsBetween ----
+  function workingMsBetween(startMs, endMs, cal) {
+    if (endMs <= startMs) return 0;
+    var total = 0;
+    // iterate day by day from the Dubai-local midnight of startMs
+    var dayMid = dubaiMidnight(startMs);
+    while (dayMid < endMs) {
+      var wins = windowsForDay(dayMid, cal);
+      for (var i = 0; i < wins.length; i++) {
+        var s = wins[i].s < startMs ? startMs : wins[i].s;
+        var e = wins[i].e > endMs ? endMs : wins[i].e;
+        if (e > s) total += e - s;
+      }
+      // advance one calendar day (use +25h then re-floor to be DST-proof; no
+      // DST here but this keeps it robust against any boundary arithmetic)
+      dayMid = dubaiMidnight(dayMid + MS_PER_DAY + MS_PER_HOUR);
+    }
+    return total;
+  }
+
+  // ---- public: addWorkingHours ----
+  function addWorkingHours(startMs, hours, cal) {
+    var remaining = hours * MS_PER_HOUR;
+    if (remaining <= 0) {
+      // snap to next working instant if outside a window, else return as-is
+      var nowWin = currentOrNextWindowStart(startMs, cal);
+      return remaining === 0 ? nowWin : startMs;
+    }
+    var dayMid = dubaiMidnight(startMs);
+    // guard against runaway loops (e.g. all-holiday config)
+    var guardDays = 0;
+    while (remaining > 0) {
+      if (guardDays++ > 3650) {
+        throw new Error("addWorkingHours: no working time found within 10 years");
+      }
+      var wins = windowsForDay(dayMid, cal);
+      for (var i = 0; i < wins.length; i++) {
+        var s = wins[i].s < startMs ? startMs : wins[i].s;
+        var e = wins[i].e;
+        if (e <= s) continue;
+        var avail = e - s;
+        if (avail >= remaining) {
+          return s + remaining;
+        }
+        remaining -= avail;
+      }
+      dayMid = dubaiMidnight(dayMid + MS_PER_DAY + MS_PER_HOUR);
+    }
+    return dayMid; // unreachable
+  }
+
+  // helper: epoch ms of the next working instant at/after `ms`
+  function currentOrNextWindowStart(ms, cal) {
+    var dayMid = dubaiMidnight(ms);
+    var guard = 0;
+    while (guard++ < 3650) {
+      var wins = windowsForDay(dayMid, cal);
+      for (var i = 0; i < wins.length; i++) {
+        if (ms <= wins[i].s) return wins[i].s;
+        if (ms < wins[i].e) return ms; // already inside a window
+      }
+      dayMid = dubaiMidnight(dayMid + MS_PER_DAY + MS_PER_HOUR);
+    }
+    throw new Error("currentOrNextWindowStart: no working window found");
+  }
+
+  // ---- public: remainingWorkingMs ----
+  function remainingWorkingMs(nowMs, startMs, slaHours, cal) {
+    var deadline = addWorkingHours(startMs, slaHours, cal);
+    if (nowMs < deadline) {
+      return workingMsBetween(nowMs, deadline, cal); // positive
+    }
+    return -workingMsBetween(deadline, nowMs, cal); // negative (overdue)
+  }
+
+  // ---- public: slaStatus ----
+  function slaStatus(opts) {
+    var cal = opts.cal;
+    var slaMs = opts.slaHours * MS_PER_HOUR;
+    var approachingPct =
+      typeof opts.approachingPct === "number" ? opts.approachingPct : 0.25;
+    var deadlineMs = addWorkingHours(opts.startMs, opts.slaHours, cal);
+
+    if (opts.completedMs != null) {
+      var usedMs = workingMsBetween(opts.startMs, opts.completedMs, cal);
+      if (usedMs <= slaMs) {
+        return {
+          status: "completed_ontime",
+          deadlineMs: deadlineMs,
+          remainingMs: slaMs - usedMs,
+          usedMs: usedMs,
+          overByMs: 0
+        };
+      }
+      return {
+        status: "completed_late",
+        deadlineMs: deadlineMs,
+        remainingMs: slaMs - usedMs,
+        usedMs: usedMs,
+        overByMs: usedMs - slaMs
+      };
+    }
+
+    var remainingMs = remainingWorkingMs(opts.nowMs, opts.startMs, opts.slaHours, cal);
+    var usedWork = workingMsBetween(opts.startMs, opts.nowMs, cal);
+    if (remainingMs <= 0) {
+      return {
+        status: "overdue",
+        deadlineMs: deadlineMs,
+        remainingMs: remainingMs,
+        usedMs: usedWork,
+        overByMs: -remainingMs
+      };
+    }
+    if (remainingMs <= approachingPct * slaMs) {
+      return {
+        status: "approaching",
+        deadlineMs: deadlineMs,
+        remainingMs: remainingMs,
+        usedMs: usedWork,
+        overByMs: 0
+      };
+    }
+    return {
+      status: "within",
+      deadlineMs: deadlineMs,
+      remainingMs: remainingMs,
+      usedMs: usedWork,
+      overByMs: 0
+    };
+  }
+
+  // ---- public: fmtWorkingDuration ----
+  // Short human string. A working DAY is treated as 8h for display.
+  // 22500000ms -> "6h 15m"; a value >= 8h may show "1d 2h".
+  function fmtWorkingDuration(ms) {
+    var neg = ms < 0;
+    ms = Math.abs(ms);
+    var totalMin = Math.round(ms / 60000);
+    var WORK_DAY_MIN = 8 * 60;
+    var days = Math.floor(totalMin / WORK_DAY_MIN);
+    var rem = totalMin - days * WORK_DAY_MIN;
+    var hrs = Math.floor(rem / 60);
+    var mins = rem - hrs * 60;
+    var parts = [];
+    if (days > 0) parts.push(days + "d");
+    if (hrs > 0) parts.push(hrs + "h");
+    if (mins > 0) parts.push(mins + "m");
+    if (parts.length === 0) parts.push("0m");
+    return (neg ? "-" : "") + parts.join(" ");
+  }
+
+  return {
+    WORK_CALENDAR: WORK_CALENDAR,
+    DUBAI_OFFSET_MS: DUBAI_OFFSET_MS,
+    workingMsBetween: workingMsBetween,
+    addWorkingHours: addWorkingHours,
+    remainingWorkingMs: remainingWorkingMs,
+    slaStatus: slaStatus,
+    fmtWorkingDuration: fmtWorkingDuration
+  };
+});
+
+/*
+ * slaKpi.js — SLA performance KPI aggregation (pure functions)
+ *
+ * Self-contained, dependency-free. Works in the browser and in Node.
+ * ES5-safe: uses `var`, no imports, no external libraries, no arrow funcs.
+ *
+ * All functions are PURE: they do not mutate their inputs and return fresh
+ * objects/arrays.
+ *
+ * INPUT record shape:
+ * {
+ *   id, project, entity ("UXE"|"EMCODE"), dept ("IT"|"HR"|"Procurement"|"Finance"),
+ *   approver (string), slaHours (number), queueEnteredMs (number),
+ *   completedMs (number|null), usedWorkingMs (number|null = working ms consumed if completed),
+ *   status ("within"|"approaching"|"overdue"|"completed_ontime"|"completed_late"),
+ *   overByMs (number, optional — only consulted for status "overdue")
+ * }
+ *
+ * SLA_MS(r) = r.slaHours * 3600000.
+ *
+ * DUBAI-LOCAL BUCKETING:
+ *   Dubai is UTC+4 with no daylight saving. To bucket an epoch-ms timestamp by
+ *   Dubai local calendar date, we add 4*3600000 ms to the epoch value and then
+ *   read the date with UTC getters (getUTCFullYear / getUTCMonth). This shifts
+ *   the instant so that UTC getters report the Dubai wall-clock date, without
+ *   relying on the host machine's timezone. Used by trend().
+ */
+(function (root, factory) {
+  var api = factory();
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = api;            // Node / CommonJS
+  } else {
+    root.slaKpi = api;               // Browser global
+  }
+})(typeof self !== "undefined" ? self : this, function () {
+  "use strict";
+
+  var HOUR_MS = 3600000;
+  var DUBAI_OFFSET_MS = 4 * HOUR_MS;
+  var DEPTS = ["IT", "HR", "Procurement", "Finance"];
+
+  // --- helpers --------------------------------------------------------------
+
+  function SLA_MS(r) {
+    return r.slaHours * HOUR_MS;
+  }
+
+  // Round to 1 decimal place, returning a Number.
+  function round1(n) {
+    return Math.round(n * 10) / 10;
+  }
+
+  // Is `ms` within [startMs, endMs]? Either bound null => open-ended on that side.
+  // null `ms` is never within a period.
+  function inPeriod(ms, period) {
+    if (ms === null || ms === undefined) return false;
+    if (!period) return true;
+    if (period.startMs !== null && period.startMs !== undefined && ms < period.startMs) return false;
+    if (period.endMs !== null && period.endMs !== undefined && ms > period.endMs) return false;
+    return true;
+  }
+
+  // Dubai-local date parts for an epoch-ms value.
+  function dubaiParts(ms) {
+    var d = new Date(ms + DUBAI_OFFSET_MS);
+    return { year: d.getUTCFullYear(), month: d.getUTCMonth() }; // month 0-11
+  }
+
+  function pad2(n) {
+    return n < 10 ? "0" + n : "" + n;
+  }
+
+  // --- kpiSummary -----------------------------------------------------------
+
+  function kpiSummary(records, period) {
+    var received = 0, completed = 0, pending = 0, overdue = 0;
+    var completedWithin = 0, completedLate = 0;
+    var i, r;
+    for (i = 0; i < records.length; i++) {
+      r = records[i];
+
+      if (inPeriod(r.queueEnteredMs, period)) received++;
+
+      if (r.completedMs === null || r.completedMs === undefined) {
+        pending++;
+      } else if (inPeriod(r.completedMs, period)) {
+        completed++;
+        if (r.status === "completed_ontime") completedWithin++;
+        else if (r.status === "completed_late") completedLate++;
+      }
+
+      if (r.status === "overdue") overdue++;
+    }
+
+    var denom = completedWithin + completedLate;
+    var compliancePct = denom === 0 ? 0 : round1((completedWithin / denom) * 100);
+
+    return {
+      received: received,
+      completed: completed,
+      pending: pending,
+      overdue: overdue,
+      completedWithin: completedWithin,
+      completedLate: completedLate,
+      compliancePct: compliancePct
+    };
+  }
+
+  // --- complianceByDept -----------------------------------------------------
+
+  function complianceByDept(records, period) {
+    var acc = {};
+    var i, d;
+    for (i = 0; i < DEPTS.length; i++) {
+      acc[DEPTS[i]] = { completed: 0, within: 0, late: 0, tatSum: 0, tatCount: 0 };
+    }
+
+    var r, a;
+    for (i = 0; i < records.length; i++) {
+      r = records[i];
+      a = acc[r.dept];
+      if (!a) continue; // unknown dept ignored
+      if (r.completedMs === null || r.completedMs === undefined) continue;
+      if (!inPeriod(r.completedMs, period)) continue;
+
+      a.completed++;
+      if (r.status === "completed_ontime") a.within++;
+      else if (r.status === "completed_late") a.late++;
+
+      if (r.usedWorkingMs !== null && r.usedWorkingMs !== undefined) {
+        a.tatSum += r.usedWorkingMs;
+        a.tatCount++;
+      }
+    }
+
+    var out = [];
+    for (i = 0; i < DEPTS.length; i++) {
+      d = DEPTS[i];
+      a = acc[d];
+      var denom = a.within + a.late;
+      var compliancePct = denom === 0 ? 0 : round1((a.within / denom) * 100);
+      var avgTatHours = a.tatCount === 0 ? 0 : round1((a.tatSum / a.tatCount) / HOUR_MS);
+      out.push({
+        dept: d,
+        completed: a.completed,
+        within: a.within,
+        late: a.late,
+        compliancePct: compliancePct,
+        avgTatHours: avgTatHours
+      });
+    }
+    return out;
+  }
+
+  // --- avgTatByApprover -----------------------------------------------------
+
+  function avgTatByApprover(records, period) {
+    var acc = {};
+    var order = [];
+    var i, r;
+    for (i = 0; i < records.length; i++) {
+      r = records[i];
+      if (r.completedMs === null || r.completedMs === undefined) continue;
+      if (!inPeriod(r.completedMs, period)) continue;
+
+      var key = r.approver;
+      if (!acc[key]) {
+        acc[key] = { approver: r.approver, dept: r.dept, completed: 0, within: 0, tatSum: 0, tatCount: 0 };
+        order.push(key);
+      }
+      var a = acc[key];
+      a.completed++;
+      if (r.status === "completed_ontime") a.within++;
+      if (r.usedWorkingMs !== null && r.usedWorkingMs !== undefined) {
+        a.tatSum += r.usedWorkingMs;
+        a.tatCount++;
+      }
+    }
+
+    var out = [];
+    for (i = 0; i < order.length; i++) {
+      var o = acc[order[i]];
+      var avgTatHours = o.tatCount === 0 ? 0 : round1((o.tatSum / o.tatCount) / HOUR_MS);
+      var withinPct = o.completed === 0 ? 0 : round1((o.within / o.completed) * 100);
+      out.push({
+        approver: o.approver,
+        dept: o.dept,
+        completed: o.completed,
+        avgTatHours: avgTatHours,
+        withinPct: withinPct
+      });
+    }
+
+    out.sort(function (x, y) { return y.completed - x.completed; });
+    return out;
+  }
+
+  // --- breaches -------------------------------------------------------------
+
+  function breaches(records, period) {
+    var out = [];
+    var i, r, overBy;
+    for (i = 0; i < records.length; i++) {
+      r = records[i];
+
+      if (r.status === "completed_late") {
+        if (r.completedMs !== null && r.completedMs !== undefined && !inPeriod(r.completedMs, period)) continue;
+        var used = (r.usedWorkingMs === null || r.usedWorkingMs === undefined) ? 0 : r.usedWorkingMs;
+        overBy = (used - SLA_MS(r)) / HOUR_MS;
+      } else if (r.status === "overdue") {
+        // No "now" available; use r.overByMs if present, else 0.
+        var ob = (r.overByMs === null || r.overByMs === undefined) ? 0 : r.overByMs;
+        overBy = ob / HOUR_MS;
+      } else {
+        continue;
+      }
+
+      out.push({
+        id: r.id,
+        project: r.project,
+        dept: r.dept,
+        approver: r.approver,
+        slaHours: r.slaHours,
+        overByHours: round1(overBy)
+      });
+    }
+
+    out.sort(function (x, y) { return y.overByHours - x.overByHours; });
+    return out;
+  }
+
+  // --- trend ----------------------------------------------------------------
+
+  function trend(records, grain) {
+    var acc = {};
+    var order = [];
+    var i, r;
+
+    for (i = 0; i < records.length; i++) {
+      r = records[i];
+      if (r.queueEnteredMs === null || r.queueEnteredMs === undefined) continue;
+      var p = dubaiParts(r.queueEnteredMs);
+
+      var bucket;
+      if (grain === "quarter") {
+        var q = Math.floor(p.month / 3) + 1;
+        bucket = p.year + "-Q" + q;
+      } else { // "month"
+        bucket = p.year + "-" + pad2(p.month + 1);
+      }
+
+      if (!acc[bucket]) {
+        acc[bucket] = { bucket: bucket, received: 0, completed: 0, within: 0, late: 0 };
+        order.push(bucket);
+      }
+      var a = acc[bucket];
+      a.received++;
+      if (r.completedMs !== null && r.completedMs !== undefined) {
+        a.completed++;
+        if (r.status === "completed_ontime") a.within++;
+        else if (r.status === "completed_late") a.late++;
+      }
+    }
+
+    order.sort(); // "YYYY-MM" and "YYYY-Qn" both sort chronologically as strings
+
+    var out = [];
+    for (i = 0; i < order.length; i++) {
+      var o = acc[order[i]];
+      var denom = o.within + o.late;
+      var compliancePct = denom === 0 ? 0 : round1((o.within / denom) * 100);
+      out.push({
+        bucket: o.bucket,
+        received: o.received,
+        completed: o.completed,
+        compliancePct: compliancePct
+      });
+    }
+    return out;
+  }
+
+  // --- applyFilters ---------------------------------------------------------
+
+  function applyFilters(records, filters) {
+    filters = filters || {};
+    var keys = ["entity", "dept", "approver", "project", "status"];
+    var out = [];
+    var i, j, r, ok;
+    for (i = 0; i < records.length; i++) {
+      r = records[i];
+      ok = true;
+      for (j = 0; j < keys.length; j++) {
+        var k = keys[j];
+        var want = filters[k];
+        if (want === undefined || want === null || want === "") continue; // ignored
+        if (r[k] !== want) { ok = false; break; }
+      }
+      if (ok) out.push(r);
+    }
+    return out;
+  }
+
+  return {
+    SLA_MS: SLA_MS,
+    kpiSummary: kpiSummary,
+    complianceByDept: complianceByDept,
+    avgTatByApprover: avgTatByApprover,
+    breaches: breaches,
+    trend: trend,
+    applyFilters: applyFilters
+  };
+});
+
 /* ================= CONFIG ================= */
 // Point this at the deployed backend (Render). Override with ?api=https://... once.
 var API_BASE = (new URLSearchParams(location.search).get("api")) ||
@@ -468,10 +1062,57 @@ var STAGES=["Draft","Review-IT","Costing","Review-Finance","CEO-Approval","PM-Ac
 var STAGE_LABEL={"Draft":"Draft","Review-IT":"IT review","Costing":"Costing (HR + Procurement)","Review-Finance":"Finance","CEO-Approval":"CEO","PM-Acceptance":"PM acceptance","Approved":"Approved"};
 var STAGE_SHORT={"Draft":"Draft","Review-IT":"IT review","Costing":"Costing","Review-Finance":"Finance","CEO-Approval":"CEO","PM-Acceptance":"PM acceptance","Approved":"Approved"};
 var SCENARIO_LABEL={internal:"Internal-resources project",partner:"Partner-implemented software"};
+/* ===== #4-#7 SLA (working-hours) front-end helpers ===== */
+var SLA_TARGETS_FE={IT:24,HR:48,Procurement:72,Finance:36};
+var SLA_ROLE_DEPT={itmanager:"IT",hr:"HR",procurement:"Procurement",finance:"Finance"};
+var SLA_STATUS_META={within:{label:"Within SLA",c:"#0b7a53",bg:"var(--good-bg)"},approaching:{label:"Approaching deadline",c:"#b3541e",bg:"#fdf0e5"},overdue:{label:"Overdue",c:"#c23b36",bg:"#fdecea"},completed_ontime:{label:"Completed · on time",c:"#0b7a53",bg:"var(--good-bg)"},completed_late:{label:"Completed late",c:"#c23b36",bg:"#fdecea"}};
+function slaCal(){return (window.SLAClock&&window.SLAClock.WORK_CALENDAR)||null;}
+function slaEnrich(recs){var now=Date.now(),cal=slaCal();return (recs||[]).map(function(r){var o=Object.assign({},r);if(r.completedMs!=null){var late=r.usedWorkingMs>r.slaHours*3600000;o.status=late?"completed_late":"completed_ontime";o.overByMs=late?(r.usedWorkingMs-r.slaHours*3600000):0;o.remainingMs=0;}else if(cal){var s=window.SLAClock.slaStatus({nowMs:now,startMs:r.queueEnteredMs,slaHours:r.slaHours,cal:cal});o.status=s.status;o.remainingMs=s.remainingMs;o.deadlineMs=s.deadlineMs;o.overByMs=s.overByMs;}else{o.status="within";o.remainingMs=r.slaHours*3600000;}return o;});}
+function slaFmtDur(ms){return (window.SLAClock?window.SLAClock.fmtWorkingDuration(ms):Math.round(ms/3600000)+"h");}
+function slaDateTime(ms){try{var d=new Date(ms);return d.toLocaleDateString(undefined,{day:"2-digit",month:"short"})+" "+d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"});}catch(e){return "";}}
+function slaPill(status){var m=SLA_STATUS_META[status]||{label:status,c:"var(--muted)",bg:"var(--surface-2)"};var s=el("span",{text:m.label});s.style.cssText="display:inline-block;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;color:"+m.c+";background:"+m.bg;return s;}
+function slaQueueCard(records,dept){
+  if(!dept)return null;
+  var recs=slaEnrich(records).filter(function(r){return r.dept===dept&&r.completedMs==null;});
+  var done=slaEnrich(records).filter(function(r){return r.dept===dept&&r.completedMs!=null;});
+  var app=recs.filter(function(r){return r.status==="approaching";}).length, od=recs.filter(function(r){return r.status==="overdue";}).length;
+  var c=el("div",{class:"dcard soft"});
+  var h=el("div");h.style.cssText="display:flex;align-items:center;gap:10px;flex-wrap:wrap";
+  h.appendChild(el("div",{class:"t",text:"Your SLA queue — "+dept+" review"}));
+  h.appendChild(el("span",{class:"finchip",text:SLA_TARGETS_FE[dept]+" working-hour target"}));
+  if(od)h.appendChild(el("span",{style:"font-size:11.5px;font-weight:800;color:#c23b36;background:#fdecea;border-radius:999px;padding:3px 10px",text:"⚠ "+od+" overdue"}));
+  if(app)h.appendChild(el("span",{style:"font-size:11.5px;font-weight:800;color:#b3541e;background:#fdf0e5;border-radius:999px;padding:3px 10px",text:app+" approaching"}));
+  c.appendChild(h);
+  if(!recs.length){c.appendChild(el("p",{class:"muted",style:"margin:10px 0 0",text:"No requests are awaiting your "+dept+" review right now."}));
+    if(done.length)c.appendChild(el("p",{class:"muted",style:"margin:6px 0 0;font-size:12px",text:done.length+" completed · avg "+slaFmtDur(done.reduce(function(a,r){return a+(r.usedWorkingMs||0);},0)/done.length)+" turnaround"}));return c;}
+  c.appendChild(el("p",{class:"muted",style:"margin:4px 0 12px",text:"Working-hours countdown — pauses outside business hours, weekends and holidays. Clear overdue and approaching items first."}));
+  var scroll=el("div");scroll.style.overflowX="auto";var tbl=el("table",{class:"tbl"});var thr=el("tr",{});
+  ["Ref","Project","In queue since","Target","Remaining","Status"].forEach(function(hh){thr.appendChild(el("th",{text:hh}));});
+  tbl.appendChild(el("thead",{},[thr]));var tb=el("tbody",{});
+  recs.sort(function(a,b){return a.remainingMs-b.remainingMs;}).forEach(function(r){
+    var tr=el("tr",{});
+    tr.appendChild(el("td",{html:"<b>"+esc(r.ref||"")+"</b>"}));
+    tr.appendChild(el("td",{text:r.project}));
+    tr.appendChild(el("td",{text:slaDateTime(r.queueEnteredMs)}));
+    tr.appendChild(el("td",{text:r.slaHours+" wh"}));
+    var m=SLA_STATUS_META[r.status]||{};var rem=el("td",{html:"<b style='color:"+(m.c||"inherit")+"'>"+(r.remainingMs<0?("− "+slaFmtDur(-r.remainingMs)+" over"):(slaFmtDur(r.remainingMs)+" left"))+"</b>"});tr.appendChild(rem);
+    var std=el("td",{});std.appendChild(slaPill(r.status));tr.appendChild(std);
+    tb.appendChild(tr);
+  });
+  tbl.appendChild(tb);scroll.appendChild(tbl);c.appendChild(scroll);return c;
+}
 
 /* ===== #4/#5 work categories (admin-editable; list comes from /masters) ===== */
-var CAT_DEFAULT=["Frontend","Backend","UI/UX","Mobile","Integration & APIs","Database","QA & Testing","DevOps & Cloud","Cybersecurity","Infrastructure (Servers/Network/Firewall)","Project Management","Software Licenses","Professional Services","Hardware & Materials","Support & Maintenance"];
+// #2 separate controlled lists: resource (human) categories vs material/other-cost categories — no mixing
+var RES_CAT_DEFAULT=["Frontend","Backend","UI/UX","Mobile","Integration & APIs","Database","QA & Testing","DevOps & Cloud","Cybersecurity","Project Management","Professional Services","Support & Maintenance"];
+var MAT_CAT_DEFAULT=["Hardware & Materials","Servers & Storage","Network & Switches","Firewalls & Security Appliances","Infrastructure (Servers/Network/Firewall)","Software Licenses","Cloud & Hosting","Third-party Services","Subcontract Services","Support & Maintenance","Other Direct Costs"];
+var CAT_DEFAULT=RES_CAT_DEFAULT.concat(MAT_CAT_DEFAULT);   // legacy fallback
+// #3 industry-standard UOM master for technology/security materials (admin-maintained)
+var UOM_DEFAULT=["EA","PCS","Unit","Set","Pair","Lot","M","GB","TB","License"];
+function resCatList(){return (S._masters&&S._masters.resCategories)||RES_CAT_DEFAULT;}
+function matCatList(){return (S._masters&&S._masters.matCategories)||MAT_CAT_DEFAULT;}
 function catList(){return (S._masters&&S._masters.categories)||CAT_DEFAULT;}
+function uomList(){return (S._masters&&S._masters.uoms)||UOM_DEFAULT;}
 /* ===== #3/#4 SAP mapping helpers ===== */
 function parseSapMap(p){try{return JSON.parse((p&&p.SAPMap)||"{}")||{};}catch(e){return {};}}
 function projCategories(){ // distinct categories present on the open project (case-insensitive)
@@ -601,7 +1242,7 @@ function enterApp(){
   var rent=document.querySelector(".rent");if(rent)rent.style.display=single?"none":"";
   if($("#entSec"))$("#entSec").style.display=single?"none":"";
   if($("#entDiv"))$("#entDiv").style.display=single?"none":"";
-  buildTabs();
+  buildTabs();getMasters().catch(function(){});
   S.project=null;S.tab="dashboard";setBrand(landing);renderTab();markTabs();
 }
 function entParam(sep){var ents=(S.user&&S.user.entities)?S.user.entities:[];return (S.activeEntity&&S.activeEntity!=="Group"&&ents.length>1)?((sep||"?")+"entity="+encodeURIComponent(S.activeEntity)):"";}
@@ -613,6 +1254,7 @@ var RAIL_ICON={
   hr:"<svg width='20' height='20' viewBox='0 0 24 24' fill='none'><circle cx='9' cy='8' r='3.2' stroke='currentColor' stroke-width='1.7'/><path d='M3.5 20a5.5 5.5 0 0 1 11 0M16 5.5a3 3 0 0 1 0 5.8M17 20a5 5 0 0 0-3-4.6' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'/></svg>",
   finance:"<svg width='20' height='20' viewBox='0 0 24 24' fill='none'><rect x='3' y='6' width='18' height='13' rx='2' stroke='currentColor' stroke-width='1.7'/><path d='M3 10h18M7 15h4' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'/></svg>",
   reports:"<svg width='20' height='20' viewBox='0 0 24 24' fill='none'><path d='M4 20V10M10 20V4M16 20v-7M22 20H2' stroke='currentColor' stroke-width='1.8' stroke-linecap='round'/></svg>",
+  sla:"<svg width='20' height='20' viewBox='0 0 24 24' fill='none'><circle cx='12' cy='13' r='8' stroke='currentColor' stroke-width='1.7'/><path d='M12 13V9M12 13l3 2M9 2h6' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'/></svg>",
   resources:"<svg width='20' height='20' viewBox='0 0 24 24' fill='none'><circle cx='12' cy='7' r='3.5' stroke='currentColor' stroke-width='1.7'/><path d='M5 20a7 7 0 0 1 14 0' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'/></svg>",
   admin:"<svg width='20' height='20' viewBox='0 0 24 24' fill='none'><path d='M12 3l7 3v5c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3Z' stroke='currentColor' stroke-width='1.7' stroke-linejoin='round'/><path d='M9 12l2 2 4-4' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/></svg>"
 };
@@ -624,6 +1266,7 @@ function visibleTabs(){
   if(r==="hr"||r==="finance"||r==="admin")t.push(["hr","HR masters"]);
   if(r==="finance"||r==="admin")t.push(["finance","Finance"]);
   if(r==="finance"||r==="admin")t.push(["reports","Reports"]);   // #7 period cost reporting
+  if(r==="finance"||r==="admin")t.push(["sla","SLA & KPIs"]);    // #7 SLA performance reporting
   if(r==="admin")t.push(["admin","Admin"]);                      // #3/#4 admin console
   return t;
 }
@@ -636,7 +1279,7 @@ function buildTabs(){
   });
   markTabs();
 }
-var TAB_TITLE={dashboard:"Dashboard",costing:"Costings",hr:"HR masters",finance:"Finance",reports:"Finance reports",resources:"Resource master",admin:"Admin console"};
+var TAB_TITLE={dashboard:"Dashboard",costing:"Costings",hr:"HR masters",finance:"Finance",reports:"Finance reports",sla:"SLA & KPI performance",resources:"Resource master",admin:"Admin console"};
 function markTabs(){Array.prototype.forEach.call($("#railnav").children,function(b){b.classList.toggle("on",b._key===S.tab)});var pt=$("#pageTitle");if(pt)pt.textContent=TAB_TITLE[S.tab]||"Dashboard";}
 
 /* ================= placeholder renderers (filled next) ================= */
@@ -644,6 +1287,7 @@ function renderTab(){ var v=$("#view"); v.innerHTML="";
   var ab=S.activeEntity||S.user.entity;
   if(S.tab==="dashboard"){ setBrand(ab); return renderDashboard(v); }
   if(S.tab==="reports"){ setBrand(ab); return renderReports(v); }   // #7 standalone finance screen
+  if(S.tab==="sla"){ setBrand(ab); return renderSlaReport(v); }     // #7 SLA & KPI performance
   if(S.tab==="resources"){ setBrand(ab); return renderResourceMaster(v); }  // #5A
   if(S.tab==="admin"){ setBrand(ab); return renderAdmin(v); }               // #3/#4
   if(S.tab==="finance"&&!S.project){ setBrand(ab); return renderFinance(v); }
@@ -818,11 +1462,22 @@ function extensionField(editable){
 }
 // #4/#5 category picker cell — value constrained to the managed list so two lines in the same
 // category share it (no duplicate categories). Keeps an unknown stored value selectable.
-function catCell(val,editable,onsave){
+function catCell(val,editable,onsave,kind){
   var td=el("td",{});var s=el("select",{});s.disabled=!editable;if(editable)s.className="ed";
   s.appendChild(el("option",{value:"",text:"— category —"}));
-  var list=catList().slice();if(val&&list.map(function(c){return c.toLowerCase();}).indexOf(String(val).toLowerCase())<0)list.push(val);
+  var base=(kind==="material")?matCatList():(kind==="resource")?resCatList():catList();
+  var list=base.slice();if(val&&list.map(function(c){return c.toLowerCase();}).indexOf(String(val).toLowerCase())<0)list.push(val);
   list.forEach(function(c){var op=el("option",{text:c});op.value=c;s.appendChild(op);});
+  s.value=val||"";
+  if(editable)s.onchange=function(){onsave(s.value);};
+  td.appendChild(s);return td;
+}
+// #3 UOM dropdown for material lines — controlled master, admin-maintained
+function uomCell(val,editable,onsave){
+  var td=el("td",{});var s=el("select",{});s.disabled=!editable;if(editable)s.className="ed";
+  s.appendChild(el("option",{value:"",text:"— UOM —"}));
+  var list=uomList().slice();if(val&&list.indexOf(val)<0)list.push(val);
+  list.forEach(function(u){var op=el("option",{text:u});op.value=u;s.appendChild(op);});
   s.value=val||"";
   if(editable)s.onchange=function(){onsave(s.value);};
   td.appendChild(s);return td;
@@ -1122,7 +1777,7 @@ function resourceTable(E){
   var tbl=el("table",{class:"tbl"});var thr=el("tr",{});
   thr.appendChild(thc("Resource","empId"));thr.appendChild(thc("Position","position"));thr.appendChild(thc("Category","category"));
   thr.appendChild(thc("Start","startDate"));thr.appendChild(thc("End","endDate"));
-  thr.appendChild(thc("Qty","qty",1));thr.appendChild(thc("Months","months",1));thr.appendChild(thc("Alloc %","util",1));
+  thr.appendChild(thc("Months","months",1));thr.appendChild(thc("Alloc %","util",1));
   if(showAvail)thr.appendChild(thc("Availability","avail"));
   if(hasSalary)thr.appendChild(thc("Salary","salary",1));
   if(hasLoaded)thr.appendChild(thc("Loaded cost","loaded",1));
@@ -1135,9 +1790,9 @@ function resourceTable(E){
     function cell(val,editable,field,type,ph){var td=el("td",{class:type==="number"?"num":""});td.appendChild(cellInput(val,editable,function(v){saveChild("resource",r.id,field,v)},type,ph));return td;}
     tr.appendChild(resPickCell(r,E.scope));
     tr.appendChild(cell(r.position,E.scope,"position"));
-    tr.appendChild(catCell(r.category,E.scope,function(v){saveChild("resource",r.id,"category",v)}));
+    tr.appendChild(catCell(r.category,E.scope,function(v){saveChild("resource",r.id,"category",v)},"resource"));
     tr.appendChild(cell(r.startDate,E.scope,"startDate","date"));tr.appendChild(cell(r.endDate,E.scope,"endDate","date"));
-    tr.appendChild(cell(r.qty,E.scope,"qty","number"));tr.appendChild(cell(r.months,E.scope,"months","number"));tr.appendChild(cell(r.util,E.scope,"util","number"));
+    tr.appendChild(cell(r.months,E.scope,"months","number"));tr.appendChild(cell(r.util,E.scope,"util","number"));
     if(showAvail){var atd=el("td",{});var asp=el("span",{});atd.appendChild(asp);tr.appendChild(atd);fillAvail(asp,r);}
     if(hasSalary)tr.appendChild(cell(r.salary,E.salary,"salary","number"));
     if(hasLoaded)tr.appendChild(el("td",{class:"num rv",text:r.loaded!==undefined?money(r.loaded):"—"}));
@@ -1174,7 +1829,7 @@ function costlineTable(E){
     function cell(val,editable,field,type,ph){var td=el("td",{class:type==="number"?"num":""});td.appendChild(cellInput(val,editable,function(v){saveChild("costline",l.id,field,v)},type,ph));return td;}
     tr.appendChild(cell(l.item,E.scope,"item"));
     var std=el("td",{});var ssel=el("select",{});["Materials","Other"].forEach(function(o){var op=el("option",{text:o});ssel.appendChild(op)});ssel.value=l.section||"Materials";ssel.disabled=!E.scope;if(E.scope){ssel.className="ed";ssel.onchange=function(){saveChild("costline",l.id,"section",ssel.value)};}std.appendChild(ssel);tr.appendChild(std);
-    tr.appendChild(catCell(l.category,E.scope,function(v){saveChild("costline",l.id,"category",v)}));tr.appendChild(cell(l.uom,E.scope,"uom"));tr.appendChild(cell(l.qty,E.scope,"qty","number"));
+    tr.appendChild(catCell(l.category,E.scope,function(v){saveChild("costline",l.id,"category",v)},"material"));tr.appendChild(uomCell(l.uom,E.scope,function(v){saveChild("costline",l.id,"uom",v)}));tr.appendChild(cell(l.qty,E.scope,"qty","number"));
     if(hasPrice){tr.appendChild(cell(l.vendor,E.price,"vendor"));tr.appendChild(cell(l.price,E.price,"price","number"));}
     if(hasTotal)tr.appendChild(el("td",{class:"num rv",text:l.total!==undefined?money(l.total):"—"}));
     if(showPricing){
@@ -1418,6 +2073,10 @@ async function renderDashboard(v){
   hl.appendChild(el("p",{html:group?("Group portfolio across <b style='color:#c9a96a'>UXE</b> &amp; <b style='color:#49b88a'>EMCODE</b> · "+po.count+" active project"+(po.count===1?"":"s")+" · figures stream live from SAP S/4HANA."):(d.full?("Portfolio budget health across "+po.count+" active projects · figures stream live from SAP S/4HANA."):(_subt[d.role||S.user.role]||("Budget health across your "+po.count+" project"+(po.count===1?"":"s")+".")))}));
   hero.appendChild(hl);wrap.appendChild(hero);
 
+  // #6 SLA countdown panel on each department's dashboard
+  var _slaDept=SLA_ROLE_DEPT[S.user.role];
+  if(_slaDept){try{var _sr=await api("/sla");var _sc=slaQueueCard(_sr,_slaDept);if(_sc)wrap.appendChild(_sc);}catch(e){}}
+
   if(group){
     renderGroupBody(wrap,d);
     wrap.appendChild(el("p",{class:"muted",html:"Live from SAP S/4HANA via OData · amounts in AED. Demo data shown."}));
@@ -1620,6 +2279,97 @@ async function renderFinance(v){
 }
 
 /* ================= #7 FINANCE PERIOD REPORT ================= */
+/* ===== #7 SLA & KPI performance report ===== */
+function slaTableCard(title,sub,headers,rows,aligns){
+  var c=el("div",{class:"dcard soft"});
+  var h=el("div");h.style.cssText="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap";h.appendChild(el("div",{class:"t",text:title}));if(sub)h.appendChild(el("span",{class:"muted",style:"font-size:12px",text:sub}));c.appendChild(h);
+  var scroll=el("div");scroll.style.cssText="overflow-x:auto;margin-top:10px";var tbl=el("table",{class:"tbl"});var thr=el("tr",{});
+  headers.forEach(function(hh,i){var th=el("th",{text:hh});if(aligns&&aligns[i]==="r")th.style.textAlign="right";thr.appendChild(th);});
+  tbl.appendChild(el("thead",{},[thr]));var tb=el("tbody",{});
+  if(!rows.length){var er=el("tr",{});er.appendChild(el("td",{colspan:String(headers.length),class:"muted",style:"padding:18px 4px",text:"No records for the selected filters."}));tb.appendChild(er);}
+  rows.forEach(function(row){var tr=el("tr",{});row.forEach(function(cell,i){var td=el("td",{});if(aligns&&aligns[i]==="r")td.style.textAlign="right";if(cell&&cell.nodeType)td.appendChild(cell);else td.innerHTML=(cell==null?"":String(cell));tr.appendChild(td);});tb.appendChild(tr);});
+  tbl.appendChild(tb);scroll.appendChild(tbl);c.appendChild(scroll);return c;
+}
+function slaComplianceChip(pct){var c=pct>=80?"#0b7a53":(pct>=60?"#b3541e":"#c23b36");var s=el("span",{text:pct+"%"});s.style.cssText="font-weight:800;color:"+c;return s;}
+function slaCsv(rows){return rows.map(function(r){return r.map(function(c){c=(c==null?"":String(c));return /[",\n]/.test(c)?('"'+c.replace(/"/g,'""')+'"'):c;}).join(",");}).join("\r\n");}
+function slaDownload(name,text,mime){try{var blob=new Blob([text],{type:mime||"text/csv;charset=utf-8"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},800);}catch(e){toast("Export failed: "+e.message);}}
+async function renderSlaReport(v){
+  v.innerHTML="";
+  var load=el("div",{class:"dcard"},[el("div",{text:"Loading SLA performance…"})]);v.appendChild(load);
+  var raw,audit=[];
+  try{raw=await api("/sla");}catch(e){load.firstChild.textContent=e.message;return;}
+  try{audit=await api("/audit");}catch(e){audit=[];}
+  if(S.tab!=="sla")return;
+  v.innerHTML="";
+  var recs=slaEnrich(raw);
+  S._slaState=S._slaState||{entity:"",dept:"",approver:"",project:"",status:"",period:"90"};
+  var st=S._slaState;
+  function periodRange(k){var now=Date.now();var d=new Date();if(k==="30")return{startMs:now-30*864e5,endMs:now};if(k==="90")return{startMs:now-90*864e5,endMs:now};if(k==="month")return{startMs:new Date(d.getFullYear(),d.getMonth(),1).getTime(),endMs:now};if(k==="quarter"){var qm=Math.floor(d.getMonth()/3)*3;return{startMs:new Date(d.getFullYear(),qm,1).getTime(),endMs:now};}return{startMs:null,endMs:null};}
+  var wrap=el("div",{class:"dash"});
+  // hero + export
+  var hero=el("div",{class:"dhero"});var hl=el("div");
+  hl.appendChild(el("div",{class:"big",text:"SLA & KPI performance"}));
+  hl.appendChild(el("p",{html:"Turnaround against working-hour SLAs — <b>IT 24h · HR 48h · Procurement 72h · Finance 36h</b>. Working calendar: Mon–Thu 07:30–15:30, Fri 07:00–12:30; weekends, holidays and off-hours excluded (configured centrally)."}));
+  hero.appendChild(hl);
+  var exp=el("div");exp.style.cssText="display:flex;gap:8px;align-items:center";
+  var xls=el("button",{class:"b",text:"⬇ Excel (CSV)"});var pdf=el("button",{class:"b",text:"⎙ Print / PDF"});
+  exp.appendChild(xls);exp.appendChild(pdf);hero.appendChild(exp);wrap.appendChild(hero);
+  // filter bar
+  var fbar=el("div",{class:"dcard soft"});var fg=el("div");fg.style.cssText="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end";
+  function selField(label,key,opts){var w=el("div");w.appendChild(el("div",{style:"font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--faint);font-weight:700;margin-bottom:4px",text:label}));var s=el("select",{});s.className="ed";opts.forEach(function(o){var op=el("option",{value:o.v,text:o.t});s.appendChild(op);});s.value=st[key];s.onchange=function(){st[key]=s.value;renderSlaReport(v);};w.appendChild(s);fg.appendChild(w);}
+  var approvers=recs.map(function(r){return r.approver;}).filter(function(x,i,a){return x&&a.indexOf(x)===i;});
+  var projects=recs.map(function(r){return r.project;}).filter(function(x,i,a){return x&&a.indexOf(x)===i;});
+  selField("Company","entity",[{v:"",t:"All companies"},{v:"UXE",t:"UXE"},{v:"EMCODE",t:"EMCODE"}]);
+  selField("Department","dept",[{v:"",t:"All"},{v:"IT",t:"IT"},{v:"HR",t:"HR"},{v:"Procurement",t:"Procurement"},{v:"Finance",t:"Finance"}]);
+  selField("Approver","approver",[{v:"",t:"All"}].concat(approvers.map(function(a){return{v:a,t:a};})));
+  selField("Project","project",[{v:"",t:"All"}].concat(projects.map(function(a){return{v:a,t:a};})));
+  selField("Status","status",[{v:"",t:"All"},{v:"within",t:"Within SLA"},{v:"approaching",t:"Approaching"},{v:"overdue",t:"Overdue"},{v:"completed_ontime",t:"Completed on time"},{v:"completed_late",t:"Completed late"}]);
+  selField("Period","period",[{v:"30",t:"Last 30 days"},{v:"90",t:"Last 90 days"},{v:"month",t:"This month"},{v:"quarter",t:"This quarter"},{v:"all",t:"All time"}]);
+  fbar.appendChild(fg);wrap.appendChild(fbar);
+  // compute
+  var period=periodRange(st.period);
+  var filtered=slaKpi.applyFilters(recs,{entity:st.entity,dept:st.dept,approver:st.approver,project:st.project,status:st.status});
+  var summary=slaKpi.kpiSummary(filtered,period);
+  var byDept=slaKpi.complianceByDept(filtered,period);
+  var byApp=slaKpi.avgTatByApprover(filtered,period);
+  var brs=slaKpi.breaches(filtered,period);
+  var trd=slaKpi.trend(filtered,"month");
+  // summary cards
+  var ks=el("div",{class:"kpis"});
+  function kc(label,val,color,sub){var e=el("div",{class:"kpi"});e.appendChild(el("div",{class:"lab",text:label}));var vv=el("div",{class:"val",text:val});if(color)vv.style.color=color;e.appendChild(vv);if(sub)e.appendChild(el("div",{class:"muted",style:"font-size:11.5px;margin-top:2px",text:sub}));return e;}
+  ks.appendChild(kc("SLA compliance",summary.compliancePct+"%",summary.compliancePct>=80?"#0b7a53":(summary.compliancePct>=60?"#b3541e":"#c23b36"),summary.completedWithin+" on time of "+summary.completed+" completed"));
+  ks.appendChild(kc("Completed",String(summary.completed),null,summary.completedLate+" completed late"));
+  ks.appendChild(kc("Pending",String(summary.pending),"#7a3fcf","in progress"));
+  ks.appendChild(kc("Overdue now",String(summary.overdue),summary.overdue?"#c23b36":"#0b7a53","breaching SLA"));
+  wrap.appendChild(ks);
+  // KPI formula note
+  var note=el("div",{class:"dcard soft"});note.appendChild(el("p",{class:"muted",style:"margin:0;font-size:12.5px",html:"<b>SLA compliance %</b> = requests completed within SLA ÷ total requests completed (due) in the period × 100. Requests not yet due are excluded; working-hours only. Figures recompute live from recorded submission, assignment, completion and approval timestamps."}));wrap.appendChild(note);
+  // compliance by dept
+  wrap.appendChild(slaTableCard("Compliance by department","on-time vs late and average turnaround",["Department","Completed","Within SLA","Late","Compliance","Avg turnaround"],byDept.map(function(d){return [d.dept,d.completed,d.within,d.late,slaComplianceChip(d.compliancePct),(d.avgTatHours?slaFmtDur(d.avgTatHours*3600000):"—")];}),[null,"r","r","r","r","r"]));
+  // avg TAT by approver
+  wrap.appendChild(slaTableCard("Average turnaround by approver","per-approver performance (authorised access)",["Approver","Department","Completed","Avg turnaround","On-time %"],byApp.map(function(a){return [a.approver,a.dept,a.completed,(a.avgTatHours?slaFmtDur(a.avgTatHours*3600000):"—"),a.withinPct+"%"];}),[null,null,"r","r","r"]));
+  // breaches
+  wrap.appendChild(slaTableCard("SLA breaches & delays","requests that exceeded SLA, by extent of delay",["Project","Department","Approver","SLA","Over by"],brs.map(function(b){var ov=el("span",{text:slaFmtDur(b.overByHours*3600000)});ov.style.cssText="font-weight:800;color:#c23b36";return [b.project,b.dept,b.approver,b.slaHours+" wh",ov];}),[null,null,null,"r","r"]));
+  // trend
+  wrap.appendChild(slaTableCard("Monthly trend","requests received, completed and compliance by month",["Month","Received","Completed","Compliance"],trd.map(function(t){return [t.bucket,t.received,t.completed,slaComplianceChip(t.compliancePct)];}),[null,"r","r","r"]));
+  // audit trail
+  wrap.appendChild(slaTableCard("Audit trail","timestamps of submissions, assignments, completions, approvals and breaches",["When","Ref","Project","Department","Event","By"],audit.slice(0,60).map(function(a){return [slaDateTime(a.ts),a.ref||"",a.project||"",a.dept||"",a.event||"",a.by||""];})));
+  // exports
+  xls.onclick=function(){
+    var rows=[["UXE / EMCODE — SLA & KPI performance"],["Generated",slaDateTime(Date.now())],["Compliance %",summary.compliancePct,"Completed",summary.completed,"Late",summary.completedLate,"Pending",summary.pending,"Overdue",summary.overdue],[],
+      ["Compliance by department"],["Department","Completed","Within SLA","Late","Compliance %","Avg TAT (h)"]];
+    byDept.forEach(function(d){rows.push([d.dept,d.completed,d.within,d.late,d.compliancePct,d.avgTatHours]);});
+    rows.push([],["Average turnaround by approver"],["Approver","Department","Completed","Avg TAT (h)","On-time %"]);
+    byApp.forEach(function(a){rows.push([a.approver,a.dept,a.completed,a.avgTatHours,a.withinPct]);});
+    rows.push([],["SLA breaches"],["Project","Department","Approver","SLA (wh)","Over by (h)"]);
+    brs.forEach(function(b){rows.push([b.project,b.dept,b.approver,b.slaHours,b.overByHours]);});
+    rows.push([],["Monthly trend"],["Month","Received","Completed","Compliance %"]);
+    trd.forEach(function(t){rows.push([t.bucket,t.received,t.completed,t.compliancePct]);});
+    slaDownload("UXE_SLA_KPI_"+st.period+".csv",slaCsv(rows));
+  };
+  pdf.onclick=function(){window.print();};
+  v.appendChild(wrap);
+}
 async function renderReports(v){
   v.innerHTML="";
   var wrap=el("div",{class:"dash"});
@@ -1787,7 +2537,40 @@ async function renderAdmin(v){
     });
     tbl.appendChild(tb);bd.appendChild(el("div",{class:"rowscroll"},[tbl]));card.appendChild(bd);v.appendChild(card);
   }catch(e){toast(e.message);}
+  try{ await getMasters(); }catch(e){}
+  v.appendChild(mastersMaintCard());
 }
+function mastersMaintCard(){
+  var card=el("div",{class:"card"});
+  card.appendChild(el("header",{},[el("span",{class:"n",text:"⚙"}),el("h2",{text:"Costing masters — categories & units"})]));
+  var bd=el("div",{class:"body"});
+  bd.appendChild(el("p",{class:"muted",style:"margin:0 0 14px",html:"Controlled lists used by the costing sheet. Resource and material categories are kept separate; the UOM list drives the materials unit dropdown. Only administrators can edit these."}));
+  function sub(title,listKey,getList){
+    var wrap=el("div",{style:"margin-bottom:18px"});
+    wrap.appendChild(el("div",{style:"font-size:13px;font-weight:700;margin-bottom:9px",text:title}));
+    var chips=el("div",{style:"display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px"});
+    (getList()||[]).forEach(function(nm){
+      var c=el("span",{style:"display:inline-flex;align-items:center;gap:7px;font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:5px 7px 5px 12px"});
+      c.appendChild(el("span",{text:nm}));
+      var x=el("button",{text:"×",title:"Remove"});x.style.cssText="border:none;background:var(--line);color:var(--fg);width:18px;height:18px;border-radius:50%;cursor:pointer;line-height:1;font-size:13px";
+      x.onclick=function(){delMaster(listKey,nm);};c.appendChild(x);chips.appendChild(c);
+    });
+    wrap.appendChild(chips);
+    var row=el("div",{style:"display:flex;gap:8px;max-width:440px"});
+    var inp=el("input",{placeholder:"Add to "+title.toLowerCase()});inp.className="ed";
+    var add=el("button",{class:"b ok",text:"Add"});
+    add.onclick=function(){if(!inp.value.trim())return;addMaster(listKey,inp.value.trim());};
+    inp.onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();add.onclick();}};
+    row.appendChild(inp);row.appendChild(add);wrap.appendChild(row);
+    return wrap;
+  }
+  bd.appendChild(sub("Resource categories","resCategories",resCatList));
+  bd.appendChild(sub("Material & other-cost categories","matCategories",matCatList));
+  bd.appendChild(sub("Units of measurement (UOM)","uoms",uomList));
+  card.appendChild(bd);return card;
+}
+async function addMaster(listKey,name){try{var r=await api("/masters/list",{method:"POST",body:{list:listKey,name:name}});S._masters=S._masters||{};S._masters[listKey]=r.list;toast("Added");renderTab();}catch(e){toast(e.message);}}
+async function delMaster(listKey,name){try{var r=await api("/masters/list",{method:"DELETE",body:{list:listKey,name:name}});S._masters=S._masters||{};S._masters[listKey]=r.list;toast("Removed");renderTab();}catch(e){toast(e.message);}}
 
 /* ================= PROPOSAL ================= */
 var DEFAULT_SPECIAL=[
@@ -2187,6 +2970,11 @@ if(S.token&&S.user){enterApp();}
     serialSeq: 0,
     // #4/#5 admin-editable standard work-category list (tech-industry best practice)
     categories: ["Frontend", "Backend", "UI/UX", "Mobile", "Integration & APIs", "Database", "QA & Testing", "DevOps & Cloud", "Cybersecurity", "Infrastructure (Servers/Network/Firewall)", "Project Management", "Software Licenses", "Professional Services", "Hardware & Materials", "Support & Maintenance"],
+    // #2 separate controlled lists — resource (human) vs material/other-cost categories
+    resCategories: ["Frontend", "Backend", "UI/UX", "Mobile", "Integration & APIs", "Database", "QA & Testing", "DevOps & Cloud", "Cybersecurity", "Project Management", "Professional Services", "Support & Maintenance"],
+    matCategories: ["Hardware & Materials", "Servers & Storage", "Network & Switches", "Firewalls & Security Appliances", "Infrastructure (Servers/Network/Firewall)", "Software Licenses", "Cloud & Hosting", "Third-party Services", "Subcontract Services", "Support & Maintenance", "Other Direct Costs"],
+    // #3 UOM master (admin-maintained)
+    uoms: ["EA", "PCS", "Unit", "Set", "Pair", "Lot", "M", "GB", "TB", "License"],
     domains: ["uxe.ai", "emcode.ae"],
     // #4 each user is assigned one or BOTH companies (entities); they only see data for their entities
     members: [
@@ -2308,6 +3096,37 @@ if(S.token&&S.user){enterApp();}
     costlines: [{ item: "Edge AI servers", category: "Infrastructure (Servers/Network/Firewall)", section: "Materials", price: 28000, qty: 2, vendor: "Dell" }],
     extra: { RequesterEmail: "requester@uxe.ai", Requester: "Demo Requester" } });
 
+  // ===== #4–#7 SLA tracking layer (working-hours; IT 24h · HR 48h · Procurement 72h · Finance 36h) =====
+  var SLA_TARGETS = { IT: 24, HR: 48, Procurement: 72, Finance: 36 };
+  DB.slaRecords = []; DB.audit = [];
+  function _cal() { return (typeof window !== "undefined" && window.SLAClock) ? window.SLAClock.WORK_CALENDAR : null; }
+  function wbetween(a, b) { var c = _cal(); return c ? window.SLAClock.workingMsBetween(a, b, c) : Math.max(0, b - a); }
+  function wadd(s, h) { var c = _cal(); return c ? window.SLAClock.addWorkingHours(s, h, c) : s + h * 3600000; }
+  function wsub(h) { var c = _cal(); var now = Date.now(); if (!c) return now - h * 3600000; var need = h * 3600000, t = now, g = 0; while (need > 0 && g++ < 40000) { var p = t - 1800000; need -= window.SLAClock.workingMsBetween(p, t, c); t = p; } return t; }
+  function deptApprover(dept) { var role = { IT: "itmanager", HR: "hr", Procurement: "procurement", Finance: "finance" }[dept]; var m = DB.members.filter(function (x) { return x.role === role; })[0]; return m ? m.name : dept; }
+  function slaOpen(proj, dept, queuedMs) { var f = proj.fields; DB.slaRecords.push({ id: "SLA-" + proj.id + "-" + dept + "-" + DB.slaRecords.length, projectId: proj.id, ref: f.Serial, project: f.Title, entity: f.Entity || "UXE", dept: dept, approver: deptApprover(dept), slaHours: SLA_TARGETS[dept], queueEnteredMs: queuedMs, completedMs: null, usedWorkingMs: null }); DB.audit.push({ ts: queuedMs, projectId: proj.id, ref: f.Serial, project: f.Title, dept: dept, event: "Entered " + dept + " queue", by: "" }); }
+  function slaClose(proj, dept, completedMs, by) { var rec = DB.slaRecords.filter(function (r) { return r.projectId === proj.id && r.dept === dept && r.completedMs == null; })[0]; if (rec) { rec.completedMs = completedMs; rec.usedWorkingMs = wbetween(rec.queueEnteredMs, completedMs); } DB.audit.push({ ts: completedMs, projectId: proj.id, ref: proj.fields.Serial, project: proj.fields.Title, dept: dept, event: dept + " review completed", by: by || "" }); }
+  function slaOnTransition(proj, action, by) {
+    var now = Date.now(), f = proj.fields;
+    if (action === "submit") { slaOpen(proj, "IT", now); }
+    else if (action === "it_approve") { slaClose(proj, "IT", now, by); var rs = kids(proj.id, DB.resources), ls = kids(proj.id, DB.costlines); if (rs.length) slaOpen(proj, "HR", now); if (ls.length) slaOpen(proj, "Procurement", now); if (f.Stage === "Review-Finance") slaOpen(proj, "Finance", now); }
+    else if (action === "hr_submit") { slaClose(proj, "HR", now, by); if (f.Stage === "Review-Finance") slaOpen(proj, "Finance", now); }
+    else if (action === "proc_submit") { slaClose(proj, "Procurement", now, by); if (f.Stage === "Review-Finance") slaOpen(proj, "Finance", now); }
+    else if (action === "finance_approve") { slaClose(proj, "Finance", now, by); }
+  }
+  (function seedSLA() {
+    function byCode(c) { return DB.projects.filter(function (p) { return p.fields.Code === c; })[0]; }
+    function active(code, dept, elapsedH) { var p = byCode(code); if (!p) return; var q = wsub(elapsedH); DB.slaRecords.push({ id: "SLA-" + p.id + "-" + dept, projectId: p.id, ref: p.fields.Serial, project: p.fields.Title, entity: p.fields.Entity, dept: dept, approver: deptApprover(dept), slaHours: SLA_TARGETS[dept], queueEnteredMs: q, completedMs: null, usedWorkingMs: null }); DB.audit.push({ ts: q, projectId: p.id, ref: p.fields.Serial, project: p.fields.Title, dept: dept, event: "Entered " + dept + " queue", by: "" }); }
+    function done(code, dept, startAgoH, usedH) { var p = byCode(code); if (!p) return; var q = wsub(startAgoH); var cmp = wadd(q, usedH); DB.slaRecords.push({ id: "SLA-" + p.id + "-" + dept, projectId: p.id, ref: p.fields.Serial, project: p.fields.Title, entity: p.fields.Entity, dept: dept, approver: deptApprover(dept), slaHours: SLA_TARGETS[dept], queueEnteredMs: q, completedMs: cmp, usedWorkingMs: wbetween(q, cmp) }); DB.audit.push({ ts: cmp, projectId: p.id, ref: p.fields.Serial, project: p.fields.Title, dept: dept, event: dept + " review completed", by: deptApprover(dept) }); }
+    // active (live countdowns): within / approaching / overdue spread
+    active("PJS", "IT", 20); active("DBC", "HR", 50); active("DBC", "Procurement", 40); done("SBT", "Procurement", 60, 30); active("SBT", "HR", 44); active("ACH", "Finance", 10); active("DMFR", "Finance", 30);
+    // historical (KPI reporting): mix of on-time and late
+    done("DBC1", "IT", 220, 12); done("DBC1", "HR", 210, 20); done("DBC1", "Procurement", 205, 40); done("DBC1", "Finance", 190, 18);
+    done("BAL", "IT", 160, 10); done("BAL", "HR", 150, 54); done("BAL", "Procurement", 150, 40); done("BAL", "Finance", 140, 30);
+    done("CUC", "IT", 120, 14); done("CUC", "HR", 110, 30); done("CUC", "Procurement", 110, 80); done("CUC", "Finance", 95, 20);
+    done("PIP", "IT", 80, 16); done("PIP", "HR", 70, 44); done("PIP", "Procurement", 70, 60); done("PIP", "Finance", 60, 34);
+  })();
+
   /* ---------- pure logic (ported from backend) ---------- */
   function benefitMonthly(salary) {
     salary = +salary || 0; var m = 0;
@@ -2332,7 +3151,7 @@ if(S.token&&S.user){enterApp();}
     return { direct: direct, indirect: indirect, base: base, overhead: overhead, cost: cost, sell: sell, marginPct: marginPct, ind: ind, oh: oh, mg: mg };
   }
   function computeTotals(proj, resources, costlines) {
-    var loaded = function (r) { return ((+r.salary || 0) + benefitMonthly(r.salary)) * (+r.qty || 0) * (+r.months || 0) * (+r.util || 0) / 100; };
+    var loaded = function (r) { return ((+r.salary || 0) + benefitMonthly(r.salary)) * (+r.months || 0) * (+r.util || 0) / 100; };   // #1 resources = rate × duration × allocation (no Qty)
     var rLines = resources.map(function (r) { return Object.assign({ _id: r.id }, lineBuild(loaded(r), proj, r)); });
     var cLines = costlines.map(function (l) { return Object.assign({ _id: l.id, _section: l.section || "Materials" }, lineBuild((+l.price || 0) * (+l.qty || 0), proj, l)); });
     var sum = function (arr, k) { return arr.reduce(function (a, x) { return a + x[k]; }, 0); };
@@ -2615,7 +3434,24 @@ if(S.token&&S.user){enterApp();}
       return visibleProjects(CUR, QS.entity).map(function (p) { return { id: p.id, title: p.fields.Title, code: p.fields.Code, entity: p.fields.Entity, stage: p.fields.Stage }; });
     }
 
-    if (u === "/masters" && method === "GET") return { positions: DB.positions.slice(), benefits: DB.benefits.slice(), matrix: DB.matrix.slice(), domains: DB.domains.slice(), categories: DB.categories.slice() };
+    if (u === "/masters" && method === "GET") return { positions: DB.positions.slice(), benefits: DB.benefits.slice(), matrix: DB.matrix.slice(), domains: DB.domains.slice(), categories: DB.categories.slice(), resCategories: DB.resCategories.slice(), matCategories: DB.matCategories.slice(), uoms: DB.uoms.slice() };
+    // #2/#3 admin-maintained master lists (resource categories, material categories, UOM)
+    if (u === "/masters/list" && method === "POST") {
+      if (CUR.role !== "admin") throw err(403, "Only administrators can maintain master lists.");
+      var lk = body.list; if (["resCategories", "matCategories", "uoms"].indexOf(lk) < 0) throw err(400, "Unknown list.");
+      var nm = (body.name || "").trim(); if (!nm) throw err(400, "Value required.");
+      if (DB[lk].map(function (c) { return String(c).toLowerCase(); }).indexOf(nm.toLowerCase()) >= 0) throw err(400, "That value already exists.");
+      DB[lk].push(nm); return { ok: true, list: DB[lk].slice() };
+    }
+    if (u === "/masters/list" && method === "DELETE") {
+      if (CUR.role !== "admin") throw err(403, "Only administrators can maintain master lists.");
+      var lk2 = body.list; if (["resCategories", "matCategories", "uoms"].indexOf(lk2) < 0) throw err(400, "Unknown list.");
+      DB[lk2] = DB[lk2].filter(function (c) { return String(c).toLowerCase() !== (body.name || "").toLowerCase(); }); return { ok: true, list: DB[lk2].slice() };
+    }
+    // #4-#7 SLA records (entity-scoped) + audit trail
+    if (u === "/sla" && method === "GET") return DB.slaRecords.filter(function (r) { return canSeeEntity(CUR, r.entity); }).map(function (r) { return Object.assign({}, r); });
+    if (u === "/sla/config" && method === "GET") return { targets: SLA_TARGETS, calendar: (typeof window !== "undefined" && window.SLAClock) ? window.SLAClock.WORK_CALENDAR : null };
+    if (u === "/audit" && method === "GET") { if (["admin", "finance"].indexOf(CUR.role) < 0) throw err(403, "Only admin/finance can view the audit trail."); return DB.audit.filter(function (a) { var p = proj(a.projectId); return !p || canSeeEntity(CUR, p.fields.Entity); }).map(function (a) { return Object.assign({}, a); }).sort(function (x, y) { return y.ts - x.ts; }); }
     // #4/#5 admin-editable category master
     if (u === "/masters/category" && method === "POST") {
       if (["admin", "finance"].indexOf(CUR.role) < 0) throw err(403, "Only admin/finance can edit categories.");
@@ -2749,6 +3585,7 @@ if(S.token&&S.user){enterApp();}
       var ownerEmail = DB.members.filter(function (m) { return ownerRoles.indexOf(m.role) >= 0; }).map(function (m) { return m.email; })[0] || "";
       Object.assign(P2.fields, r.set, { CurrentOwnerEmail: ownerEmail });
       DB.history.push({ ProjectRef: String(P2.id), Actor: CUR.email, Action: r.history.Action, FromStage: r.history.FromStage, ToStage: r.history.ToStage, Comment: r.history.Comment, At: new Date().toISOString() });
+      try { slaOnTransition(P2, body.action, CUR.email); } catch (e) { }   // #4-#7 update SLA clocks on real transitions
       return { ok: true, toStage: r.toStage };
     }
     if (parts[0] === "projects" && (parts[2] === "resources" || parts[2] === "costlines") && method === "POST") {
