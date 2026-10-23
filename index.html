@@ -1735,7 +1735,7 @@ function resPickCell(r,editable){
   master.forEach(function(m){s.appendChild(el("option",{value:m.empId,text:m.name+" · "+m.designation+" ("+m.empId+")"}));});
   if(r.empId&&master.map(function(m){return m.empId;}).indexOf(r.empId)<0)s.appendChild(el("option",{value:r.empId,text:(r.person||r.empId)}));
   s.value=r.empId||"";
-  s.onchange=function(){var m=(S._resMaster||[]).filter(function(x){return x.empId===s.value;})[0];saveChildMulti("resource",r.id,{empId:s.value,person:m?m.name:"",position:m?m.designation:""});};
+  s.onchange=function(){var m=(S._resMaster||[]).filter(function(x){return x.empId===s.value;})[0];saveChildMulti("resource",r.id,{empId:s.value,person:m?m.name:"",position:m?m.designation:"",category:m?(m.category||""):""});};
   td.appendChild(s);return td;
 }
 function fillAvail(span,r){
@@ -1789,8 +1789,9 @@ function resourceTable(E){
     var tr=el("tr",{});if(r.flagNote)tr.className="flagged";
     function cell(val,editable,field,type,ph){var td=el("td",{class:type==="number"?"num":""});td.appendChild(cellInput(val,editable,function(v){saveChild("resource",r.id,field,v)},type,ph));return td;}
     tr.appendChild(resPickCell(r,E.scope));
-    tr.appendChild(cell(r.position,E.scope,"position"));
-    tr.appendChild(catCell(r.category,E.scope,function(v){saveChild("resource",r.id,"category",v)},"resource"));
+    // position & category are auto-filled from the employee's HR master record and read-only here — only HR can change them, in the HR resource master
+    var ptd=el("td",{text:r.position||"—"});ptd.title="Set by HR in the resource master";ptd.style.color=r.position?"":"var(--faint)";tr.appendChild(ptd);
+    var ctd=el("td",{text:r.category||"—"});ctd.title="Set by HR in the resource master";ctd.style.color=r.category?"":"var(--faint)";tr.appendChild(ctd);
     tr.appendChild(cell(r.startDate,E.scope,"startDate","date"));tr.appendChild(cell(r.endDate,E.scope,"endDate","date"));
     tr.appendChild(cell(r.months,E.scope,"months","number"));tr.appendChild(cell(r.util,E.scope,"util","number"));
     if(showAvail){var atd=el("td",{});var asp=el("span",{});atd.appendChild(asp);tr.appendChild(atd);fillAvail(asp,r);}
@@ -2426,7 +2427,7 @@ function myEntities(){return (S.user.entities&&S.user.entities.length)?S.user.en
 function normRows(rows){
   return (rows||[]).map(function(r){var o={};Object.keys(r).forEach(function(k){o[String(k).toLowerCase().trim()]=r[k];});
     var ent=(o.entity||o.company||"UXE");ent=/emc|emcode/i.test(ent)?"EMCODE":"UXE";
-    return {empId:String(o.empid||o["emp id"]||o.id||o["employee id"]||"").trim(),name:String(o.name||o["full name"]||"").trim(),designation:String(o.designation||o.role||o.title||"").trim(),entity:ent,availability:(o.availability===""||o.availability===undefined)?100:o.availability};
+    return {empId:String(o.empid||o["emp id"]||o.id||o["employee id"]||"").trim(),name:String(o.name||o["full name"]||"").trim(),designation:String(o.designation||o.role||o.title||"").trim(),category:String(o.category||o.skill||o.discipline||"").trim(),entity:ent,salary:(o.salary===""||o.salary===undefined)?"":(o.salary||o["monthly salary"]||o.pay||""),availability:(o.availability===""||o.availability===undefined)?100:o.availability};
   }).filter(function(r){return r.empId||r.name;});
 }
 function csvToRows(text){
@@ -2449,34 +2450,38 @@ async function renderResourceMaster(v){
   var ents=myEntities();
   // upload + template
   var up=el("div",{class:"card"});var ub=el("div",{class:"body"});ub.style.cssText="display:flex;flex-wrap:wrap;gap:12px;align-items:center";
-  ub.appendChild(el("div",{html:"<b>Bulk upload</b> <span class='muted' style='font-size:12px'>— Excel (.xlsx) or CSV with columns: empId, name, designation, entity, availability</span>"}));
+  ub.appendChild(el("div",{html:"<b>Bulk upload</b> <span class='muted' style='font-size:12px'>— Excel (.xlsx) or CSV with columns: empId, name, designation, category, entity, salary, availability</span>"}));
   var fi=el("input",{type:"file"});fi.accept=".xlsx,.xls,.csv";fi.style.fontSize="12px";
   var ubtn=el("button",{class:"b ok",text:"Upload"});
   ubtn.onclick=async function(){if(!fi.files||!fi.files[0]){toast("Choose a file first.");return;}try{toast("Reading…");var rows=await parseResourceFile(fi.files[0]);if(!rows.length){toast("No rows found.");return;}var r=await api("/resources-master/bulk",{method:"POST",body:{rows:rows}});toast("Added "+r.added+", updated "+r.updated+(r.skipped&&r.skipped.length?(" · skipped "+r.skipped.length):""));renderTab();}catch(e){toast(e.message);}};
   var tmpl=el("button",{class:"b",text:"⬇ CSV template"});
-  tmpl.onclick=function(){var csv="empId,name,designation,entity,availability\nUXE-E-110,New Person,Engineer,UXE,100\n";var bl=new Blob([csv],{type:"text/csv"});var a=document.createElement("a");a.href=URL.createObjectURL(bl);a.download="resource_master_template.csv";a.click();};
+  tmpl.onclick=function(){var csv="empId,name,designation,category,entity,salary,availability\nUXE-E-110,New Person,Security Engineer,Cybersecurity,UXE,12000,100\n";var bl=new Blob([csv],{type:"text/csv"});var a=document.createElement("a");a.href=URL.createObjectURL(bl);a.download="resource_master_template.csv";a.click();};
   ub.appendChild(fi);ub.appendChild(ubtn);ub.appendChild(tmpl);up.appendChild(ub);v.appendChild(up);
   // manual add
-  var add=el("div",{class:"card"});var ab=el("div",{class:"body"});ab.style.cssText="display:grid;grid-template-columns:repeat(5,1fr) auto;gap:10px;align-items:end";
+  var add=el("div",{class:"card"});var ab=el("div",{class:"body"});ab.style.cssText="display:grid;grid-template-columns:repeat(7,1fr) auto;gap:10px;align-items:end";
   function f(ph){var i=el("input",{placeholder:ph});i.className="ed";return i;}
   var iEmp=f("empId"),iName=f("name"),iDes=f("designation");
+  var iCat=el("select",{});iCat.className="ed";iCat.appendChild(el("option",{value:"",text:"category"}));resCatList().forEach(function(c){iCat.appendChild(el("option",{text:c,value:c}));});
   var iEnt=el("select",{});iEnt.className="ed";ents.forEach(function(e){iEnt.appendChild(el("option",{text:e,value:e}));});
+  var iSal=f("monthly salary");iSal.type="number";
   var iAv=f("availability %");iAv.type="number";iAv.value="100";
   var addb=el("button",{class:"b ok",text:"＋ Add resource"});
-  addb.onclick=async function(){if(!iName.value.trim()){toast("Name required.");return;}try{await api("/resources-master",{method:"POST",body:{empId:iEmp.value,name:iName.value,designation:iDes.value,entity:iEnt.value,availability:+iAv.value||100}});toast("Added");renderTab();}catch(e){toast(e.message);}};
-  [iEmp,iName,iDes,iEnt,iAv].forEach(function(x){ab.appendChild(x);});ab.appendChild(addb);add.appendChild(el("header",{},[el("span",{class:"n",text:"＋"}),el("h2",{text:"Add a resource manually"})]));add.appendChild(ab);v.appendChild(add);
+  addb.onclick=async function(){if(!iName.value.trim()){toast("Name required.");return;}try{await api("/resources-master",{method:"POST",body:{empId:iEmp.value,name:iName.value,designation:iDes.value,category:iCat.value,entity:iEnt.value,salary:+iSal.value||0,availability:+iAv.value||100}});toast("Added");renderTab();}catch(e){toast(e.message);}};
+  [iEmp,iName,iDes,iCat,iEnt,iSal,iAv].forEach(function(x){ab.appendChild(x);});ab.appendChild(addb);add.appendChild(el("header",{},[el("span",{class:"n",text:"＋"}),el("h2",{text:"Add a resource manually"})]));add.appendChild(ab);v.appendChild(add);
   // list
   try{
     var list=await api("/resources-master");
     var card=el("div",{class:"card"});card.appendChild(el("header",{},[el("span",{class:"n",text:"👥"}),el("h2",{text:"Resources ("+list.length+")"})]));
     var bd=el("div",{class:"body"});var tbl=el("table",{class:"tbl"});
-    var thr=el("tr",{});["Emp ID","Name","Designation","Company","Availability %",""].forEach(function(h){thr.appendChild(el("th",{text:h}));});tbl.appendChild(el("thead",{},[thr]));
+    var thr=el("tr",{});["Emp ID","Name","Designation","Category","Company","Monthly salary (AED)","Availability %",""].forEach(function(h){thr.appendChild(el("th",{text:h}));});tbl.appendChild(el("thead",{},[thr]));
     var tb=el("tbody",{});
     list.forEach(function(r){
       var tr=el("tr",{});
       function ic(val,field,type){var td=el("td",{});var i=el("input",{});if(type)i.type=type;i.value=val==null?"":val;i.className="ed";i.onchange=function(){api("/resources-master/"+r.id,{method:"PATCH",body:defObj(field,type==="number"?(+i.value||0):i.value)}).then(function(){toast("Saved");}).catch(function(e){toast(e.message);});};td.appendChild(i);return td;}
       tr.appendChild(ic(r.empId,"empId"));tr.appendChild(ic(r.name,"name"));tr.appendChild(ic(r.designation,"designation"));
+      var ctd=el("td",{});var cs=el("select",{});cs.className="ed";cs.appendChild(el("option",{value:"",text:"— category —"}));var cl=resCatList().slice();if(r.category&&cl.indexOf(r.category)<0)cl.push(r.category);cl.forEach(function(c){var op=el("option",{text:c});op.value=c;cs.appendChild(op);});cs.value=r.category||"";cs.onchange=function(){api("/resources-master/"+r.id,{method:"PATCH",body:{category:cs.value}}).then(function(){toast("Saved");}).catch(function(e){toast(e.message);});};ctd.appendChild(cs);tr.appendChild(ctd);
       var etd=el("td",{});var es=el("select",{});es.className="ed";ents.forEach(function(e){es.appendChild(el("option",{text:e,value:e}));});es.value=r.entity;es.onchange=function(){api("/resources-master/"+r.id,{method:"PATCH",body:{entity:es.value}}).then(function(){toast("Saved");}).catch(function(e){toast(e.message);});};etd.appendChild(es);tr.appendChild(etd);
+      tr.appendChild(ic(r.salary,"salary","number"));
       tr.appendChild(ic(r.availability,"availability","number"));
       var dtd=el("td",{});var db=el("button",{class:"btn",text:"×"});db.onclick=function(){api("/resources-master/"+r.id,{method:"DELETE"}).then(function(){toast("Removed");renderTab();}).catch(function(e){toast(e.message);});};dtd.appendChild(db);tr.appendChild(dtd);
       tb.appendChild(tr);
@@ -2978,6 +2983,8 @@ if(S.token&&S.user){enterApp();}
     domains: ["uxe.ai", "emcode.ae"],
     // #4 each user is assigned one or BOTH companies (entities); they only see data for their entities
     members: [
+      // all-role reviewer — can act at EVERY stage (submit → IT → HR → Procurement → Finance → CEO → PM → Approved) to test a sheet end-to-end from one login
+      { email: "demo@uxe.ai", name: "Demo Reviewer (all roles)", entity: "UXE", role: "admin", entities: ["UXE", "EMCODE"] },
       { email: "bassam.youssef@uxe.ai", name: "Bassam Youssef", entity: "UXE", role: "admin", entities: ["UXE", "EMCODE"] },
       { email: "mohamed.ishraf@uxe.ai", name: "Mohamed Ishraf", entity: "EMCODE", role: "admin", entities: ["UXE", "EMCODE"] },
       { email: "requester@uxe.ai", name: "Demo Requester (UXE)", entity: "UXE", role: "requester", entities: ["UXE"] },
@@ -2991,14 +2998,15 @@ if(S.token&&S.user){enterApp();}
     ],
     // #5A HR-controlled resource master (per entity): empId, name, designation, entity, availability%
     resourceMaster: [
-      { id: 9001, empId: "UXE-E-101", name: "A. Rahman", designation: "Security Engineer", entity: "UXE", availability: 100 },
-      { id: 9002, empId: "UXE-E-102", name: "S. Pillai", designation: "Project Manager", entity: "UXE", availability: 100 },
-      { id: 9003, empId: "UXE-E-103", name: "M. Noor", designation: "Security Engineer", entity: "UXE", availability: 100 },
-      { id: 9004, empId: "UXE-E-104", name: "T. Aziz", designation: "Technician", entity: "UXE", availability: 100 },
-      { id: 9005, empId: "UXE-E-105", name: "L. Haddad", designation: "Frontend Engineer", entity: "UXE", availability: 100 },
-      { id: 9006, empId: "UXE-E-106", name: "R. Nair", designation: "Backend Engineer", entity: "UXE", availability: 100 },
-      { id: 9007, empId: "EMC-E-201", name: "K. Das", designation: "Automation Engineer", entity: "EMCODE", availability: 100 },
-      { id: 9008, empId: "EMC-E-202", name: "J. Fernandes", designation: "BMS Specialist", entity: "EMCODE", availability: 100 }
+      // #HR per-employee master: salary (experience-based) + position (designation) + category are all maintained here by HR; costings auto-fill from this and are read-only
+      { id: 9001, empId: "UXE-E-101", name: "A. Rahman", designation: "Security Engineer", category: "Cybersecurity", entity: "UXE", availability: 100, salary: 12000 },
+      { id: 9002, empId: "UXE-E-102", name: "S. Pillai", designation: "Project Manager", category: "Project Management", entity: "UXE", availability: 100, salary: 18000 },
+      { id: 9003, empId: "UXE-E-103", name: "M. Noor", designation: "Security Engineer", category: "Cybersecurity", entity: "UXE", availability: 100, salary: 13500 },
+      { id: 9004, empId: "UXE-E-104", name: "T. Aziz", designation: "Technician", category: "Support & Maintenance", entity: "UXE", availability: 100, salary: 7000 },
+      { id: 9005, empId: "UXE-E-105", name: "L. Haddad", designation: "Frontend Engineer", category: "Frontend", entity: "UXE", availability: 100, salary: 16000 },
+      { id: 9006, empId: "UXE-E-106", name: "R. Nair", designation: "Backend Engineer", category: "Backend", entity: "UXE", availability: 100, salary: 17000 },
+      { id: 9007, empId: "EMC-E-201", name: "K. Das", designation: "Automation Engineer", category: "Integration & APIs", entity: "EMCODE", availability: 100, salary: 14000 },
+      { id: 9008, empId: "EMC-E-202", name: "J. Fernandes", designation: "BMS Specialist", category: "Integration & APIs", entity: "EMCODE", availability: 100, salary: 15000 }
     ],
     positions: [
       { id: 1, position: "Security Engineer", salary: 12000, status: "Pending HR" },
@@ -3150,8 +3158,14 @@ if(S.token&&S.user){enterApp();}
     var marginPct = sell > 0 ? (sell - cost) / sell * 100 : 0;
     return { direct: direct, indirect: indirect, base: base, overhead: overhead, cost: cost, sell: sell, marginPct: marginPct, ind: ind, oh: oh, mg: mg };
   }
+  // #HR per-employee master is the source of truth: salary (line value may override), position & category (always from master when the employee has an empId)
+  function masterOf(empId) { return empId ? DB.resourceMaster.filter(function (x) { return String(x.empId) === String(empId); })[0] : null; }
+  function masterSalary(empId) { var m = masterOf(empId); return m ? (+m.salary || 0) : 0; }
+  function effSal(r) { var s = +r.salary || 0; return s > 0 ? s : masterSalary(r.empId); }
+  function effPos(r) { var m = masterOf(r.empId); return (m && m.designation) ? m.designation : (r.position || ""); }
+  function effCat(r) { var m = masterOf(r.empId); return (m && m.category) ? m.category : (r.category || ""); }
   function computeTotals(proj, resources, costlines) {
-    var loaded = function (r) { return ((+r.salary || 0) + benefitMonthly(r.salary)) * (+r.months || 0) * (+r.util || 0) / 100; };   // #1 resources = rate × duration × allocation (no Qty)
+    var loaded = function (r) { var sal = effSal(r); return (sal + benefitMonthly(sal)) * (+r.months || 0) * (+r.util || 0) / 100; };   // #1 resources = rate × duration × allocation (no Qty); salary is per-employee
     var rLines = resources.map(function (r) { return Object.assign({ _id: r.id }, lineBuild(loaded(r), proj, r)); });
     var cLines = costlines.map(function (l) { return Object.assign({ _id: l.id, _section: l.section || "Materials" }, lineBuild((+l.price || 0) * (+l.qty || 0), proj, l)); });
     var sum = function (arr, k) { return arr.reduce(function (a, x) { return a + x[k]; }, 0); };
@@ -3167,7 +3181,7 @@ if(S.token&&S.user){enterApp();}
   function enterCosting(set, hasHR, hasProc) { set.HRStatus = hasHR ? "Pending" : "Done"; set.ProcStatus = hasProc ? "Pending" : "Done"; return (set.HRStatus === "Done" && set.ProcStatus === "Done") ? "Review-Finance" : "Costing"; }
   function isPartner(pf) { return (pf.Scenario || "internal") === "partner"; }
   // #4/#5 distinct work categories present on a costing (case-insensitive dedupe)
-  function distinctCategories(resources, costlines) { var seen = {}, out = []; (resources || []).concat(costlines || []).forEach(function (x) { var c = (x.category || "").trim(); if (c && !seen[c.toLowerCase()]) { seen[c.toLowerCase()] = 1; out.push(c); } }); return out; }
+  function distinctCategories(resources, costlines) { var seen = {}, out = []; (resources || []).concat(costlines || []).forEach(function (x) { var c = (effCat(x) || "").trim(); if (c && !seen[c.toLowerCase()]) { seen[c.toLowerCase()] = 1; out.push(c); } }); return out; }
   function parseMap(pf) { try { return JSON.parse(pf.SAPMap || "{}") || {}; } catch (e) { return {}; } }
   // #3 every applicable category needs a Main Project Code + WBS code
   function sapComplete(categories, map, mainDefault) { var missing = (categories || []).filter(function (c) { var m = map[c] || {}; return !((String(m.mainCode || "").trim() || String(mainDefault || "").trim()) && String(m.wbsCode || "").trim()); }); return { complete: missing.length === 0, missing: missing }; }
@@ -3288,9 +3302,9 @@ if(S.token&&S.user){enterApp();}
     var lmap = {}; (totals.lines ? totals.lines.resource : []).forEach(function (x) { lmap["r" + x._id] = x; });
     var cmap = {}; (totals.lines ? totals.lines.costline : []).forEach(function (x) { cmap["c" + x._id] = x; });
     var res = resources.map(function (r) {
-      var b = { id: r.id, person: r.person, position: r.position, type: r.type, category: r.category, qty: r.qty, months: r.months, util: r.util, empId: r.empId, startDate: r.startDate, endDate: r.endDate };
+      var b = { id: r.id, person: r.person, position: effPos(r), type: r.type, category: effCat(r), qty: r.qty, months: r.months, util: r.util, empId: r.empId, startDate: r.startDate, endDate: r.endDate };
       var comp = lmap["r" + r.id];
-      if (showSal) { b.salary = r.salary; if (comp) b.loaded = comp.direct; if (r.flagNote) b.flagNote = r.flagNote; }   // #5 loaded cost -> HR/finance
+      if (showSal) { b.salary = effSal(r); if (comp) b.loaded = comp.direct; if (r.flagNote) b.flagNote = r.flagNote; }   // #5 loaded cost -> HR/finance; salary auto-fills from employee master
       if (full && comp) { b.marginPct = r.marginPct; b.indPct = r.indPct; b.ohPct = r.ohPct; b.lineCost = comp.cost; b.lineSell = comp.sell; b.lineMargin = comp.marginPct; b.effMg = comp.mg; b.effInd = comp.ind; b.effOh = comp.oh; }
       return b;
     });
@@ -3376,7 +3390,7 @@ if(S.token&&S.user){enterApp();}
       var cl = {}; t.lines.costline.forEach(function (x) { cl["c" + x._id] = x; });
       var byCat = {};
       function bucket(c) { c = c || "Uncategorised"; return (byCat[c] = byCat[c] || { category: c, resources: [], materials: [], planned: 0 }); }
-      rs.forEach(function (r) { var b = bucket(r.category); var d = (rl["r" + r.id] || {}).cost || 0; b.resources.push({ name: r.person || r.position || "—", qty: r.qty, months: r.months, cost: Math.round(d) }); b.planned += d; });
+      rs.forEach(function (r) { var b = bucket(effCat(r)); var d = (rl["r" + r.id] || {}).cost || 0; b.resources.push({ name: r.person || effPos(r) || "—", qty: r.qty, months: r.months, cost: Math.round(d) }); b.planned += d; });
       ls.forEach(function (l) { var b = bucket(l.category); var d = (cl["c" + l.id] || {}).cost || 0; b.materials.push({ name: l.item || "—", qty: l.qty, cost: Math.round(d) }); b.planned += d; });
       var cats = Object.keys(byCat).map(function (c) { var o = byCat[c], m = sapMap[c] || {}; return { category: c, mainCode: m.mainCode || f.SAPMainCode || "", wbsCode: m.wbsCode || "", planned: Math.round(o.planned), actual: null, resources: o.resources, materials: o.materials }; });
       return { id: p.id, name: f.Title, client: f.Client, entity: f.Entity, stage: f.Stage, sapMain: f.SAPMainCode || "", total: Math.round(t.cost), price: Math.round(t.price), categories: cats };
@@ -3471,7 +3485,7 @@ if(S.token&&S.user){enterApp();}
     if (u === "/resources-master" && method === "POST") {
       if (["hr", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only HR / admin can manage the resource master.");
       if (!canSeeEntity(CUR, body.entity)) throw err(403, "You are not authorised for " + (body.entity || "that company") + ".");
-      var rid = nid(); DB.resourceMaster.push({ id: rid, empId: body.empId || "", name: body.name || "", designation: body.designation || "", entity: body.entity || "UXE", availability: (body.availability === undefined ? 100 : +body.availability) });
+      var rid = nid(); DB.resourceMaster.push({ id: rid, empId: body.empId || "", name: body.name || "", designation: body.designation || "", category: body.category || "", entity: body.entity || "UXE", availability: (body.availability === undefined ? 100 : +body.availability), salary: (+body.salary || 0) });
       return { id: rid };
     }
     if (u === "/resources-master/bulk" && method === "POST") {   // bulk CSV/Excel upload
@@ -3481,8 +3495,8 @@ if(S.token&&S.user){enterApp();}
         var entity = row.entity || "UXE";
         if (!canSeeEntity(CUR, entity)) { skipped.push((row.empId || row.name || "?") + " (not your company)"); return; }
         var ex = DB.resourceMaster.filter(function (x) { return x.empId && row.empId && String(x.empId).toLowerCase() === String(row.empId).toLowerCase() && x.entity === entity; })[0];
-        if (ex) { ex.name = row.name || ex.name; ex.designation = row.designation || ex.designation; if (row.availability !== undefined && row.availability !== "") ex.availability = +row.availability; updated++; }
-        else { DB.resourceMaster.push({ id: nid(), empId: row.empId || "", name: row.name || "", designation: row.designation || "", entity: entity, availability: (row.availability === undefined || row.availability === "") ? 100 : +row.availability }); added++; }
+        if (ex) { ex.name = row.name || ex.name; ex.designation = row.designation || ex.designation; if (row.category !== undefined && row.category !== "") ex.category = row.category; if (row.availability !== undefined && row.availability !== "") ex.availability = +row.availability; if (row.salary !== undefined && row.salary !== "") ex.salary = +row.salary; updated++; }
+        else { DB.resourceMaster.push({ id: nid(), empId: row.empId || "", name: row.name || "", designation: row.designation || "", category: row.category || "", entity: entity, availability: (row.availability === undefined || row.availability === "") ? 100 : +row.availability, salary: (+row.salary || 0) }); added++; }
       });
       return { ok: true, added: added, updated: updated, skipped: skipped };
     }
@@ -3490,7 +3504,7 @@ if(S.token&&S.user){enterApp();}
       var rrow = DB.resourceMaster.filter(function (x) { return String(x.id) === parts[1]; })[0]; if (!rrow) throw err(404, "Not found.");
       if (["hr", "admin"].indexOf(CUR.role) < 0) throw err(403, "Only HR / admin can edit the resource master.");
       if (!canSeeEntity(CUR, rrow.entity)) throw err(403, "Not your company.");
-      if (method === "PATCH") { ["empId", "name", "designation", "entity", "availability"].forEach(function (k) { if (body[k] !== undefined) rrow[k] = (k === "availability") ? +body[k] : body[k]; }); return { ok: true }; }
+      if (method === "PATCH") { ["empId", "name", "designation", "category", "entity", "availability", "salary"].forEach(function (k) { if (body[k] !== undefined) rrow[k] = (k === "availability" || k === "salary") ? +body[k] : body[k]; }); return { ok: true }; }
       if (method === "DELETE") { DB.resourceMaster.splice(DB.resourceMaster.indexOf(rrow), 1); return { ok: true }; }
     }
     // ---- #5C/D availability check ----
